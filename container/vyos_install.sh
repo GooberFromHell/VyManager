@@ -84,9 +84,15 @@ load_or_pull_image() {
     if [ -f "${tarpath}" ]; then
         echo "Loading ${image} from ${tarball}..."
         sudo podman load -i "${tarpath}"
+    elif sudo podman image exists "${image}" 2>/dev/null; then
+        echo "Image ${image} already exists locally, skipping pull."
     else
         echo "Pulling ${image} from registry..."
-        sudo podman pull "${image}"
+        if ! sudo podman pull "${image}"; then
+            echo "ERROR: Failed to pull ${image}. If this router has no internet access,"
+            echo "use vyos_bundle.sh on a dev machine to create offline tarballs."
+            exit 1
+        fi
     fi
 }
 
