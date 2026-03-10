@@ -95,3 +95,65 @@ load_or_pull_image "vymanager-backend-beta.tar" "${IMAGE_BACKEND}"
 load_or_pull_image "vymanager-frontend-beta.tar" "${IMAGE_FRONTEND}"
 
 echo "All images ready."
+
+# ------------------------------------------------------------------
+# Phase 3: VyOS container configuration
+# ------------------------------------------------------------------
+echo ""
+echo "--- Phase 3: Configuring containers ---"
+
+# Derived URLs (do not edit — computed from variables above)
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@vymanager-postgres:${POSTGRES_PORT}/${DB_NAME}"
+FRONTEND_INTERNAL_URL="http://vymanager-frontend:3000"
+BACKEND_INTERNAL_URL="http://vymanager-backend:${BACKEND_PORT}"
+EXTERNAL_URL="http://${ROUTER_IP}:${FRONTEND_PORT}"
+TRUSTED_ORIGINS_VAL="${EXTERNAL_URL},http://localhost:${FRONTEND_PORT}"
+
+# --- Network and Registry ---
+set container network "${CONTAINER_NETWORK}" prefix "${CONTAINER_NETWORK_PREFIX}"
+set container registry ghcr.io
+
+# --- PostgreSQL ---
+set container name vymanager-postgres image "${IMAGE_POSTGRES}"
+set container name vymanager-postgres network "${CONTAINER_NETWORK}"
+set container name vymanager-postgres restart on-failure
+set container name vymanager-postgres port db source "${POSTGRES_PORT}"
+set container name vymanager-postgres port db destination "${POSTGRES_PORT}"
+set container name vymanager-postgres port db protocol tcp
+set container name vymanager-postgres volume postgres-data source '/config/vymanager/postgres_data'
+set container name vymanager-postgres volume postgres-data destination '/var/lib/postgresql/data'
+set container name vymanager-postgres environment POSTGRES_USER value "${DB_USER}"
+set container name vymanager-postgres environment POSTGRES_PASSWORD value "${DB_PASS}"
+set container name vymanager-postgres environment POSTGRES_DB value "${DB_NAME}"
+
+# --- Backend ---
+set container name vymanager-backend image "${IMAGE_BACKEND}"
+set container name vymanager-backend network "${CONTAINER_NETWORK}"
+set container name vymanager-backend restart on-failure
+set container name vymanager-backend port api source "${BACKEND_PORT}"
+set container name vymanager-backend port api destination "${BACKEND_PORT}"
+set container name vymanager-backend port api protocol tcp
+set container name vymanager-backend environment DATABASE_URL value "${DATABASE_URL}"
+set container name vymanager-backend environment FRONTEND_URL value "${FRONTEND_INTERNAL_URL}"
+set container name vymanager-backend environment BETTER_AUTH_SECRET value "${BETTER_AUTH_SECRET}"
+set container name vymanager-backend environment SSH_ENCRYPTION_KEY value "${SSH_ENCRYPTION_KEY}"
+set container name vymanager-backend environment TRUSTED_ORIGINS value "${TRUSTED_ORIGINS_VAL}"
+set container name vymanager-backend environment VYMANAGER_ENV value 'production'
+
+# --- Frontend ---
+set container name vymanager-frontend image "${IMAGE_FRONTEND}"
+set container name vymanager-frontend network "${CONTAINER_NETWORK}"
+set container name vymanager-frontend restart on-failure
+set container name vymanager-frontend port web source "${FRONTEND_PORT}"
+set container name vymanager-frontend port web destination '3000'
+set container name vymanager-frontend port web protocol tcp
+set container name vymanager-frontend environment DATABASE_URL value "${DATABASE_URL}"
+set container name vymanager-frontend environment BACKEND_URL value "${BACKEND_INTERNAL_URL}"
+set container name vymanager-frontend environment BETTER_AUTH_SECRET value "${BETTER_AUTH_SECRET}"
+set container name vymanager-frontend environment BETTER_AUTH_URL value "${EXTERNAL_URL}"
+set container name vymanager-frontend environment NEXT_PUBLIC_APP_URL value "${EXTERNAL_URL}"
+set container name vymanager-frontend environment TRUSTED_ORIGINS value "${TRUSTED_ORIGINS_VAL}"
+set container name vymanager-frontend environment NODE_ENV value 'production'
+set container name vymanager-frontend environment VYMANAGER_ENV value 'production'
+
+echo "Container configuration set."
