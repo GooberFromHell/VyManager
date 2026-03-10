@@ -115,7 +115,8 @@ BACKEND_INTERNAL_URL="http://vymanager-backend:${BACKEND_PORT}"
 EXTERNAL_URL="http://${ROUTER_IP}:${FRONTEND_PORT}"
 TRUSTED_ORIGINS_VAL="${EXTERNAL_URL},http://localhost:${FRONTEND_PORT}"
 
-# --- Network and Registry ---
+# --- Network and Registry (set twice — VyOS CLI quirk) ---
+set container network "${CONTAINER_NETWORK}" prefix "${CONTAINER_NETWORK_PREFIX}"
 set container network "${CONTAINER_NETWORK}" prefix "${CONTAINER_NETWORK_PREFIX}"
 set container registry ghcr.io
 
