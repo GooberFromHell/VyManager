@@ -28,7 +28,7 @@ CONTAINER_NETWORK_PREFIX="172.18.200.0/24"
 
 # Generate secrets if not provided (override by exporting before running)
 BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 44)}"
-SSH_ENCRYPTION_KEY="${SSH_ENCRYPTION_KEY:-$(head -c 32 /dev/urandom | xxd -p -c 64)}"
+SSH_ENCRYPTION_KEY="${SSH_ENCRYPTION_KEY:-$(head -c 32 /dev/urandom | od -A n -t x1 | tr -d ' \n')}"
 
 IMAGE_POSTGRES="docker.io/postgres:16-alpine"
 IMAGE_BACKEND="ghcr.io/community-vyprojects/vymanager-backend:beta"
@@ -86,7 +86,7 @@ load_or_pull_image() {
         sudo podman load -i "${tarpath}"
     else
         echo "Pulling ${image} from registry..."
-        add container image "${image}"
+        sudo podman pull "${image}"
     fi
 }
 
