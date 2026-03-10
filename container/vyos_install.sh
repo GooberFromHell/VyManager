@@ -119,8 +119,15 @@ TRUSTED_ORIGINS_VAL="${EXTERNAL_URL},http://localhost:${FRONTEND_PORT}"
 set container network "${CONTAINER_NETWORK}" prefix "${CONTAINER_NETWORK_PREFIX}"
 set container registry ghcr.io
 
-# --- PostgreSQL ---
+# --- Set images first (run twice — VyOS sometimes requires a repeat) ---
 set container name vymanager-postgres image "${IMAGE_POSTGRES}"
+set container name vymanager-backend image "${IMAGE_BACKEND}"
+set container name vymanager-frontend image "${IMAGE_FRONTEND}"
+set container name vymanager-postgres image "${IMAGE_POSTGRES}"
+set container name vymanager-backend image "${IMAGE_BACKEND}"
+set container name vymanager-frontend image "${IMAGE_FRONTEND}"
+
+# --- PostgreSQL ---
 set container name vymanager-postgres network "${CONTAINER_NETWORK}"
 set container name vymanager-postgres restart on-failure
 set container name vymanager-postgres port db source "${POSTGRES_PORT}"
@@ -133,7 +140,6 @@ set container name vymanager-postgres environment POSTGRES_PASSWORD value "${DB_
 set container name vymanager-postgres environment POSTGRES_DB value "${DB_NAME}"
 
 # --- Backend ---
-set container name vymanager-backend image "${IMAGE_BACKEND}"
 set container name vymanager-backend network "${CONTAINER_NETWORK}"
 set container name vymanager-backend restart on-failure
 set container name vymanager-backend port api source "${BACKEND_PORT}"
@@ -147,7 +153,6 @@ set container name vymanager-backend environment TRUSTED_ORIGINS value "${TRUSTE
 set container name vymanager-backend environment VYMANAGER_ENV value 'production'
 
 # --- Frontend ---
-set container name vymanager-frontend image "${IMAGE_FRONTEND}"
 set container name vymanager-frontend network "${CONTAINER_NETWORK}"
 set container name vymanager-frontend restart on-failure
 set container name vymanager-frontend port web source "${FRONTEND_PORT}"
