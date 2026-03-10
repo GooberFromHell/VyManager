@@ -157,3 +157,33 @@ set container name vymanager-frontend environment NODE_ENV value 'production'
 set container name vymanager-frontend environment VYMANAGER_ENV value 'production'
 
 echo "Container configuration set."
+
+# ------------------------------------------------------------------
+# Phase 4: Commit, save, and verify
+# ------------------------------------------------------------------
+echo ""
+echo "--- Phase 4: Committing configuration ---"
+
+commit
+save
+exit
+
+echo ""
+echo "=== VyManager Installation Complete ==="
+echo ""
+echo "Access VyManager at: http://${ROUTER_IP}:${FRONTEND_PORT}"
+echo ""
+echo "Container status:"
+sudo podman ps --filter "name=vymanager" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+echo ""
+echo "If containers are not running yet, wait 30-60 seconds for startup."
+echo "The frontend runs database migrations on first boot."
+echo ""
+echo "To check logs:"
+echo "  sudo podman logs vymanager-postgres"
+echo "  sudo podman logs vymanager-backend"
+echo "  sudo podman logs vymanager-frontend"
+echo ""
+echo "To verify in VyOS CLI:"
+echo "  show container"
+echo "  show configuration commands | match vymanager"
