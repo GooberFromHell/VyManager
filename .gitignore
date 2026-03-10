@@ -121,3 +121,6 @@ docker-compose.yml
 CLAUDE.md
 .claude/
 .claude*
+
+# Git worktrees
+.worktrees/
