@@ -60,3 +60,38 @@ delete container network "${CONTAINER_NETWORK}" 2>/dev/null || true
 
 commit
 echo "Cleanup complete."
+
+# ------------------------------------------------------------------
+# Phase 2: Prerequisites — data directory and container images
+# ------------------------------------------------------------------
+echo ""
+echo "--- Phase 2: Prerequisites ---"
+
+# Create persistent PostgreSQL data directory
+# /config/ survives VyOS image upgrades
+sudo mkdir -p /config/vymanager/postgres_data
+sudo chown 70:70 /config/vymanager/postgres_data
+echo "PostgreSQL data directory ready."
+
+# Load or pull container images
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+load_or_pull_image() {
+    local tarball="$1"
+    local image="$2"
+    local tarpath="${SCRIPT_DIR}/${tarball}"
+
+    if [ -f "${tarpath}" ]; then
+        echo "Loading ${image} from ${tarball}..."
+        sudo podman load -i "${tarpath}"
+    else
+        echo "Pulling ${image} from registry..."
+        add container image "${image}"
+    fi
+}
+
+load_or_pull_image "postgres-16-alpine.tar" "${IMAGE_POSTGRES}"
+load_or_pull_image "vymanager-backend-beta.tar" "${IMAGE_BACKEND}"
+load_or_pull_image "vymanager-frontend-beta.tar" "${IMAGE_FRONTEND}"
+
+echo "All images ready."
