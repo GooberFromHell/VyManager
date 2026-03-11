@@ -365,22 +365,23 @@ class VyOSService:
         if self._cached_config is not None and not refresh:
             return self._cached_config
 
-        # Fetch full config using pyvyos show() with JSON output
-        response = self.device.show(path=["configuration", "json", "pretty"])
+        # Fetch full config using pyvyos retrieve_show_config() (uses /retrieve with op=showConfig)
+        response = self.device.retrieve_show_config(path=[])
 
         if response.status != 200:
             error_msg = response.error if response.error else "Unknown error"
             raise ValueError(f"Failed to retrieve full config: {error_msg}")
 
-        # Parse JSON from result
-        import json
-        # response.result is already the JSON string
-        config_json = response.result
-
-        try:
-            self._cached_config = json.loads(config_json)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse configuration JSON: {e}")
+        # response.result is already a parsed dict from the API
+        if isinstance(response.result, dict):
+            self._cached_config = response.result
+        else:
+            # Fallback: parse JSON string if result is a string
+            import json
+            try:
+                self._cached_config = json.loads(response.result)
+            except (json.JSONDecodeError, TypeError) as e:
+                raise ValueError(f"Failed to parse configuration JSON: {e}")
 
         return self._cached_config
 
