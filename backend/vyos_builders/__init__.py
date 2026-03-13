@@ -5,7 +5,7 @@ Self-contained batch builders for different features.
 Each builder includes all necessary operations for its feature type.
 """
 
-from .interfaces import EthernetInterfaceBuilderMixin, DummyInterfaceBuilderMixin
+from .interfaces import EthernetInterfaceBuilderMixin, DummyInterfaceBuilderMixin, TunnelInterfaceBuilderMixin, VxlanInterfaceBuilderMixin
 from .firewall import FirewallGroupsBatchBuilder, FirewallIPv4BatchBuilder, FirewallIPv6BatchBuilder, BridgeFirewallBatchBuilder, FirewallZonesBatchBuilder
 from .nat import NATBatchBuilder
 from .dhcp import DHCPBatchBuilder
@@ -36,10 +36,14 @@ from .isis import IsisBatchBuilder
 # Directly use the self-contained builders
 EthernetBatchBuilder = EthernetInterfaceBuilderMixin
 DummyBatchBuilder = DummyInterfaceBuilderMixin
+TunnelBatchBuilder = TunnelInterfaceBuilderMixin
+VxlanBatchBuilder = VxlanInterfaceBuilderMixin
 
 __all__ = [
     "EthernetBatchBuilder",
     "DummyBatchBuilder",
+    "TunnelBatchBuilder",
+    "VxlanBatchBuilder",
     "FirewallGroupsBatchBuilder",
     "FirewallIPv4BatchBuilder",
     "FirewallIPv6BatchBuilder",

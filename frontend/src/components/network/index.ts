@@ -14,3 +14,11 @@ export { EditEthernetModal } from "./EditEthernetModal";
 export { DeleteEthernetModal } from "./DeleteEthernetModal";
 export { ComprehensiveEthernetModal } from "./ComprehensiveEthernetModal";
 export { ComprehensiveVLANModal } from "./ComprehensiveVLANModal";
+
+// Tunnel interface modals
+export { TunnelModal } from "./TunnelModal";
+export { DeleteTunnelModal } from "./DeleteTunnelModal";
+
+// VXLAN interface modals
+export { VxlanModal } from "./VxlanModal";
+export { DeleteVxlanModal } from "./DeleteVxlanModal";

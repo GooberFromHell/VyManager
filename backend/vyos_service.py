@@ -16,6 +16,8 @@ import commit_confirm_state
 from vyos_builders import (
     EthernetBatchBuilder,
     DummyBatchBuilder,
+    TunnelBatchBuilder,
+    VxlanBatchBuilder,
     FirewallGroupsBatchBuilder,
     NATBatchBuilder,
     DHCPBatchBuilder,
@@ -91,6 +93,22 @@ class VyOSService:
         """
         return DummyBatchBuilder(self.config.version)
 
+    def create_tunnel_batch(self) -> TunnelBatchBuilder:
+        """
+        Create a batch builder for tunnel interfaces.
+
+        The builder automatically uses correct command syntax based on version.
+        """
+        return TunnelBatchBuilder(self.config.version)
+
+    def create_vxlan_batch(self) -> VxlanBatchBuilder:
+        """
+        Create a batch builder for VXLAN interfaces.
+
+        The builder automatically uses correct command syntax based on version.
+        """
+        return VxlanBatchBuilder(self.config.version)
+
     def create_firewall_groups_batch(self) -> FirewallGroupsBatchBuilder:
         """
         Create a batch builder for firewall groups.
@@ -119,6 +137,8 @@ class VyOSService:
         batch: Union[
             EthernetBatchBuilder,
             DummyBatchBuilder,
+            TunnelBatchBuilder,
+            VxlanBatchBuilder,
             FirewallGroupsBatchBuilder,
             NATBatchBuilder,
             DHCPBatchBuilder,
