@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { vxlanService } from "@/lib/api/vxlan";
 import type {
@@ -30,6 +37,7 @@ interface VxlanModalProps {
   capabilities: VxlanCapabilities | null;
   onSuccess: () => void;
   mode: "create" | "edit";
+  availableInterfaces?: string[];
 }
 
 export function VxlanModal({
@@ -39,6 +47,7 @@ export function VxlanModal({
   capabilities,
   onSuccess,
   mode,
+  availableInterfaces = [],
 }: VxlanModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -482,6 +491,32 @@ export function VxlanModal({
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="vxlan-primary-remote" className="text-zinc-300">
+                  Remote
+                </Label>
+                <Input
+                  id="vxlan-primary-remote"
+                  placeholder="10.0.0.2"
+                  value={remotes[0] || ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (remotes.length === 0) {
+                      setRemotes(val ? [val] : []);
+                    } else {
+                      const updated = [...remotes];
+                      updated[0] = val;
+                      setRemotes(updated);
+                    }
+                  }}
+                  disabled={hasGroup}
+                  className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-40"
+                />
+                <p className="text-xs text-zinc-500">
+                  Remote VTEP peer address. Add more in the Peers tab.
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="vxlan-source-address" className="text-zinc-300">
@@ -504,13 +539,18 @@ export function VxlanModal({
                   >
                     Source Interface
                   </Label>
-                  <Input
-                    id="vxlan-source-interface"
-                    placeholder="eth0"
-                    value={sourceInterface}
-                    onChange={(e) => setSourceInterface(e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
-                  />
+                  <Select value={sourceInterface} onValueChange={setSourceInterface}>
+                    <SelectTrigger id="vxlan-source-interface" className="bg-zinc-900 border-zinc-700 text-zinc-100">
+                      <SelectValue placeholder="Select interface" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableInterfaces.map((iface) => (
+                        <SelectItem key={iface} value={iface}>
+                          {iface}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-zinc-500">
                     Interface to derive source address from
                   </p>

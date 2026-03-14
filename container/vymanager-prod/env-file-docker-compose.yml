@@ -6,8 +6,8 @@ services:
     container_name: vymanager-postgres
     environment:
       POSTGRES_USER: vymanager
-      POSTGRES_PASSWORD: vymanager_secure_password
-      POSTGRES_DB: vymanager_auth
+      POSTGRES_PASSWORD: vymanager
+      POSTGRES_DB: vymanager_atuh
     ports:
       - "5432:5432"
     volumes:

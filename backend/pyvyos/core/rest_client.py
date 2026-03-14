@@ -215,9 +215,9 @@ class RestClient(ABC):
             if not command:
                 raise ValueError("API command is required")
             
-            # Special case: config-file requires path to be present (even if empty)
-            # Other commands can omit path when empty
-            include_empty_path = (command == "config-file")
+            # config-file and retrieve require path to be present (even if empty)
+            # VyOS 1.5 returns "missing 'path' field" for retrieve without path
+            include_empty_path = command in ("config-file", "retrieve")
             
             return {
                 "url": self._get_url(command),

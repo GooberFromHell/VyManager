@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, RefreshCw, AlertCircle, Search, Cable, Pencil, Trash2, Network, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ethernetService } from "@/lib/api/ethernet";
 import { tunnelService } from "@/lib/api/tunnel";
 import { vxlanService } from "@/lib/api/vxlan";
@@ -129,6 +129,15 @@ export default function InterfacesPage() {
       loadVxlanData();
     }
   }, [activeTab]);
+
+  // Build list of all interface names for source-interface dropdowns
+  const availableInterfaces = useMemo(() => {
+    const names: string[] = [];
+    interfaces.forEach((iface) => names.push(iface.name));
+    tunnelInterfaces.forEach((iface) => names.push(iface.name));
+    vxlanInterfaces.forEach((iface) => names.push(iface.name));
+    return names.sort();
+  }, [interfaces, tunnelInterfaces, vxlanInterfaces]);
 
   // Extract all VLANs from interfaces
   const allVlans: VLANWithParent[] = interfaces.flatMap((iface) => {
@@ -911,6 +920,7 @@ export default function InterfacesPage() {
         capabilities={tunnelCapabilities}
         onSuccess={loadTunnelData}
         mode="create"
+        availableInterfaces={availableInterfaces}
       />
       {editingTunnel && (
         <TunnelModal
@@ -920,6 +930,7 @@ export default function InterfacesPage() {
           capabilities={tunnelCapabilities}
           onSuccess={loadTunnelData}
           mode="edit"
+          availableInterfaces={availableInterfaces}
         />
       )}
       {deletingTunnel && (
@@ -938,6 +949,7 @@ export default function InterfacesPage() {
         capabilities={vxlanCapabilities}
         onSuccess={loadVxlanData}
         mode="create"
+        availableInterfaces={availableInterfaces}
       />
       {editingVxlan && (
         <VxlanModal
@@ -947,6 +959,7 @@ export default function InterfacesPage() {
           capabilities={vxlanCapabilities}
           onSuccess={loadVxlanData}
           mode="edit"
+          availableInterfaces={availableInterfaces}
         />
       )}
       {deletingVxlan && (

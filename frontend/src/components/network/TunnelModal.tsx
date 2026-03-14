@@ -38,6 +38,7 @@ interface TunnelModalProps {
   capabilities: TunnelCapabilities | null;
   onSuccess: () => void;
   mode: "create" | "edit";
+  availableInterfaces?: string[];
 }
 
 export function TunnelModal({
@@ -47,6 +48,7 @@ export function TunnelModal({
   capabilities,
   onSuccess,
   mode,
+  availableInterfaces = [],
 }: TunnelModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -463,12 +465,18 @@ export function TunnelModal({
 
               <div className="space-y-2">
                 <Label htmlFor="source-interface">Source Interface</Label>
-                <Input
-                  id="source-interface"
-                  placeholder="eth0"
-                  value={sourceInterface}
-                  onChange={(e) => setSourceInterface(e.target.value)}
-                />
+                <Select value={sourceInterface} onValueChange={setSourceInterface}>
+                  <SelectTrigger id="source-interface">
+                    <SelectValue placeholder="Select interface" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableInterfaces.map((iface) => (
+                      <SelectItem key={iface} value={iface}>
+                        {iface}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-zinc-500">
                   Physical interface to use as the tunnel source
                 </p>

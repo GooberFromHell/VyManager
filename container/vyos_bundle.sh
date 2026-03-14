@@ -23,11 +23,16 @@ echo "=== VyManager Offline Bundler ==="
 echo "Output directory: ${OUTDIR}"
 mkdir -p "${OUTDIR}"
 
-# Pull images
+# Pull images (skip if already present locally)
 for img in "${IMAGES[@]}"; do
   echo ""
-  echo "--- Pulling ${img} ---"
-  docker pull --platform linux/amd64 "${img}"
+  echo "--- Checking ${img} ---"
+  if docker image inspect "${img}" > /dev/null 2>&1; then
+    echo "Image ${img} already exists locally, skipping pull."
+  else
+    echo "Pulling ${img}..."
+    docker pull --platform linux/amd64 "${img}"
+  fi
 done
 
 # Save as tarballs

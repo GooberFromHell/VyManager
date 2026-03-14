@@ -36,6 +36,19 @@ def set_configured_device_name(name):
 _saved_config_snapshots: Dict[str, Dict[str, Any]] = {}
 
 
+def ensure_snapshot_before_change(instance_id: str, current_config: Dict[str, Any]) -> None:
+    """
+    Ensure a baseline snapshot exists for an instance before applying changes.
+
+    Called by batch endpoints before executing operations. If no snapshot exists
+    (e.g. after a backend restart), this captures the current running config as the
+    baseline. This way, subsequent diff polls will detect the changes made by the batch.
+    """
+    if instance_id not in _saved_config_snapshots:
+        import copy
+        _saved_config_snapshots[instance_id] = copy.deepcopy(current_config)
+
+
 # ========================================================================
 # Pydantic Models
 # ========================================================================

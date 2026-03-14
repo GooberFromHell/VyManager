@@ -1,0 +1,18 @@
+{
+  "planPath": "docs/plans/2026-03-12-tunnel-vxlan-design.md",
+  "tasks": [
+    {"id": 0, "nativeId": "13", "subject": "Task 0: Tunnel Interface Mapper", "status": "completed"},
+    {"id": 1, "nativeId": "14", "subject": "Task 1: Tunnel Interface Builder", "status": "completed", "blockedBy": [0]},
+    {"id": 2, "nativeId": "15", "subject": "Task 2: Tunnel Interface Router", "status": "completed", "blockedBy": [1]},
+    {"id": 3, "nativeId": "16", "subject": "Task 3: VXLAN Interface Mapper", "status": "completed"},
+    {"id": 4, "nativeId": "17", "subject": "Task 4: VXLAN Interface Builder and Router", "status": "completed", "blockedBy": [3]},
+    {"id": 5, "nativeId": "18", "subject": "Task 5: Frontend Tunnel Types and Service", "status": "completed"},
+    {"id": 6, "nativeId": "19", "subject": "Task 6: Frontend VXLAN Types and Service", "status": "completed"},
+    {"id": 7, "nativeId": "20", "subject": "Task 7: Tunnel Interface Modal", "status": "completed", "blockedBy": [5]},
+    {"id": 8, "nativeId": "21", "subject": "Task 8: VXLAN Interface Modal", "status": "completed", "blockedBy": [6]},
+    {"id": 9, "nativeId": "22", "subject": "Task 9: Delete Modals for Tunnel and VXLAN", "status": "completed"},
+    {"id": 10, "nativeId": "23", "subject": "Task 10: Interfaces Page Integration", "status": "completed", "blockedBy": [2, 4, 7, 8, 9]},
+    {"id": 11, "nativeId": "24", "subject": "Task 11: Component Index and Final Cleanup", "status": "completed", "blockedBy": [10]}
+  ],
+  "lastUpdated": "2026-03-13T09:25:00Z"
+}
