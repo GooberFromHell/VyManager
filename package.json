@@ -32,5 +32,8 @@
   "license": "ISC",
   "dependencies": {
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "shadcn": "^4.0.7"
   }
 }
