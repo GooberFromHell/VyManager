@@ -64,6 +64,9 @@ from .isis import IsisMapper
 from .isis.isis_versions import get_isis_mapper
 from .mpls import MplsMapper
 from .mpls.mpls_versions import get_mpls_mapper
+from .dns_forwarding.dns_forwarding_versions import get_dns_forwarding_mapper
+from .ntp.ntp_versions import get_ntp_mapper
+from .ssh.ssh_versions import get_ssh_mapper
 
 # Auto-register all mappers
 # Ethernet uses factory for version-specific mappers
@@ -146,6 +149,12 @@ CommandMapperRegistry.register_feature("load_balancing", get_load_balancing_mapp
 CommandMapperRegistry.register_feature("isis", get_isis_mapper)
 # MPLS uses factory for version-specific mappers
 CommandMapperRegistry.register_feature("mpls", get_mpls_mapper)
+# DNS Forwarding uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("dns_forwarding", get_dns_forwarding_mapper)
+# NTP uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("ntp", get_ntp_mapper)
+# SSH uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("ssh", get_ssh_mapper)
 
 __all__ = [
     "BaseFeatureMapper",
