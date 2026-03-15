@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Any
 from session_vyos_service import get_session_vyos_service
 from fastapi_permissions import require_read_permission, require_write_permission
 from rbac_permissions import FeatureGroup
+from routers.config.config import ensure_snapshot_before_change
 import logging
 logger = logging.getLogger(__name__)
 
@@ -872,6 +873,10 @@ async def configure_interface_batch(http_request: Request, request: InterfaceBat
 
     try:
         service = get_session_vyos_service(http_request)
+        instance_id = http_request.state.instance["id"]
+        current_config = await run_in_threadpool(service.get_full_config)
+        ensure_snapshot_before_change(instance_id, current_config)
+
         batch = service.create_ethernet_batch()
 
         # Process each operation
