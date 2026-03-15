@@ -204,14 +204,17 @@ export default function NTPPage() {
         onOpenChange={setCreateOpen}
         onSuccess={loadData}
         capabilities={capabilities}
+        existingServers={servers.map((s) => s.address)}
       />
-      <EditNTPSettingsModal
-        open={editSettingsOpen}
-        onOpenChange={setEditSettingsOpen}
-        onSuccess={loadData}
-        config={config}
-        capabilities={capabilities}
-      />
+      {config && (
+        <EditNTPSettingsModal
+          open={editSettingsOpen}
+          onOpenChange={setEditSettingsOpen}
+          onSuccess={loadData}
+          config={config}
+          capabilities={capabilities}
+        />
+      )}
       <DeleteNTPServerModal
         open={!!deletingServer}
         onOpenChange={(open) => !open && setDeletingServer(null)}

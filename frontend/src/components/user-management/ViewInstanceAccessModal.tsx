@@ -43,6 +43,8 @@ import {
   UserCircle,
   Route,
   Power,
+  Clock,
+  Terminal,
 } from "lucide-react";
 import { userManagementService, FeatureGroup, InstanceUserListItem } from "@/lib/api/user-management";
 import { ApiError } from "@/lib/types/api";
@@ -122,6 +124,9 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.USER_MANAGEMENT]: UserCircle,
   [FeatureGroup.POWER]: Power,
   [FeatureGroup.HIGH_AVAILABILITY]: Shield,
+  [FeatureGroup.DNS_FORWARDING]: Globe,
+  [FeatureGroup.NTP]: Clock,
+  [FeatureGroup.SSH]: Terminal,
 };
 
 // Feature display names
@@ -182,6 +187,9 @@ const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.USER_MANAGEMENT]: "User Management",
   [FeatureGroup.POWER]: "Power",
   [FeatureGroup.HIGH_AVAILABILITY]: "High Availability",
+  [FeatureGroup.DNS_FORWARDING]: "DNS Forwarding",
+  [FeatureGroup.NTP]: "NTP",
+  [FeatureGroup.SSH]: "SSH",
 };
 
 export function ViewInstanceAccessModal({

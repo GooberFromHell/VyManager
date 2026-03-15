@@ -210,13 +210,15 @@ export default function SSHPage() {
         </Card>
       </div>
 
-      <EditSSHSettingsModal
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSuccess={loadData}
-        config={config}
-        capabilities={capabilities}
-      />
+      {config && (
+        <EditSSHSettingsModal
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSuccess={loadData}
+          config={config}
+          capabilities={capabilities}
+        />
+      )}
     </div>
   );
 }

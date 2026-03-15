@@ -65,6 +65,8 @@ import {
   Radio,
   Power,
   Scale,
+  Clock,
+  Terminal,
 } from "lucide-react";
 import {
   userManagementService,
@@ -149,6 +151,9 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.USER_MANAGEMENT]: UserCircle,
   [FeatureGroup.POWER]: Power,
   [FeatureGroup.HIGH_AVAILABILITY]: Shield,
+  [FeatureGroup.DNS_FORWARDING]: Globe,
+  [FeatureGroup.NTP]: Clock,
+  [FeatureGroup.SSH]: Terminal,
 };
 
 // Feature display names
@@ -209,6 +214,9 @@ const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.USER_MANAGEMENT]: "User Management",
   [FeatureGroup.POWER]: "Power",
   [FeatureGroup.HIGH_AVAILABILITY]: "High Availability",
+  [FeatureGroup.DNS_FORWARDING]: "DNS Forwarding",
+  [FeatureGroup.NTP]: "NTP",
+  [FeatureGroup.SSH]: "SSH",
 };
 
 // Role badge styles
