@@ -24,10 +24,44 @@ class TunnelService {
     return apiClient.post<VyOSResponse>("/vyos/tunnel/batch", request);
   }
 
+  async createInterface(
+    interfaceName: string,
+    operations: BatchOperation[]
+  ): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations,
+    });
+  }
+
+  async updateInterface(
+    interfaceName: string,
+    operations: BatchOperation[]
+  ): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations,
+    });
+  }
+
   async deleteInterface(interfaceName: string): Promise<VyOSResponse> {
     return this.batchConfigure({
       interface: interfaceName,
       operations: [{ op: "delete_interface" }],
+    });
+  }
+
+  async enableInterface(interfaceName: string): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations: [{ op: "enable" }],
+    });
+  }
+
+  async disableInterface(interfaceName: string): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations: [{ op: "disable" }],
     });
   }
 

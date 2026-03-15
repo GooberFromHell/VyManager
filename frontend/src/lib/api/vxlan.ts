@@ -34,12 +34,58 @@ class VxlanService {
   }
 
   /**
+   * Create a new VXLAN interface
+   */
+  async createInterface(
+    interfaceName: string,
+    operations: BatchOperation[]
+  ): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations,
+    });
+  }
+
+  /**
+   * Update an existing VXLAN interface
+   */
+  async updateInterface(
+    interfaceName: string,
+    operations: BatchOperation[]
+  ): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations,
+    });
+  }
+
+  /**
    * Delete a VXLAN interface
    */
   async deleteInterface(interfaceName: string): Promise<VyOSResponse> {
     return this.batchConfigure({
       interface: interfaceName,
       operations: [{ op: "delete_interface" }],
+    });
+  }
+
+  /**
+   * Enable an interface
+   */
+  async enableInterface(interfaceName: string): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations: [{ op: "enable" }],
+    });
+  }
+
+  /**
+   * Disable an interface
+   */
+  async disableInterface(interfaceName: string): Promise<VyOSResponse> {
+    return this.batchConfigure({
+      interface: interfaceName,
+      operations: [{ op: "disable" }],
     });
   }
 
