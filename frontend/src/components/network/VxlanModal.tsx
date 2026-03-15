@@ -372,10 +372,11 @@ export function VxlanModal({
         return;
       }
 
-      await vxlanService.batchConfigure({
-        interface: interfaceName.trim(),
-        operations,
-      });
+      if (mode === "create") {
+        await vxlanService.createInterface(interfaceName.trim(), operations);
+      } else {
+        await vxlanService.updateInterface(vxlan!.name, operations);
+      }
 
       // Refresh config cache
       await vxlanService.refreshConfig();

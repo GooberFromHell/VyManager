@@ -313,10 +313,11 @@ export function TunnelModal({
         return;
       }
 
-      await tunnelService.batchConfigure({
-        interface: mode === "create" ? interfaceName.trim() : tunnel!.name,
-        operations,
-      });
+      if (mode === "create") {
+        await tunnelService.createInterface(interfaceName.trim(), operations);
+      } else {
+        await tunnelService.updateInterface(tunnel!.name, operations);
+      }
 
       // Refresh config cache
       await tunnelService.refreshConfig();
