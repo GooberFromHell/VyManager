@@ -170,6 +170,11 @@ export enum FeatureGroup {
   PIM = "PIM",
   PIM6 = "PIM6",
 
+  // Services
+  DNS_FORWARDING = "DNS_FORWARDING",
+  NTP = "NTP",
+  SSH = "SSH",
+
   SYSTEM = "SYSTEM",
   CONFIGURATION = "CONFIGURATION",
   MONITORING = "MONITORING",

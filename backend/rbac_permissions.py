@@ -89,6 +89,11 @@ class FeatureGroup(str, Enum):
 
     HIGH_AVAILABILITY = "HIGH_AVAILABILITY"
 
+    # Services
+    DNS_FORWARDING = "DNS_FORWARDING"
+    NTP = "NTP"
+    SSH = "SSH"
+
     SYSTEM = "SYSTEM"
     POWER = "POWER"  # Reboot, shutdown actions
     CONFIGURATION = "CONFIGURATION"
@@ -168,6 +173,9 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.PIM: PermissionLevel.WRITE,
         FeatureGroup.PIM6: PermissionLevel.WRITE,
         FeatureGroup.HIGH_AVAILABILITY: PermissionLevel.WRITE,
+        FeatureGroup.DNS_FORWARDING: PermissionLevel.WRITE,
+        FeatureGroup.NTP: PermissionLevel.WRITE,
+        FeatureGroup.SSH: PermissionLevel.WRITE,
         FeatureGroup.SYSTEM: PermissionLevel.WRITE,
         FeatureGroup.POWER: PermissionLevel.WRITE,
         FeatureGroup.CONFIGURATION: PermissionLevel.WRITE,
@@ -227,6 +235,9 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.PIM: PermissionLevel.WRITE,
         FeatureGroup.PIM6: PermissionLevel.WRITE,
         FeatureGroup.HIGH_AVAILABILITY: PermissionLevel.WRITE,
+        FeatureGroup.DNS_FORWARDING: PermissionLevel.WRITE,
+        FeatureGroup.NTP: PermissionLevel.WRITE,
+        FeatureGroup.SSH: PermissionLevel.WRITE,
         FeatureGroup.SYSTEM: PermissionLevel.WRITE,
         FeatureGroup.POWER: PermissionLevel.WRITE,
         FeatureGroup.CONFIGURATION: PermissionLevel.WRITE,
@@ -287,6 +298,9 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.PIM: PermissionLevel.READ,
         FeatureGroup.PIM6: PermissionLevel.READ,
         FeatureGroup.HIGH_AVAILABILITY: PermissionLevel.READ,
+        FeatureGroup.DNS_FORWARDING: PermissionLevel.READ,
+        FeatureGroup.NTP: PermissionLevel.READ,
+        FeatureGroup.SSH: PermissionLevel.READ,
         FeatureGroup.SYSTEM: PermissionLevel.READ,
         FeatureGroup.POWER: PermissionLevel.READ,  # Can see status, cannot execute power actions
         FeatureGroup.CONFIGURATION: PermissionLevel.READ,
@@ -388,6 +402,9 @@ async def get_user_permissions(
                 FeatureGroup.PIM,
                 FeatureGroup.PIM6,
                 FeatureGroup.HIGH_AVAILABILITY,
+                FeatureGroup.DNS_FORWARDING,
+                FeatureGroup.NTP,
+                FeatureGroup.SSH,
                 FeatureGroup.SYSTEM,
                 FeatureGroup.POWER,
                 FeatureGroup.CONFIGURATION,
@@ -467,6 +484,9 @@ async def get_user_permissions(
                 FeatureGroup.PIM,
                 FeatureGroup.PIM6,
                 FeatureGroup.HIGH_AVAILABILITY,
+                FeatureGroup.DNS_FORWARDING,
+                FeatureGroup.NTP,
+                FeatureGroup.SSH,
                 FeatureGroup.SYSTEM,
                 FeatureGroup.POWER,
                 FeatureGroup.CONFIGURATION,
