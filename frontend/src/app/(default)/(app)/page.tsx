@@ -108,7 +108,7 @@ export default function Home() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
   const { data: session, isPending } = useSession();
-  const { activeSession, loadSession } = useSessionStore();
+  const { activeSession } = useSessionStore();
 
   // Dashboard state
   const [cards, setCards] = useState<DashboardCard[]>([]);
@@ -188,8 +188,7 @@ export default function Home() {
         return;
       }
 
-      const sessionLoaded = await loadSession();
-      // Always try to load dashboard - the API will return empty if no layout exists
+      // Session already loaded by (default)/layout.tsx — just load dashboard data
       await loadDashboard();
 
       // Check if user has permission to edit the dashboard layout
@@ -207,7 +206,7 @@ export default function Home() {
     };
 
     checkAndRedirect();
-  }, [router, session, isPending, loadSession]);
+  }, [router, session, isPending]);
 
   if (isPending || isChecking) {
     return (

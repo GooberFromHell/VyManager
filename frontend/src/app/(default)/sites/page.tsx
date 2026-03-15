@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/toaster";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -777,8 +776,6 @@ export default function SitesPage() {
         onOpenChange={setImportCSVOpen}
         onSuccess={handleImportSuccess}
       />
-
-      <Toaster />
     </div>
   );
 }
