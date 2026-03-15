@@ -336,6 +336,7 @@ export default function BridgeFirewallPage() {
   }
 
   return (
+    <>
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col h-full">
@@ -776,5 +777,6 @@ export default function BridgeFirewallPage() {
           onSuccess={handleDeleteChainSuccess}
         />
       )}
+    </>
   );
 }

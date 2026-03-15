@@ -283,6 +283,7 @@ export default function PrefixListPage() {
   }
 
   return (
+    <>
       <div className="flex h-full">
         {/* Left Sidebar - Prefix List List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
@@ -602,5 +603,6 @@ export default function PrefixListPage() {
           />
         </>
       )}
+    </>
   );
 }

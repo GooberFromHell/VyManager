@@ -129,6 +129,7 @@ export default function FirewallGroupsPage() {
   }
 
   return (
+    <>
       <TooltipProvider>
       <div className="space-y-6 p-6">
         {/* Header */}
@@ -478,5 +479,6 @@ export default function FirewallGroupsPage() {
         group={selectedGroup}
         onSuccess={handleModalSuccess}
       />
+    </>
   );
 }

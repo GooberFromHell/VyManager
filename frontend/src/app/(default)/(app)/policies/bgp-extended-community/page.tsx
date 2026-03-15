@@ -356,6 +356,7 @@ export default function BGPExtCommunityPage() {
   }
 
   return (
+    <>
       <div className="flex h-full">
         {/* Left Sidebar - ExtCommunity Lists */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
@@ -672,5 +673,6 @@ export default function BGPExtCommunityPage() {
           )}
         </>
       )}
+    </>
   );
 }

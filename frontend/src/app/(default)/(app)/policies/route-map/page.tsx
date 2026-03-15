@@ -247,6 +247,7 @@ export default function RouteMapPage() {
   }
 
   return (
+    <>
       <div className="flex h-full">
         {/* Left Sidebar - Route Map List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
@@ -551,5 +552,6 @@ export default function RouteMapPage() {
           />
         </>
       )}
+    </>
   );
 }

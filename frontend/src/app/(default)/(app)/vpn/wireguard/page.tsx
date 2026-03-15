@@ -254,6 +254,7 @@ export default function WireGuardPage() {
   }
 
   return (
+    <>
       <div className="flex h-full overflow-hidden">
         {/* Left Sidebar - Interface List */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col">
@@ -869,5 +870,6 @@ export default function WireGuardPage() {
         existingInterfaces={config?.interfaces.map((i) => i.name) || []}
         existingPorts={config?.interfaces.map((i) => i.port).filter((p): p is string => !!p) || []}
       />
+    </>
   );
 }

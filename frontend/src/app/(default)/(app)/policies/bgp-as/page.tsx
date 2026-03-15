@@ -305,6 +305,7 @@ export default function BGPASPage() {
   }
 
   return (
+    <>
       <div className="flex h-full">
         {/* Left Sidebar - AS Path List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
@@ -621,5 +622,6 @@ export default function BGPASPage() {
           )}
         </>
       )}
+    </>
   );
 }

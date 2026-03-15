@@ -299,6 +299,7 @@ export default function NATPage() {
   }
 
   return (
+    <>
       <div className="flex h-full">
         {/* Left Sidebar - Rule Type Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -857,5 +858,6 @@ export default function NATPage() {
         ruleType={deleteRuleType}
         onSuccess={() => fetchConfig(true)}
       />
+    </>
   );
 }

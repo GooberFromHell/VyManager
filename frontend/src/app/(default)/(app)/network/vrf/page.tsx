@@ -134,6 +134,7 @@ export default function VRFPage() {
   const selectedInstance = config?.instances.find((v) => v.name === selectedVrf) ?? null;
 
   return (
+    <>
       <div className="flex h-full">
         {/* Left Sidebar - VRF Instance Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -304,5 +305,6 @@ export default function VRFPage() {
         onCreated={handleVrfCreated}
         existingNames={config?.instances.map((v) => v.name) ?? []}
       />
+    </>
   );
 }

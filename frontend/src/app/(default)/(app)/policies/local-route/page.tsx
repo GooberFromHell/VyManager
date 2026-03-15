@@ -209,6 +209,7 @@ export default function LocalRoutePage() {
   }
 
   return (
+    <>
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-border bg-card/30 shrink-0">
@@ -449,5 +450,6 @@ export default function LocalRoutePage() {
           ruleType={selectedTab}
         />
       )}
+    </>
   );
 }
