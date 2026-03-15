@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -115,7 +114,7 @@ export default function FlowtablesPage() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="border-b border-border bg-card/50 px-6 py-4">
@@ -320,6 +319,6 @@ export default function FlowtablesPage() {
         onSuccess={() => fetchConfig(true)}
         flowtable={deletingFlowtable}
       />
-    </AppLayout>
+    </>
   );
 }

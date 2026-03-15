@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { InProgress } from "@/components/layout/InProgress";
 import { IgmpProxyContent } from "@/components/igmp-proxy/IgmpProxyContent";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,7 +37,6 @@ export default function MulticastPage() {
   }, [multicast, selectedMulticast]);
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Left Sidebar - Multicast Protocol Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -125,6 +123,5 @@ export default function MulticastPage() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

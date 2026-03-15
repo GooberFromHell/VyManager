@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { VrfContent } from "@/components/vrf/VrfContent";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -91,17 +90,14 @@ export default function VRFPage() {
   // Permission check
   if (permissionsLoading) {
     return (
-      <AppLayout>
         <div className="flex h-full items-center justify-center">
           <LoadingSpinner />
         </div>
-      </AppLayout>
     );
   }
 
   if (!canRead(FeatureGroup.VRF)) {
     return (
-      <AppLayout>
         <div className="flex h-full items-center justify-center">
           <div className="text-center max-w-md">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
@@ -111,23 +107,19 @@ export default function VRFPage() {
             </p>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   if (loading && !config) {
     return (
-      <AppLayout>
         <div className="flex h-full items-center justify-center">
           <LoadingSpinner />
         </div>
-      </AppLayout>
     );
   }
 
   if (error && !config) {
     return (
-      <AppLayout>
         <div className="flex h-full items-center justify-center">
           <div className="text-center max-w-md">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
@@ -136,14 +128,12 @@ export default function VRFPage() {
             <Button onClick={() => loadData(true)}>Retry</Button>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   const selectedInstance = config?.instances.find((v) => v.name === selectedVrf) ?? null;
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Left Sidebar - VRF Instance Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -314,6 +304,5 @@ export default function VRFPage() {
         onCreated={handleVrfCreated}
         existingNames={config?.instances.map((v) => v.name) ?? []}
       />
-    </AppLayout>
   );
 }

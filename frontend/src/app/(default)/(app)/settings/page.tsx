@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { RebootModal } from "@/components/system/RebootModal";
 import { PoweroffModal } from "@/components/system/PoweroffModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,7 +83,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="p-8 space-y-6">
         {/* Header */}
         <div>
@@ -205,6 +204,6 @@ export default function SettingsPage() {
         onOpenChange={setPoweroffModalOpen}
         onSuccess={handlePoweroffSuccess}
       />
-    </AppLayout>
+    </>
   );
 }

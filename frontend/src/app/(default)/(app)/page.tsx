@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, Save, Edit3, X } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Github, Globe, MessageCircle, Sparkles } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
@@ -500,7 +499,6 @@ export default function Home() {
   };
 
   return (
-    <AppLayout>
       <div className="p-8">
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -697,6 +695,5 @@ export default function Home() {
         />
         </DashboardDataProvider>
       </div>
-    </AppLayout>
   );
 }

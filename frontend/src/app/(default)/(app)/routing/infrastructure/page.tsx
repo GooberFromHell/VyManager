@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { InProgress } from "@/components/layout/InProgress";
 import { BfdContent } from "@/components/bfd/BfdContent";
 import { MplsContent } from "@/components/mpls/MplsContent";
@@ -41,7 +40,6 @@ export default function InfrastructurePage() {
   }, [infrastructure, selectedInfra]);
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Left Sidebar - Infrastructure Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -130,6 +128,5 @@ export default function InfrastructurePage() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

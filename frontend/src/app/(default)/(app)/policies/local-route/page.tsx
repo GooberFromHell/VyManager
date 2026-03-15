@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -187,17 +186,14 @@ export default function LocalRoutePage() {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <LoadingSpinner />
         </div>
-      </AppLayout>
     );
   }
 
   if (error && !config) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
@@ -209,12 +205,10 @@ export default function LocalRoutePage() {
             </Button>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-border bg-card/30 shrink-0">
@@ -455,6 +449,5 @@ export default function LocalRoutePage() {
           ruleType={selectedTab}
         />
       )}
-    </AppLayout>
   );
 }

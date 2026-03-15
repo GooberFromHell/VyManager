@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -290,17 +289,14 @@ export default function RoutePage() {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <LoadingSpinner />
         </div>
-      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
@@ -312,12 +308,10 @@ export default function RoutePage() {
             </Button>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Left Sidebar - Policy List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
@@ -706,6 +700,5 @@ export default function RoutePage() {
           />
         </>
       )}
-    </AppLayout>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Server, Users, FileText, Shield, Map, Settings2 } from "lucide-react";
 import {
@@ -49,7 +48,6 @@ export default function SystemSettingsPage() {
   const refresh = () => load(true);
 
   return (
-    <AppLayout>
       <div className="p-8 space-y-6">
         {/* Header */}
         <div>
@@ -161,6 +159,5 @@ export default function SystemSettingsPage() {
           </Tabs>
         )}
       </div>
-    </AppLayout>
   );
 }

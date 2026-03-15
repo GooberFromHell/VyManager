@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -169,7 +168,7 @@ export default function MonitoringPage() {
     (selectedCommand === "monitor_traffic" && !captureIface);
 
   return (
-    <AppLayout>
+    <>
       <div className="p-6 space-y-4">
         {/* Page Header */}
         <div className="flex items-center gap-3">
@@ -475,6 +474,6 @@ export default function MonitoringPage() {
         onOpenChange={setFilterBuilderOpen}
         onApply={(bpf) => setCaptureFilter(bpf)}
       />
-    </AppLayout>
+    </>
   );
 }

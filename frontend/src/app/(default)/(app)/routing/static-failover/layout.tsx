@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, ChevronRight, Route, Activity } from "lucide-react";
@@ -43,8 +42,7 @@ export default function StaticFailoverLayout({
   const isActive = (href: string) => pathname === href;
 
   return (
-    <AppLayout>
-      <div className="flex h-full">
+    <div className="flex h-full">
         {/* Left Sidebar - Route Type Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
           <div className="p-6 pb-4">
@@ -116,7 +114,6 @@ export default function StaticFailoverLayout({
         <div className="flex-1">
           {children}
         </div>
-      </div>
-    </AppLayout>
+    </div>
   );
 }

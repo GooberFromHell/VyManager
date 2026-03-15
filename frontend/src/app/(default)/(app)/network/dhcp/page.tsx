@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -299,17 +298,14 @@ export default function DHCPPage() {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <LoadingSpinner />
         </div>
-      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
@@ -321,12 +317,10 @@ export default function DHCPPage() {
             </Button>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex h-full overflow-hidden">
         {/* Sidebar */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col">
@@ -1253,6 +1247,5 @@ export default function DHCPPage() {
           />
         )}
       </div>
-    </AppLayout>
   );
 }

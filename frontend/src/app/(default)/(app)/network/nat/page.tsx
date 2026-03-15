@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -279,17 +278,14 @@ export default function NATPage() {
   // Check permissions
   if (permissionsLoading) {
     return (
-      <AppLayout>
         <div className="flex h-full items-center justify-center">
           <LoadingSpinner />
         </div>
-      </AppLayout>
     );
   }
 
   if (!canRead(FeatureGroup.NAT)) {
     return (
-      <AppLayout>
         <div className="flex h-full items-center justify-center">
           <div className="text-center max-w-md">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
@@ -299,12 +295,10 @@ export default function NATPage() {
             </p>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Left Sidebar - Rule Type Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -863,6 +857,5 @@ export default function NATPage() {
         ruleType={deleteRuleType}
         onSuccess={() => fetchConfig(true)}
       />
-    </AppLayout>
   );
 }

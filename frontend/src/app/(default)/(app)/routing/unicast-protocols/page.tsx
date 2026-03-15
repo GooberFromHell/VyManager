@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { InProgress } from "@/components/layout/InProgress";
 import { BabelContent } from "@/components/babel/BabelContent";
 import { BgpContent } from "@/components/bgp/BgpContent";
@@ -47,7 +46,6 @@ export default function UnicastProtocolsPage() {
   }, [protocols, selectedProtocol]);
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Left Sidebar - Protocol Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
@@ -139,6 +137,5 @@ export default function UnicastProtocolsPage() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

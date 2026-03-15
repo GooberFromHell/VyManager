@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -521,7 +520,7 @@ export default function FirewallPoliciesPage() {
     : forwardRulesIPv6.length + inputRulesIPv6.length + outputRulesIPv6.length;
 
   return (
-    <AppLayout>
+    <>
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col h-full">
@@ -1167,6 +1166,6 @@ export default function FirewallPoliciesPage() {
         chain={deletingChain}
         protocol={selectedProtocol}
       />
-    </AppLayout>
+    </>
   );
 }

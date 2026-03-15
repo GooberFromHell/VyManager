@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import {
   Table,
   TableBody,
@@ -330,16 +329,13 @@ export default function BridgeFirewallPage() {
   // Loading state
   if (loading && !config) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-96">
           <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col h-full">
@@ -780,6 +776,5 @@ export default function BridgeFirewallPage() {
           onSuccess={handleDeleteChainSuccess}
         />
       )}
-    </AppLayout>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -348,11 +347,9 @@ export default function FirewallGlobalOptionsPage() {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-96">
           <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </AppLayout>
     );
   }
 
@@ -423,7 +420,6 @@ export default function FirewallGlobalOptionsPage() {
   ];
 
   return (
-    <AppLayout>
       <div className="space-y-4 p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -854,6 +850,5 @@ export default function FirewallGlobalOptionsPage() {
           </div>
         </div>
       </div>
-    </AppLayout>
   );
 }

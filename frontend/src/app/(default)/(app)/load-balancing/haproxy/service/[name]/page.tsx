@@ -1,4 +1,3 @@
-import { AppLayout } from "@/components/layout/AppLayout";
 import { HAProxyServiceDetail } from "@/components/load-balancing/HAProxyServiceDetail";
 
 interface Props {
@@ -8,8 +7,6 @@ interface Props {
 export default async function HAProxyServicePage({ params }: Props) {
   const { name } = await params;
   return (
-    <AppLayout>
       <HAProxyServiceDetail serviceName={decodeURIComponent(name)} />
-    </AppLayout>
   );
 }

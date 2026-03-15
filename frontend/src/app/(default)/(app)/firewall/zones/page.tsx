@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -584,18 +583,15 @@ export default function FirewallZonesPage() {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-64">
           <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      </AppLayout>
     );
   }
 
   const canReorder = selectedPair !== "all";
 
   return (
-    <AppLayout>
       <TooltipProvider>
         <div className="space-y-6 p-6">
           {/* Header */}
@@ -1083,6 +1079,5 @@ export default function FirewallZonesPage() {
         />
 
       </TooltipProvider>
-    </AppLayout>
   );
 }

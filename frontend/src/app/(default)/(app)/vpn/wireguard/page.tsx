@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -228,21 +227,18 @@ export default function WireGuardPage() {
   // Render loading state
   if (loading && !config) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-[calc(100vh-200px)]">
           <div className="text-center space-y-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
             <p className="text-muted-foreground">Loading WireGuard configuration...</p>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   // Render error state
   if (error && !config) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-[calc(100vh-200px)]">
           <div className="text-center space-y-4">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
@@ -254,12 +250,10 @@ export default function WireGuardPage() {
             </Button>
           </div>
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex h-full overflow-hidden">
         {/* Left Sidebar - Interface List */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col">
@@ -875,6 +869,5 @@ export default function WireGuardPage() {
         existingInterfaces={config?.interfaces.map((i) => i.name) || []}
         existingPorts={config?.interfaces.map((i) => i.port).filter((p): p is string => !!p) || []}
       />
-    </AppLayout>
   );
 }

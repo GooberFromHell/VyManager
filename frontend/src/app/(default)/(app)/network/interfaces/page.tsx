@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -203,16 +202,13 @@ export default function InterfacesPage() {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-96">
           <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="space-y-6 p-6">
         {/* Header */}
         <div className="flex items-start justify-between">
@@ -970,6 +966,5 @@ export default function InterfacesPage() {
           onSuccess={loadVxlanData}
         />
       )}
-    </AppLayout>
   );
 }
