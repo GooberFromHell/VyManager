@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "type": "prompt",
+        "prompt": "Before finalizing, check if any files were modified in these pattern-sensitive directories during this session: backend/routers/, backend/vyos_builders/, backend/vyos_mappers/, or frontend/src/lib/api/. If YES, run the /check-patterns skill to verify pattern consistency. If NO files in those directories were touched, skip the check."
+      }
+    ]
+  }
+}
