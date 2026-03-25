@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Plus, X } from "lucide-react";
 import { ntpService } from "@/lib/api/ntp";
 import type { NTPConfig, NTPCapabilities } from "@/lib/api/types/ntp";
@@ -205,42 +205,15 @@ export function EditNTPSettingsModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {capabilities?.fields.listen_address.supported && (
-            <div>
-              <Label>Listen Addresses</Label>
-              <div className="space-y-2 mt-2">
-                {listenAddresses.length === 0 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addListenAddress}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Listen Address
-                  </Button>
-                ) : (
-                  <>
-                    {listenAddresses.map((addr, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={addr}
-                          onChange={(e) =>
-                            updateListenAddress(index, e.target.value)
-                          }
-                          placeholder="e.g., 0.0.0.0"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeListenAddress(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+        <div className="space-y-5">
+          {capabilities?.fields?.listen_address?.supported && (
+            <Fieldset label="Listen Addresses">
+              <FormField
+                label="Addresses"
+                description="IP addresses the NTP service listens on"
+              >
+                <div className="space-y-2">
+                  {listenAddresses.length === 0 ? (
                     <Button
                       type="button"
                       variant="outline"
@@ -250,50 +223,56 @@ export function EditNTPSettingsModal({
                       <Plus className="h-4 w-4 mr-2" />
                       Add Listen Address
                     </Button>
-                  </>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                IP addresses the NTP service listens on
-              </p>
-            </div>
+                  ) : (
+                    <>
+                      {listenAddresses.map((addr, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={addr}
+                            onChange={(e) =>
+                              updateListenAddress(index, e.target.value)
+                            }
+                            placeholder="e.g., 0.0.0.0"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeListenAddress(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addListenAddress}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Listen Address
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </FormField>
+            </Fieldset>
           )}
 
-          {capabilities?.fields.allow_client.supported && (
-            <div>
-              <Label>Allowed Clients</Label>
-              <div className="space-y-2 mt-2">
-                {allowClients.length === 0 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addAllowClient}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Allowed Client Network
-                  </Button>
-                ) : (
-                  <>
-                    {allowClients.map((client, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={client}
-                          onChange={(e) =>
-                            updateAllowClient(index, e.target.value)
-                          }
-                          placeholder="e.g., 10.0.0.0/8"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeAllowClient(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+          {capabilities?.fields?.listen_address?.supported &&
+            capabilities?.fields?.allow_client?.supported && (
+              <FieldsetDivider />
+            )}
+
+          {capabilities?.fields?.allow_client?.supported && (
+            <Fieldset label="Allowed Clients">
+              <FormField
+                label="Client Networks"
+                description="Networks allowed to query this NTP server (CIDR notation)"
+              >
+                <div className="space-y-2">
+                  {allowClients.length === 0 ? (
                     <Button
                       type="button"
                       variant="outline"
@@ -303,28 +282,65 @@ export function EditNTPSettingsModal({
                       <Plus className="h-4 w-4 mr-2" />
                       Add Allowed Client Network
                     </Button>
-                  </>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Networks allowed to query this NTP server (CIDR notation)
-              </p>
-            </div>
+                  ) : (
+                    <>
+                      {allowClients.map((client, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={client}
+                            onChange={(e) =>
+                              updateAllowClient(index, e.target.value)
+                            }
+                            placeholder="e.g., 10.0.0.0/8"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeAllowClient(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addAllowClient}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Allowed Client Network
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </FormField>
+            </Fieldset>
           )}
 
-          {capabilities?.fields.vrf.supported && (
-            <div>
-              <Label htmlFor="vrf">VRF</Label>
-              <Input
-                id="vrf"
-                value={vrf}
-                onChange={(e) => setVrf(e.target.value)}
-                placeholder="e.g., mgmt"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                VRF instance for the NTP service (optional)
-              </p>
-            </div>
+          {capabilities?.fields?.vrf?.supported && (
+            <>
+              {(capabilities?.fields?.listen_address?.supported ||
+                capabilities?.fields?.allow_client?.supported) && (
+                <FieldsetDivider />
+              )}
+
+              <Fieldset label="Network">
+                <FormField
+                  label="VRF"
+                  htmlFor="vrf"
+                  description="VRF instance for the NTP service (optional)"
+                >
+                  <Input
+                    id="vrf"
+                    value={vrf}
+                    onChange={(e) => setVrf(e.target.value)}
+                    placeholder="e.g., mgmt"
+                  />
+                </FormField>
+              </Fieldset>
+            </>
           )}
 
           {error && (

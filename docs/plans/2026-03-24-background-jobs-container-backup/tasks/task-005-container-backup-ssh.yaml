@@ -1,0 +1,400 @@
+id: task-005-container-backup-ssh
+title: "Create container backup SSH data collection module"
+archetype: custom
+phase: 2
+depends_on: [task-002]
+parallel_with: [task-003, task-004]
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "backend/routers/site_tools/container_backup.py"
+  modify: []
+
+context_files:
+  - ".derpo/architecture.md"
+  - "backend/routers/site_tools/backup.py"
+  - "backend/routers/terminal/terminal.py"
+  - "backend/ssh_key_manager.py"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Create `backend/routers/site_tools/container_backup.py` — async SSH functions that connect
+  to a VyOS instance and collect container runtime status, image digests, and volume data for
+  the container backup feature.
+
+  ## Step 1: Read reference files
+  - Read `backend/routers/terminal/terminal.py` for the SSH connection pattern using asyncssh
+    and `decrypt_private_key` from `ssh_key_manager`.
+  - Read `backend/ssh_key_manager.py` to understand how `decrypt_private_key` works — it takes
+    `encrypted_private_key` and `nonce` strings and returns the decrypted PEM bytes.
+  - Read `backend/routers/site_tools/backup.py` to see the existing `InstanceBackupResult` and
+    new container backup models (from task-002).
+
+  ## Step 2: Create the module
+  Create `backend/routers/site_tools/container_backup.py`:
+
+  ```python
+  """
+  Container Backup SSH Data Collection
+
+  Connects to VyOS instances via SSH to collect container runtime state,
+  image digests, and volume data for comprehensive container backups.
+
+  Uses asyncssh for non-blocking SSH operations. Requires instances to have
+  SSH keys configured (via the provisioning flow).
+  """
+
+  import os
+  import asyncio
+  import logging
+  import shlex
+  import json
+  from typing import Optional
+
+  import asyncssh
+
+  from ssh_key_manager import decrypt_private_key
+  from routers.site_tools.backup import (
+      VolumeBackupData,
+      ContainerImageManifest,
+      ContainerRuntimeStatus,
+      ContainerFullBackup,
+  )
+
+  logger = logging.getLogger(__name__)
+
+  # Max volume backup size in MB (configurable via env var)
+  CONTAINER_VOLUME_BACKUP_MAX_MB = int(
+      os.getenv("CONTAINER_VOLUME_BACKUP_MAX_MB", "500")
+  )
+  ```
+
+  ## Step 3: Implement SSH connection helper
+
+  ```python
+  async def open_ssh_connection(instance_row: dict) -> Optional[asyncssh.SSHClientConnection]:
+      """
+      Open an SSH connection to a VyOS instance using stored SSH keys.
+
+      Args:
+          instance_row: Database row dict with SSH fields (sshPort, sshUsername,
+                       sshEncryptedPrivKey, sshKeyNonce, host, sshKeyConfigured).
+
+      Returns:
+          asyncssh.SSHClientConnection or None if SSH is not configured or fails.
+      """
+      if not instance_row.get("sshKeyConfigured"):
+          logger.warning(
+              "SSH not configured for instance %s — skipping container backup",
+              instance_row.get("name", "unknown"),
+          )
+          return None
+
+      encrypted_key = instance_row.get("sshEncryptedPrivKey")
+      nonce = instance_row.get("sshKeyNonce")
+      if not encrypted_key or not nonce:
+          logger.warning("SSH key data missing for instance %s", instance_row.get("name"))
+          return None
+
+      try:
+          pem_bytes = decrypt_private_key(encrypted_key, nonce)
+          private_key = asyncssh.import_private_key(pem_bytes.decode("utf-8"))
+
+          conn = await asyncssh.connect(
+              host=instance_row["host"],
+              port=instance_row.get("sshPort", 22),
+              username=instance_row.get("sshUsername", "vyos"),
+              client_keys=[private_key],
+              known_hosts=None,  # Accept any host key (same as terminal router)
+              connect_timeout=15,
+          )
+          return conn
+      except Exception as e:
+          logger.error("SSH connection failed for %s: %s", instance_row.get("name"), e)
+          return None
+  ```
+
+  ## Step 4: Implement runtime status collection
+
+  ```python
+  async def collect_runtime_status(
+      conn: asyncssh.SSHClientConnection,
+  ) -> list[ContainerRuntimeStatus]:
+      """
+      Collect running/stopped status for all containers via podman ps.
+      """
+      try:
+          result = await conn.run(
+              'sudo podman ps -a --format \'{"name":"{{.Names}}","status":"{{.Status}}","exitcode":{{.ExitCode}}}\'',
+              check=False,
+              timeout=30,
+          )
+          if result.exit_status != 0:
+              logger.warning("podman ps failed: %s", result.stderr)
+              return []
+
+          statuses = []
+          for line in result.stdout.strip().splitlines():
+              line = line.strip()
+              if not line:
+                  continue
+              try:
+                  data = json.loads(line)
+                  running = data.get("status", "").startswith("Up")
+                  # Parse uptime if running
+                  uptime = None
+                  if running:
+                      # Rough parsing — "Up 2 hours" etc.
+                      status_str = data.get("status", "")
+                      # Just store None for now; exact parsing is complex
+                      uptime = None
+                  statuses.append(ContainerRuntimeStatus(
+                      container_name=data["name"],
+                      running=running,
+                      exit_code=data.get("exitcode"),
+                      uptime_seconds=uptime,
+                  ))
+              except (json.JSONDecodeError, KeyError) as e:
+                  logger.warning("Failed to parse container status line: %s — %s", line, e)
+          return statuses
+      except Exception as e:
+          logger.error("Failed to collect runtime status: %s", e)
+          return []
+  ```
+
+  ## Step 5: Implement image digest collection
+
+  ```python
+  async def collect_image_digests(
+      conn: asyncssh.SSHClientConnection,
+      containers: dict,
+  ) -> list[ContainerImageManifest]:
+      """
+      Collect image digests for all containers by running podman inspect.
+
+      Args:
+          containers: Dict of container_name -> container config dict from VyOS config.
+                      Each should have an 'image' key.
+      """
+      manifests = []
+      for name, config in containers.items():
+          image_ref = config.get("image", "")
+          if not image_ref:
+              manifests.append(ContainerImageManifest(
+                  container_name=name,
+                  image_ref="",
+                  error="No image reference in config",
+              ))
+              continue
+
+          try:
+              result = await conn.run(
+                  f"sudo podman inspect {shlex.quote(image_ref)} --format '{{{{.Digest}}}}'",
+                  check=False,
+                  timeout=30,
+              )
+              digest = result.stdout.strip() if result.exit_status == 0 else None
+              error = result.stderr.strip() if result.exit_status != 0 else None
+
+              manifests.append(ContainerImageManifest(
+                  container_name=name,
+                  image_ref=image_ref,
+                  image_digest=digest if digest else None,
+                  error=error,
+              ))
+          except Exception as e:
+              manifests.append(ContainerImageManifest(
+                  container_name=name,
+                  image_ref=image_ref,
+                  error=str(e),
+              ))
+      return manifests
+  ```
+
+  ## Step 6: Implement volume backup
+
+  ```python
+  async def backup_volumes(
+      conn: asyncssh.SSHClientConnection,
+      container_name: str,
+      volumes: list[dict],
+  ) -> list[VolumeBackupData]:
+      """
+      Back up volume data by running tar+base64 via SSH.
+
+      Each volume dict should have 'source' (host path) and optionally 'destination'.
+      Enforces CONTAINER_VOLUME_BACKUP_MAX_MB per volume.
+      """
+      results = []
+      max_bytes = CONTAINER_VOLUME_BACKUP_MAX_MB * 1024 * 1024
+
+      for vol in volumes:
+          source = vol.get("source", "")
+          vol_name = vol.get("destination", source) or source
+          if not source:
+              continue
+
+          try:
+              # First check directory size
+              size_result = await conn.run(
+                  f"sudo du -sb {shlex.quote(source)} 2>/dev/null | cut -f1",
+                  check=False,
+                  timeout=30,
+              )
+              size_str = size_result.stdout.strip()
+              size_bytes = int(size_str) if size_str.isdigit() else 0
+
+              if size_bytes > max_bytes:
+                  results.append(VolumeBackupData(
+                      volume_name=vol_name,
+                      source_path=source,
+                      size_bytes=size_bytes,
+                      error=f"Volume exceeds max backup size ({CONTAINER_VOLUME_BACKUP_MAX_MB} MB): {size_bytes} bytes",
+                  ))
+                  continue
+
+              # Tar and base64-encode the volume data
+              tar_result = await conn.run(
+                  f"sudo tar -czf - -C {shlex.quote(source)} . 2>/dev/null | base64 -w 0",
+                  check=False,
+                  timeout=300,  # Large volumes may take time
+              )
+
+              if tar_result.exit_status != 0:
+                  results.append(VolumeBackupData(
+                      volume_name=vol_name,
+                      source_path=source,
+                      size_bytes=size_bytes,
+                      error=tar_result.stderr.strip() or "tar command failed",
+                  ))
+                  continue
+
+              data_b64 = tar_result.stdout.strip()
+              results.append(VolumeBackupData(
+                  volume_name=vol_name,
+                  source_path=source,
+                  size_bytes=size_bytes,
+                  data_base64=data_b64 if data_b64 else None,
+              ))
+
+          except Exception as e:
+              results.append(VolumeBackupData(
+                  volume_name=vol_name,
+                  source_path=source,
+                  error=str(e),
+              ))
+
+      return results
+  ```
+
+  ## Step 7: Implement the orchestrator function
+
+  ```python
+  async def collect_container_backup(
+      instance_row: dict,
+      container_config: dict,
+      config_commands_map: dict[str, str],
+  ) -> tuple[list[ContainerFullBackup], list[str]]:
+      """
+      Orchestrate full container backup data collection for an instance.
+
+      Args:
+          instance_row: Database row with instance info including SSH fields.
+          container_config: The 'container' section from the VyOS config dict.
+                           Expected structure: {"name": {<container_name>: {...}}, ...}
+          config_commands_map: Dict of container_name -> set commands string.
+
+      Returns:
+          Tuple of (list of ContainerFullBackup, list of error strings).
+      """
+      containers_dict = container_config.get("name", {})
+      if not containers_dict:
+          return [], []
+
+      errors = []
+      conn = await open_ssh_connection(instance_row)
+      if conn is None:
+          return [], ["SSH connection not available — container backup skipped"]
+
+      try:
+          # 1. Collect runtime status
+          runtime_statuses = await collect_runtime_status(conn)
+          status_map = {s.container_name: s for s in runtime_statuses}
+
+          # 2. Collect image digests
+          image_manifests = await collect_image_digests(conn, containers_dict)
+          manifest_map = {m.container_name: m for m in image_manifests}
+
+          # 3. Build full backup per container
+          backups = []
+          for name, config in containers_dict.items():
+              # Collect volumes if any
+              raw_volumes = []
+              if "volume" in config:
+                  for vol_key, vol_val in config["volume"].items():
+                      raw_volumes.append({
+                          "source": vol_val.get("source", ""),
+                          "destination": vol_val.get("destination", vol_key),
+                      })
+
+              vol_backups = await backup_volumes(conn, name, raw_volumes)
+
+              # Get the config commands for this container
+              cmds = config_commands_map.get(name, "")
+
+              # Get or create manifest
+              manifest = manifest_map.get(name, ContainerImageManifest(
+                  container_name=name,
+                  image_ref=config.get("image", ""),
+                  error="Image digest not collected",
+              ))
+
+              backups.append(ContainerFullBackup(
+                  container_name=name,
+                  config_commands=cmds,
+                  volumes=vol_backups,
+                  image_manifest=manifest,
+                  runtime_status=status_map.get(name),
+              ))
+
+          return backups, errors
+
+      except Exception as e:
+          errors.append(f"Container backup collection failed: {str(e)}")
+          return [], errors
+      finally:
+          conn.close()
+  ```
+
+  ## Important notes
+  - Use `asyncssh` (already a dependency, used by terminal router), NOT `paramiko`.
+  - Always prefix podman commands with `sudo` — VyOS typically requires it.
+  - Use `shlex.quote()` for all user-derived path values to prevent command injection.
+  - Set reasonable timeouts on all SSH commands (30s for quick commands, 300s for tar).
+  - The `known_hosts=None` parameter matches the existing terminal router pattern.
+  - All functions are async and non-blocking.
+
+acceptance_criteria:
+  - "backend/routers/site_tools/container_backup.py exists"
+  - "open_ssh_connection function connects using decrypt_private_key and asyncssh"
+  - "open_ssh_connection returns None gracefully when SSH is not configured"
+  - "collect_runtime_status parses podman ps output into ContainerRuntimeStatus models"
+  - "collect_image_digests runs podman inspect for each container image"
+  - "backup_volumes enforces CONTAINER_VOLUME_BACKUP_MAX_MB size limit"
+  - "backup_volumes uses tar+base64 via SSH to capture volume data"
+  - "collect_container_backup orchestrates all three collection steps"
+  - "collect_container_backup closes SSH connection in finally block"
+  - "All SSH commands use shlex.quote for path sanitization"
+  - "CONTAINER_VOLUME_BACKUP_MAX_MB is configurable via environment variable"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

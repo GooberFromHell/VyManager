@@ -1,0 +1,78 @@
+id: "task-001"
+title: "Create reusable EmptyState component"
+phase: produce
+execution_phase: 1
+agent: react-specialist
+status: not_started
+depends_on: []
+blocks: ["task-002"]
+parallel_with: ["task-003", "task-004"]
+
+files:
+  create:
+    - "frontend/src/components/ui/empty-state.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/dns-forwarding/page.tsx"
+  - "frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+
+instructions: |
+  Create a reusable EmptyState component in frontend/src/components/ui/empty-state.tsx.
+
+  Read the TFTP server page to see the best existing empty state pattern (lines ~128-154).
+  The new component must standardize this pattern across all pages.
+
+  Component API:
+  ```tsx
+  interface EmptyStateProps {
+    icon: LucideIcon;              // lucide-react icon component
+    title: string;                  // e.g., "No NTP servers configured"
+    description?: string;           // e.g., "Add an NTP server to synchronize time"
+    action?: {
+      label: string;               // e.g., "Add Server"
+      onClick: () => void;
+      icon?: LucideIcon;           // optional icon on the button (e.g., Plus, Pencil)
+    };
+    className?: string;            // additional classes
+  }
+  ```
+
+  Implementation:
+  - "use client" (uses Button which is client)
+  - Centered flex column layout
+  - Icon: h-12 w-12 text-muted-foreground
+  - Title: text-sm font-medium text-foreground
+  - Description: text-xs text-muted-foreground mt-1
+  - Action button: variant="outline" size="sm" with optional icon (mr-2 h-4 w-4)
+  - Wrapper: py-16 for generous whitespace when used in a Card, py-12 when standalone
+  - Accept a `compact` boolean prop (default false) — when true use py-8 and h-8 icon (for table empty rows)
+  - Export as named export
+
+  Use shadcn Button component. Import LucideIcon type from lucide-react.
+
+  Example usage (for reference, don't implement these — task-002 will):
+  ```tsx
+  <EmptyState
+    icon={Clock}
+    title="No NTP servers configured"
+    description="Add an NTP server to synchronize time"
+    action={canWrite ? { label: "Add Server", onClick: () => setCreateOpen(true), icon: Plus } : undefined}
+  />
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/ui/empty-state.tsx"
+  - "Grep match: 'EmptyState' in frontend/src/components/ui/empty-state.tsx"
+  - "Grep match: 'LucideIcon' in frontend/src/components/ui/empty-state.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

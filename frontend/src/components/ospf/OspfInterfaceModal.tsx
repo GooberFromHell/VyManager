@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -229,11 +229,13 @@ export function OspfInterfaceModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
-            {/* Basic Settings */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="ospf-iface-name">Interface</Label>
+          <div className="space-y-4 pb-2">
+            <Fieldset>
+              <FormField
+                label="Interface"
+                htmlFor="ospf-iface-name"
+                required={!isEditMode}
+              >
                 <Select value={name} onValueChange={setName} disabled={isEditMode}>
                   <SelectTrigger id="ospf-iface-name" className={isEditMode ? "bg-muted" : ""}>
                     <SelectValue placeholder="Select an interface" />
@@ -244,20 +246,24 @@ export function OspfInterfaceModal({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="ospf-iface-area">Area</Label>
+              <FormField
+                label="Area"
+                htmlFor="ospf-iface-area"
+              >
                 <Input
                   id="ospf-iface-area"
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   placeholder="e.g. 0.0.0.0 or 0"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="ospf-iface-network">Network Type</Label>
+              <FormField
+                label="Network Type"
+                htmlFor="ospf-iface-network"
+              >
                 <Select value={network} onValueChange={setNetwork}>
                   <SelectTrigger id="ospf-iface-network">
                     <SelectValue placeholder="Default" />
@@ -268,15 +274,14 @@ export function OspfInterfaceModal({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
 
-            {/* Cost & Priority */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Cost &amp; Priority</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Cost and Priority">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-cost">Cost</Label>
+                <FormField label="Cost" htmlFor="ospf-iface-cost">
                   <Input
                     id="ospf-iface-cost"
                     type="number"
@@ -286,9 +291,8 @@ export function OspfInterfaceModal({
                     min={1}
                     max={65535}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-priority">Priority</Label>
+                </FormField>
+                <FormField label="Priority" htmlFor="ospf-iface-priority">
                   <Input
                     id="ospf-iface-priority"
                     type="number"
@@ -298,9 +302,8 @@ export function OspfInterfaceModal({
                     min={0}
                     max={255}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-bandwidth">Bandwidth</Label>
+                </FormField>
+                <FormField label="Bandwidth" htmlFor="ospf-iface-bandwidth">
                   <Input
                     id="ospf-iface-bandwidth"
                     type="number"
@@ -308,16 +311,15 @@ export function OspfInterfaceModal({
                     onChange={(e) => setBandwidth(e.target.value)}
                     placeholder="Bandwidth (Kbps)"
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            {/* Timers */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Timers</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Timers">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-hello">Hello Interval</Label>
+                <FormField label="Hello Interval" htmlFor="ospf-iface-hello">
                   <Input
                     id="ospf-iface-hello"
                     type="number"
@@ -325,9 +327,8 @@ export function OspfInterfaceModal({
                     onChange={(e) => setHelloInterval(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-dead">Dead Interval</Label>
+                </FormField>
+                <FormField label="Dead Interval" htmlFor="ospf-iface-dead">
                   <Input
                     id="ospf-iface-dead"
                     type="number"
@@ -335,9 +336,8 @@ export function OspfInterfaceModal({
                     onChange={(e) => setDeadInterval(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-retransmit">Retransmit Interval</Label>
+                </FormField>
+                <FormField label="Retransmit Interval" htmlFor="ospf-iface-retransmit">
                   <Input
                     id="ospf-iface-retransmit"
                     type="number"
@@ -345,9 +345,8 @@ export function OspfInterfaceModal({
                     onChange={(e) => setRetransmitInterval(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-iface-transmit-delay">Transmit Delay</Label>
+                </FormField>
+                <FormField label="Transmit Delay" htmlFor="ospf-iface-transmit-delay">
                   <Input
                     id="ospf-iface-transmit-delay"
                     type="number"
@@ -355,62 +354,52 @@ export function OspfInterfaceModal({
                     onChange={(e) => setTransmitDelay(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            {/* Flags */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Options</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Options">
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-3 rounded-lg border p-3">
+                <FormField label="Passive" htmlFor="ospf-iface-passive" horizontal>
                   <Checkbox
                     id="ospf-iface-passive"
                     checked={passive}
                     onCheckedChange={(checked) => setPassive(checked === true)}
                   />
-                  <Label htmlFor="ospf-iface-passive" className="cursor-pointer text-sm">
-                    Passive
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 rounded-lg border p-3">
+                </FormField>
+                <FormField label="BFD" htmlFor="ospf-iface-bfd" horizontal>
                   <Checkbox
                     id="ospf-iface-bfd"
                     checked={bfd}
                     onCheckedChange={(checked) => setBfd(checked === true)}
                   />
-                  <Label htmlFor="ospf-iface-bfd" className="cursor-pointer text-sm">
-                    BFD
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 rounded-lg border p-3">
+                </FormField>
+                <FormField label="MTU Ignore" htmlFor="ospf-iface-mtu-ignore" horizontal>
                   <Checkbox
                     id="ospf-iface-mtu-ignore"
                     checked={mtuIgnore}
                     onCheckedChange={(checked) => setMtuIgnore(checked === true)}
                   />
-                  <Label htmlFor="ospf-iface-mtu-ignore" className="cursor-pointer text-sm">
-                    MTU Ignore
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 rounded-lg border p-3">
+                </FormField>
+                <FormField label="LDP Sync" htmlFor="ospf-iface-ldp-sync" horizontal>
                   <Checkbox
                     id="ospf-iface-ldp-sync"
                     checked={ldpSync}
                     onCheckedChange={(checked) => setLdpSync(checked === true)}
                   />
-                  <Label htmlFor="ospf-iface-ldp-sync" className="cursor-pointer text-sm">
-                    LDP Sync
-                  </Label>
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            {/* Authentication */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Authentication</h4>
-              <div className="space-y-2">
-                <Label htmlFor="ospf-iface-plaintext">Plaintext Password</Label>
+            <FieldsetDivider />
+
+            <Fieldset label="Authentication">
+              <FormField
+                label="Plaintext Password"
+                htmlFor="ospf-iface-plaintext"
+              >
                 <Input
                   id="ospf-iface-plaintext"
                   type="password"
@@ -418,10 +407,10 @@ export function OspfInterfaceModal({
                   onChange={(e) => setPlaintextPassword(e.target.value)}
                   placeholder="Plaintext password (optional)"
                 />
-              </div>
+              </FormField>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>MD5 Keys</Label>
+                  <span className="text-sm font-medium">MD5 Keys</span>
                   <Button type="button" variant="outline" size="sm" onClick={addMd5Key}>
                     <Plus className="h-3 w-3 mr-1" />
                     Add Key
@@ -448,7 +437,7 @@ export function OspfInterfaceModal({
                   </div>
                 ))}
               </div>
-            </div>
+            </Fieldset>
           </div>
         </ScrollArea>
 

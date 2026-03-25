@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Plus, Trash2 } from "lucide-react";
 import { staticRoutesService } from "@/lib/api/static-routes";
 import { showService } from "@/lib/api/show";
@@ -279,50 +279,49 @@ export function EditStaticRouteModal({ open, onOpenChange, onSuccess, route }: E
 
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-4">
-            <div className="space-y-2">
-              <Label>Destination Network</Label>
-              <Input
-                value={route.destination}
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">
-                Destination cannot be changed. Delete and recreate to change destination.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Destination Network"
+                description="Destination cannot be changed. Delete and recreate to change destination."
+              >
+                <Input
+                  value={route.destination}
+                  disabled
+                  className="bg-muted"
+                />
+              </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Optional description for this route"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-              />
-            </div>
+              <FormField label="Description" htmlFor="description">
+                <Textarea
+                  id="description"
+                  placeholder="Optional description for this route"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={2}
+                />
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           {/* Routing Tab */}
-          <TabsContent value="routing" className="space-y-4">
+          <TabsContent value="routing" className="space-y-6">
             {/* Next-Hops Section */}
             {!isBlackhole && !isReject && (
-              <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-semibold">Next-Hops</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addNextHop}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Next-Hop
-                    </Button>
-                  </div>
+              <Fieldset label="Next-Hops">
+                <div className="flex justify-end -mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addNextHop}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Next-Hop
+                  </Button>
+                </div>
 
-                  {nextHops.length > 0 ? (
-                    nextHops.map((nh, index) => (
+                {nextHops.length > 0 ? (
+                  nextHops.map((nh, index) => (
                     <div key={index} className="border rounded-lg p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Next-Hop #{index + 1}</span>
@@ -337,86 +336,91 @@ export function EditStaticRouteModal({ open, onOpenChange, onSuccess, route }: E
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label>Address</Label>
+                        <FormField label="Address">
                           <Input
                             placeholder={route.route_type === "ipv4" ? "e.g., 192.168.1.1" : "e.g., 2001:db8::1"}
                             value={nh.address}
                             onChange={(e) => updateNextHop(index, "address", e.target.value)}
                           />
-                        </div>
+                        </FormField>
 
-                        <div className="space-y-2">
-                          <Label>Distance (Metric)</Label>
+                        <FormField label="Distance (Metric)">
                           <Input
                             type="number"
                             placeholder="Default: 1"
                             value={nh.distance}
                             onChange={(e) => updateNextHop(index, "distance", e.target.value)}
                           />
-                        </div>
+                        </FormField>
                       </div>
 
                       {capabilities?.features.next_hop_vrf.supported && (
-                        <div className="space-y-2">
-                          <Label>VRF</Label>
+                        <FormField label="VRF">
                           <Input
                             placeholder="VRF name (optional)"
                             value={nh.vrf}
                             onChange={(e) => updateNextHop(index, "vrf", e.target.value)}
                           />
-                        </div>
+                        </FormField>
                       )}
 
                       {capabilities?.features.next_hop_bfd.supported && (
                         <div className="space-y-3">
-                          <div className="flex items-center space-x-2">
+                          <FormField
+                            label="Enable BFD Monitoring"
+                            htmlFor={`bfd-enable-${index}`}
+                            horizontal
+                          >
                             <Checkbox
                               id={`bfd-enable-${index}`}
                               checked={nh.bfd_enable}
                               onCheckedChange={(checked) => updateNextHop(index, "bfd_enable", checked)}
                             />
-                            <Label htmlFor={`bfd-enable-${index}`}>Enable BFD Monitoring</Label>
-                          </div>
+                          </FormField>
 
                           {nh.bfd_enable && (
-                            <div className="space-y-2 ml-6">
-                              <Label>BFD Profile</Label>
-                              <Input
-                                placeholder="BFD profile name (optional)"
-                                value={nh.bfd_profile}
-                                onChange={(e) => updateNextHop(index, "bfd_profile", e.target.value)}
-                              />
+                            <div className="ml-6">
+                              <FormField label="BFD Profile">
+                                <Input
+                                  placeholder="BFD profile name (optional)"
+                                  value={nh.bfd_profile}
+                                  onChange={(e) => updateNextHop(index, "bfd_profile", e.target.value)}
+                                />
+                              </FormField>
                             </div>
                           )}
                         </div>
                       )}
 
-                      <div className="flex items-center space-x-2">
+                      <FormField
+                        label="Disable this next-hop"
+                        htmlFor={`nh-disable-${index}`}
+                        horizontal
+                      >
                         <Checkbox
                           id={`nh-disable-${index}`}
                           checked={nh.disable}
                           onCheckedChange={(checked) => updateNextHop(index, "disable", checked)}
                         />
-                        <Label htmlFor={`nh-disable-${index}`}>Disable this next-hop</Label>
-                      </div>
+                      </FormField>
                     </div>
                   ))
-                  ) : (
-                    <div className="border rounded-lg p-4 bg-muted/30">
-                      <p className="text-sm text-muted-foreground text-center">
-                        No next-hops configured. Click "Add Next-Hop" to add one.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                ) : (
+                  <div className="border rounded-lg p-4 bg-muted/30">
+                    <p className="text-sm text-muted-foreground text-center">
+                      No next-hops configured. Click "Add Next-Hop" to add one.
+                    </p>
+                  </div>
+                )}
+              </Fieldset>
             )}
 
             {/* Interfaces Section */}
             {!isBlackhole && !isReject && (
-              <div className="space-y-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-semibold">Interface Routes</Label>
+              <>
+                <FieldsetDivider />
+                <Fieldset label="Interface Routes">
+                  <div className="flex justify-end -mt-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -430,60 +434,61 @@ export function EditStaticRouteModal({ open, onOpenChange, onSuccess, route }: E
 
                   {interfaces.length > 0 ? (
                     interfaces.map((iface, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Interface #{index + 1}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeInterface(index)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label>Interface</Label>
-                          <Select
-                            value={iface.interface}
-                            onValueChange={(value) => updateInterface(index, "interface", value)}
+                      <div key={index} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Interface #{index + 1}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeInterface(index)}
                           >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select interface" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              {availableInterfaces.map((interfaceName) => (
-                                <SelectItem key={interfaceName} value={interfaceName}>
-                                  {interfaceName}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label>Distance (Metric)</Label>
-                          <Input
-                            type="number"
-                            placeholder="Default: 1"
-                            value={iface.distance}
-                            onChange={(e) => updateInterface(index, "distance", e.target.value)}
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField label="Interface">
+                            <Select
+                              value={iface.interface}
+                              onValueChange={(value) => updateInterface(index, "interface", value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select interface" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                {availableInterfaces.map((interfaceName) => (
+                                  <SelectItem key={interfaceName} value={interfaceName}>
+                                    {interfaceName}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormField>
+
+                          <FormField label="Distance (Metric)">
+                            <Input
+                              type="number"
+                              placeholder="Default: 1"
+                              value={iface.distance}
+                              onChange={(e) => updateInterface(index, "distance", e.target.value)}
+                            />
+                          </FormField>
+                        </div>
+
+                        <FormField
+                          label="Disable this interface route"
+                          htmlFor={`iface-disable-${index}`}
+                          horizontal
+                        >
+                          <Checkbox
+                            id={`iface-disable-${index}`}
+                            checked={iface.disable}
+                            onCheckedChange={(checked) => updateInterface(index, "disable", checked)}
                           />
-                        </div>
+                        </FormField>
                       </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`iface-disable-${index}`}
-                          checked={iface.disable}
-                          onCheckedChange={(checked) => updateInterface(index, "disable", checked)}
-                        />
-                        <Label htmlFor={`iface-disable-${index}`}>Disable this interface route</Label>
-                      </div>
-                    </div>
-                  ))
+                    ))
                   ) : (
                     <div className="border rounded-lg p-4 bg-muted/30">
                       <p className="text-sm text-muted-foreground text-center">
@@ -491,123 +496,130 @@ export function EditStaticRouteModal({ open, onOpenChange, onSuccess, route }: E
                       </p>
                     </div>
                   )}
-                </div>
+                </Fieldset>
+              </>
             )}
 
             {/* Blackhole Section */}
             {!isReject && (
-              <div className="space-y-4 border-t pt-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="blackhole"
-                    checked={isBlackhole}
-                    onCheckedChange={(checked) => {
-                      setIsBlackhole(checked as boolean);
-                      if (checked) setIsReject(false);
-                    }}
-                  />
-                  <Label htmlFor="blackhole" className="text-base font-semibold cursor-pointer">
-                    Blackhole Route (Drop silently)
-                  </Label>
-                </div>
+              <>
+                <FieldsetDivider />
+                <Fieldset label="Blackhole Route">
+                  <FormField
+                    label="Blackhole Route (Drop silently)"
+                    htmlFor="blackhole"
+                    horizontal
+                  >
+                    <Checkbox
+                      id="blackhole"
+                      checked={isBlackhole}
+                      onCheckedChange={(checked) => {
+                        setIsBlackhole(checked as boolean);
+                        if (checked) setIsReject(false);
+                      }}
+                    />
+                  </FormField>
 
-                {isBlackhole && (
-                  <div className="ml-6 space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Packets matching this route will be dropped without notification.
-                    </p>
+                  {isBlackhole && (
+                    <div className="ml-6 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Packets matching this route will be dropped without notification.
+                      </p>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>Distance (Metric)</Label>
-                        <Input
-                          type="number"
-                          placeholder="Default: 1"
-                          value={blackholeDistance}
-                          onChange={(e) => setBlackholeDistance(e.target.value)}
-                        />
-                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField label="Distance (Metric)">
+                          <Input
+                            type="number"
+                            placeholder="Default: 1"
+                            value={blackholeDistance}
+                            onChange={(e) => setBlackholeDistance(e.target.value)}
+                          />
+                        </FormField>
 
-                      <div className="space-y-2">
-                        <Label>Tag</Label>
-                        <Input
-                          type="number"
-                          placeholder="Optional"
-                          value={blackholeTag}
-                          onChange={(e) => setBlackholeTag(e.target.value)}
-                        />
+                        <FormField label="Tag">
+                          <Input
+                            type="number"
+                            placeholder="Optional"
+                            value={blackholeTag}
+                            onChange={(e) => setBlackholeTag(e.target.value)}
+                          />
+                        </FormField>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </Fieldset>
+              </>
             )}
 
             {/* Reject Section */}
             {!isBlackhole && (
-              <div className="space-y-4 border-t pt-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="reject"
-                    checked={isReject}
-                    onCheckedChange={(checked) => {
-                      setIsReject(checked as boolean);
-                      if (checked) setIsBlackhole(false);
-                    }}
-                  />
-                  <Label htmlFor="reject" className="text-base font-semibold cursor-pointer">
-                    Reject Route (ICMP unreachable)
-                  </Label>
-                </div>
+              <>
+                <FieldsetDivider />
+                <Fieldset label="Reject Route">
+                  <FormField
+                    label="Reject Route (ICMP unreachable)"
+                    htmlFor="reject"
+                    horizontal
+                  >
+                    <Checkbox
+                      id="reject"
+                      checked={isReject}
+                      onCheckedChange={(checked) => {
+                        setIsReject(checked as boolean);
+                        if (checked) setIsBlackhole(false);
+                      }}
+                    />
+                  </FormField>
 
-                {isReject && (
-                  <div className="ml-6 space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Packets matching this route will be rejected with ICMP unreachable response.
-                    </p>
+                  {isReject && (
+                    <div className="ml-6 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Packets matching this route will be rejected with ICMP unreachable response.
+                      </p>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>Distance (Metric)</Label>
-                        <Input
-                          type="number"
-                          placeholder="Default: 1"
-                          value={rejectDistance}
-                          onChange={(e) => setRejectDistance(e.target.value)}
-                        />
-                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormField label="Distance (Metric)">
+                          <Input
+                            type="number"
+                            placeholder="Default: 1"
+                            value={rejectDistance}
+                            onChange={(e) => setRejectDistance(e.target.value)}
+                          />
+                        </FormField>
 
-                      <div className="space-y-2">
-                        <Label>Tag</Label>
-                        <Input
-                          type="number"
-                          placeholder="Optional"
-                          value={rejectTag}
-                          onChange={(e) => setRejectTag(e.target.value)}
-                        />
+                        <FormField label="Tag">
+                          <Input
+                            type="number"
+                            placeholder="Optional"
+                            value={rejectTag}
+                            onChange={(e) => setRejectTag(e.target.value)}
+                          />
+                        </FormField>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </Fieldset>
+              </>
             )}
           </TabsContent>
 
           {/* Advanced Tab */}
           <TabsContent value="advanced" className="space-y-4">
             {capabilities?.features.dhcp_interface.supported && (
-              <div className="space-y-2">
-                <Label htmlFor="dhcp-interface">DHCP Interface</Label>
-                <Input
-                  id="dhcp-interface"
-                  placeholder="e.g., eth0"
-                  value={dhcpInterface}
-                  onChange={(e) => setDhcpInterface(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Use gateway from DHCP on this interface (VyOS 1.4 only)
-                </p>
-              </div>
+              <Fieldset>
+                <FormField
+                  label="DHCP Interface"
+                  htmlFor="dhcp-interface"
+                  description="Use gateway from DHCP on this interface (VyOS 1.4 only)"
+                >
+                  <Input
+                    id="dhcp-interface"
+                    placeholder="e.g., eth0"
+                    value={dhcpInterface}
+                    onChange={(e) => setDhcpInterface(e.target.value)}
+                  />
+                </FormField>
+              </Fieldset>
             )}
 
             {!capabilities?.features.dhcp_interface.supported && (

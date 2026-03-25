@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Upload, CheckCircle, XCircle, FileText, Download } from "lucide-react";
 import { sessionService } from "@/lib/api/session";
@@ -167,8 +167,11 @@ export function ImportCSVModal({
           </div>
 
           {/* File Upload Section */}
-          <div className="space-y-2">
-            <Label htmlFor="csv-file">Upload CSV File</Label>
+          <FormField
+            label="Upload CSV File"
+            htmlFor="csv-file"
+            description="CSV file with columns: site_name, site_description, instance_name, instance_description, host, port, api_key, vyos_version, protocol, verify_ssl"
+          >
             <Input
               id="csv-file"
               type="file"
@@ -182,10 +185,7 @@ export function ImportCSVModal({
                 <span className="truncate">{file.name}</span>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              CSV file with columns: site_name, site_description, instance_name, instance_description, host, port, api_key, vyos_version, protocol, verify_ssl
-            </p>
-          </div>
+          </FormField>
 
           {/* Error Display */}
           {error && (

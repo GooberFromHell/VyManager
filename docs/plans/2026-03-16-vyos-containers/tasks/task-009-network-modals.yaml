@@ -1,0 +1,96 @@
+id: "task-009"
+title: "Create container network CRUD modals"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-006"]
+blocks: ["task-011"]
+parallel_with: ["task-007", "task-008", "task-010"]
+
+files:
+  create:
+    - "frontend/src/components/containers/CreateContainerNetworkModal.tsx"
+    - "frontend/src/components/containers/EditContainerNetworkModal.tsx"
+    - "frontend/src/components/containers/DeleteContainerNetworkModal.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/components/services/ntp/CreateNTPServerModal.tsx"
+  - "frontend/src/components/services/ntp/EditNTPSettingsModal.tsx"
+  - "frontend/src/lib/api/types/container.ts"
+  - "frontend/src/lib/api/container.ts"
+  - "frontend/src/components/ui/fieldset.tsx"
+
+instructions: |
+  Create three modals for container network management. Networks are simpler than containers — just name, prefixes, description, MTU, VRF.
+
+  ## 1. CreateContainerNetworkModal.tsx
+
+  Props:
+  ```typescript
+  interface CreateContainerNetworkModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSuccess: () => void;
+    capabilities: ContainerCapabilities | null;
+    existingNames?: string[];
+  }
+  ```
+
+  Form fields:
+  - Network Name (required, text input, validate no duplicates)
+  - Prefixes (dynamic list of text inputs, at least one required, validate IPv4/IPv6 CIDR format)
+  - Description (optional, text)
+  - MTU (optional, number input)
+  - VRF (optional, text)
+  - No Name Server (Checkbox, v1.5 only — check capabilities.has_network_no_name_server)
+
+  Submit: build operations array:
+  ```typescript
+  const operations = [];
+  for (const prefix of prefixes) {
+    operations.push({ op: "set_network_prefix", value: prefix });
+  }
+  if (description) operations.push({ op: "set_network_description", value: description });
+  if (mtu) operations.push({ op: "set_network_mtu", value: String(mtu) });
+  if (vrf) operations.push({ op: "set_network_vrf", value: vrf });
+  if (noNameServer && capabilities?.has_network_no_name_server) {
+    operations.push({ op: "set_network_no_name_server" });
+  }
+  await containerService.createNetwork(networkName, operations);
+  await containerService.refreshConfig();
+  ```
+
+  Dialog size: max-w-md (simpler form)
+
+  ## 2. EditContainerNetworkModal.tsx
+
+  Props include `network: ContainerNetwork`.
+  - Initialize form from network prop
+  - Diff old vs new for operations:
+    - Compare prefix sets (add new, delete removed)
+    - Compare scalar fields
+
+  ## 3. DeleteContainerNetworkModal.tsx
+
+  Simple confirmation:
+  - Props: `open`, `onOpenChange`, `onSuccess`, `networkName: string`
+  - Warning: "Containers using this network will lose connectivity"
+  - On confirm: `containerService.deleteNetwork(networkName)`
+  - Same destructive pattern as other delete modals
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/containers/CreateContainerNetworkModal.tsx"
+  - "File exists: frontend/src/components/containers/EditContainerNetworkModal.tsx"
+  - "File exists: frontend/src/components/containers/DeleteContainerNetworkModal.tsx"
+  - "Grep match: 'containerService' in frontend/src/components/containers/CreateContainerNetworkModal.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

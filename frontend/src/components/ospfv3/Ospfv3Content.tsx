@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FormField } from "@/components/ui/fieldset";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -532,17 +532,15 @@ export function Ospfv3Content() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Parameters</h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm">Router ID</Label>
+                      <FormField label="Router ID">
                         <Input
                           value={overviewEditing ? routerId : (config?.parameters.router_id ?? "")}
                           disabled={!overviewEditing}
                           onChange={(e) => setRouterId(e.target.value)}
                           placeholder="Auto-detected"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Reference Bandwidth</Label>
+                      </FormField>
+                      <FormField label="Reference Bandwidth">
                         <Input
                           type="number"
                           value={overviewEditing ? refBandwidth : (config?.auto_cost_reference_bandwidth != null ? String(config.auto_cost_reference_bandwidth) : "")}
@@ -550,7 +548,7 @@ export function Ospfv3Content() {
                           onChange={(e) => setRefBandwidth(e.target.value)}
                           placeholder="Default (100 Mbps)"
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -560,24 +558,22 @@ export function Ospfv3Content() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Options</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Log Adjacency Changes" htmlFor="ospfv3-log-adj" horizontal>
                         <Checkbox
                           id="ospfv3-log-adj"
                           checked={overviewEditing ? logAdjChanges : config?.log_adjacency_changes === true}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setLogAdjChanges(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-log-adj">Log Adjacency Changes</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Log Adjacency Changes (Detail)" htmlFor="ospfv3-log-adj-detail" horizontal>
                         <Checkbox
                           id="ospfv3-log-adj-detail"
                           checked={overviewEditing ? logAdjDetail : config?.log_adjacency_changes_detail}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setLogAdjDetail(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-log-adj-detail">Log Adjacency Changes (Detail)</Label>
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -614,26 +610,23 @@ export function Ospfv3Content() {
                     )}
 
                     <div className="grid grid-cols-5 gap-4 items-end">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Enabled" htmlFor="ospfv3-di-enabled" horizontal>
                         <Checkbox
                           id="ospfv3-di-enabled"
                           checked={diEditing ? diEnabled : config?.default_information.enabled}
                           disabled={!diEditing}
                           onCheckedChange={(checked) => setDiEnabled(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-di-enabled">Enabled</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Always" htmlFor="ospfv3-di-always" horizontal>
                         <Checkbox
                           id="ospfv3-di-always"
                           checked={diEditing ? diAlways : config?.default_information.always}
                           disabled={!diEditing}
                           onCheckedChange={(checked) => setDiAlways(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-di-always">Always</Label>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Metric</Label>
+                      </FormField>
+                      <FormField label="Metric">
                         <Input
                           type="number"
                           value={diEditing ? diMetric : (config?.default_information.metric != null ? String(config.default_information.metric) : "")}
@@ -641,9 +634,8 @@ export function Ospfv3Content() {
                           onChange={(e) => setDiMetric(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Metric Type</Label>
+                      </FormField>
+                      <FormField label="Metric Type">
                         <Select
                           value={diEditing ? diMetricType : (config?.default_information.metric_type != null ? String(config.default_information.metric_type) : "")}
                           onValueChange={setDiMetricType}
@@ -657,9 +649,8 @@ export function Ospfv3Content() {
                             <SelectItem value="2">Type 2</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Route Map</Label>
+                      </FormField>
+                      <FormField label="Route Map">
                         <Select
                           value={diEditing ? diRouteMap : (config?.default_information.route_map ?? "")}
                           onValueChange={(v) => setDiRouteMap(v === "__none__" ? "" : v)}
@@ -675,7 +666,7 @@ export function Ospfv3Content() {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1082,8 +1073,7 @@ export function Ospfv3Content() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Administrative Distance</h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm">Global Distance</Label>
+                      <FormField label="Global Distance">
                         <Input
                           type="number"
                           value={advancedEditing ? distGlobal : (config?.distance.global_value != null ? String(config.distance.global_value) : "")}
@@ -1093,9 +1083,8 @@ export function Ospfv3Content() {
                           min={1}
                           max={255}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">External</Label>
+                      </FormField>
+                      <FormField label="External">
                         <Input
                           type="number"
                           value={advancedEditing ? distExternal : (config?.distance.ospfv3.external != null ? String(config.distance.ospfv3.external) : "")}
@@ -1105,9 +1094,8 @@ export function Ospfv3Content() {
                           min={1}
                           max={255}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Inter-Area</Label>
+                      </FormField>
+                      <FormField label="Inter-Area">
                         <Input
                           type="number"
                           value={advancedEditing ? distInterArea : (config?.distance.ospfv3.inter_area != null ? String(config.distance.ospfv3.inter_area) : "")}
@@ -1117,9 +1105,8 @@ export function Ospfv3Content() {
                           min={1}
                           max={255}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Intra-Area</Label>
+                      </FormField>
+                      <FormField label="Intra-Area">
                         <Input
                           type="number"
                           value={advancedEditing ? distIntraArea : (config?.distance.ospfv3.intra_area != null ? String(config.distance.ospfv3.intra_area) : "")}
@@ -1129,7 +1116,7 @@ export function Ospfv3Content() {
                           min={1}
                           max={255}
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1139,17 +1126,15 @@ export function Ospfv3Content() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Graceful Restart</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Enable Graceful Restart" htmlFor="ospfv3-gr-enabled" horizontal>
                         <Checkbox
                           id="ospfv3-gr-enabled"
                           checked={advancedEditing ? grEnabled : config?.graceful_restart.enabled}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setGrEnabled(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-gr-enabled">Enable Graceful Restart</Label>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Grace Period (seconds)</Label>
+                      </FormField>
+                      <FormField label="Grace Period (seconds)">
                         <Input
                           type="number"
                           value={advancedEditing ? grPeriod : (config?.graceful_restart.grace_period != null ? String(config.graceful_restart.grace_period) : "")}
@@ -1157,36 +1142,32 @@ export function Ospfv3Content() {
                           onChange={(e) => setGrPeriod(e.target.value)}
                           placeholder="Default (120)"
                         />
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Enable Helper" htmlFor="ospfv3-gr-helper" horizontal>
                         <Checkbox
                           id="ospfv3-gr-helper"
                           checked={advancedEditing ? grHelperEnable : config?.graceful_restart.helper.enable}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setGrHelperEnable(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-gr-helper">Enable Helper</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Disable LSA Check" htmlFor="ospfv3-gr-lsa-check" horizontal>
                         <Checkbox
                           id="ospfv3-gr-lsa-check"
                           checked={advancedEditing ? grHelperLsaCheck : config?.graceful_restart.helper.lsa_check_disable}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setGrHelperLsaCheck(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-gr-lsa-check">Disable LSA Check</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Planned Only" htmlFor="ospfv3-gr-planned" horizontal>
                         <Checkbox
                           id="ospfv3-gr-planned"
                           checked={advancedEditing ? grHelperPlannedOnly : config?.graceful_restart.helper.planned_only}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setGrHelperPlannedOnly(!!checked)}
                         />
-                        <Label htmlFor="ospfv3-gr-planned">Planned Only</Label>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Supported Grace Time (seconds)</Label>
+                      </FormField>
+                      <FormField label="Supported Grace Time (seconds)">
                         <Input
                           type="number"
                           value={advancedEditing ? grHelperGraceTime : (config?.graceful_restart.helper.supported_grace_time != null ? String(config.graceful_restart.helper.supported_grace_time) : "")}
@@ -1194,7 +1175,7 @@ export function Ospfv3Content() {
                           onChange={(e) => setGrHelperGraceTime(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>

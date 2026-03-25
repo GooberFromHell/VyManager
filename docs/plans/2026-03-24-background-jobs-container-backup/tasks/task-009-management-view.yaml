@@ -1,0 +1,296 @@
+id: task-009-management-view
+title: "Create ManagementView, BackgroundJobsView, JobCard, and JobLogPanel components"
+archetype: custom
+phase: 3
+depends_on: [task-008]
+parallel_with: []
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "frontend/src/components/management/ManagementView.tsx"
+    - "frontend/src/components/management/BackgroundJobsView.tsx"
+    - "frontend/src/components/management/JobCard.tsx"
+    - "frontend/src/components/management/JobLogPanel.tsx"
+    - "frontend/src/hooks/useJobPolling.ts"
+  modify: []
+
+context_files:
+  - ".derpo/architecture.md"
+  - ".derpo/pattern-snippets/frontend-modal.tsx"
+  - "frontend/src/lib/api/background-jobs.ts"
+  - "frontend/src/lib/api/types/background-jobs.ts"
+  - "frontend/src/components/user-management/UserManagement.tsx"
+  - "frontend/src/components/sites/SiteToolsSection.tsx"
+  - "frontend/src/app/(default)/sites/page.tsx"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Create the Management section components for the /sites page. This includes the tab container,
+  background jobs list view, individual job cards, log panel, and the polling hook.
+
+  ## Step 1: Read reference files
+  - Read `frontend/src/components/user-management/UserManagement.tsx` for the pattern of a
+    section component rendered in the sites page.
+  - Read `frontend/src/app/(default)/sites/page.tsx` to understand how section components
+    are conditionally rendered.
+  - Read `frontend/src/lib/api/background-jobs.ts` and `types/background-jobs.ts` for the
+    API service and types.
+  - Read `frontend/src/components/sites/SiteToolsSection.tsx` for UI patterns (badges, icons).
+
+  ## Step 2: Create useJobPolling hook
+  Create `frontend/src/hooks/useJobPolling.ts`:
+
+  ```typescript
+  "use client";
+
+  import { useState, useEffect, useRef, useCallback } from "react";
+  import { backgroundJobsService } from "@/lib/api/background-jobs";
+  import type { BackgroundJob } from "@/lib/api/types/background-jobs";
+
+  interface UseJobPollingOptions {
+    siteId?: string;
+    triggerId?: string;
+    pollIntervalMs?: number;
+    enabled?: boolean;
+  }
+
+  export function useJobPolling({
+    siteId,
+    triggerId,
+    pollIntervalMs = 2500,
+    enabled = true,
+  }: UseJobPollingOptions = {}) {
+    const [jobs, setJobs] = useState<BackgroundJob[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const hasRunningJobs = jobs.some(
+      (j) => j.status === "queued" || j.status === "running"
+    );
+
+    const fetchJobs = useCallback(async () => {
+      try {
+        const data = await backgroundJobsService.listJobs({ siteId, triggerId });
+        setJobs(data);
+        setError(null);
+      } catch (err) {
+        setError((err as Error).message || "Failed to fetch jobs");
+      } finally {
+        setLoading(false);
+      }
+    }, [siteId, triggerId]);
+
+    // Initial fetch
+    useEffect(() => {
+      if (enabled) {
+        setLoading(true);
+        fetchJobs();
+      }
+    }, [enabled, fetchJobs]);
+
+    // Polling — only when there are running jobs
+    useEffect(() => {
+      if (!enabled || !hasRunningJobs) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        return;
+      }
+
+      intervalRef.current = setInterval(fetchJobs, pollIntervalMs);
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    }, [enabled, hasRunningJobs, pollIntervalMs, fetchJobs]);
+
+    const refresh = useCallback(() => {
+      fetchJobs();
+    }, [fetchJobs]);
+
+    return { jobs, loading, error, hasRunningJobs, refresh };
+  }
+  ```
+
+  ## Step 3: Create ManagementView
+  Create `frontend/src/components/management/ManagementView.tsx`:
+
+  This is a simple tab container. Initially only the "Jobs" tab is active.
+
+  ```typescript
+  "use client";
+
+  import { useState } from "react";
+  import { cn } from "@/lib/utils";
+  import { BackgroundJobsView } from "./BackgroundJobsView";
+
+  const TABS = [
+    { id: "jobs", label: "Jobs" },
+    { id: "audit-log", label: "Audit Log", disabled: true },
+    { id: "system-health", label: "System Health", disabled: true },
+  ] as const;
+
+  type TabId = (typeof TABS)[number]["id"];
+
+  export function ManagementView() {
+    const [activeTab, setActiveTab] = useState<TabId>("jobs");
+
+    return (
+      <div className="flex flex-col h-full">
+        {/* Tab bar */}
+        <div className="flex items-center gap-1 border-b border-border px-6 pt-4">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => !tab.disabled && setActiveTab(tab.id)}
+              disabled={tab.disabled}
+              className={cn(
+                "px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+                activeTab === tab.id
+                  ? "border-primary text-foreground"
+                  : tab.disabled
+                    ? "border-transparent text-muted-foreground/40 cursor-not-allowed"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
+              )}
+            >
+              {tab.label}
+              {tab.disabled && (
+                <span className="ml-1.5 text-[10px] text-muted-foreground/50">(soon)</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "jobs" && <BackgroundJobsView />}
+        </div>
+      </div>
+    );
+  }
+  ```
+
+  ## Step 4: Create BackgroundJobsView
+  Create `frontend/src/components/management/BackgroundJobsView.tsx`:
+
+  This is the main jobs list view with filters, trigger grouping, and polling.
+
+  Key requirements:
+  1. Use `useJobPolling` hook for data fetching and polling.
+  2. Group jobs by `trigger_id` into `TriggerGroup` objects.
+  3. Sort trigger groups by most recent `created_at` descending.
+  4. Within a trigger group, sort jobs by `instance_name` alphabetically.
+  5. Provide a site filter dropdown populated from unique `site_name` values.
+  6. Provide status filter tabs: All, Running, Completed, Failed.
+  7. Show a "Refresh" button.
+  8. Show "Jobs are kept for 24 hours" footer text.
+  9. Render each job as a `<JobCard />`.
+
+  Status filter logic:
+  - "Running" matches `status === "queued" || status === "running"`
+  - "Completed" matches `status === "success" || status === "partial"`
+  - "Failed" matches `status === "failed" || status === "cancelled"`
+
+  The trigger group header should show: site name, when started (relative time), and
+  a count of jobs in the group.
+
+  Use these shadcn components:
+  - `Select` / `SelectTrigger` / `SelectContent` / `SelectItem` for site filter
+  - `Badge` for status counts
+  - `Button` for refresh
+  - `ScrollArea` for the scrollable job list
+  - `RefreshCw`, `Filter`, `Loader2`, `AlertCircle` from lucide-react
+
+  If there are no jobs, show an empty state message centered in the view:
+  "No background jobs found. Trigger a site backup to see jobs here."
+
+  ## Step 5: Create JobCard
+  Create `frontend/src/components/management/JobCard.tsx`:
+
+  Each card represents one instance's backup job. Shows:
+  - Instance name (bold)
+  - Site name (muted)
+  - Status badge (color-coded):
+    - queued: gray/muted
+    - running: blue with animate-pulse
+    - success: green
+    - partial: yellow/amber
+    - failed: red
+    - cancelled: gray with strikethrough
+  - Progress bar (only visible when status is running or queued):
+    - Use a simple div with background color and width percentage.
+  - Time info: "Started X min ago" or "Finished X min ago" using relative time formatting.
+  - Action buttons:
+    - "Logs" toggle button (expand/collapse) — always visible
+    - "Cancel" button — only when status is queued or running
+    - "Download" button — only when status is success
+    - "View Details" button — only when status is success or partial (for task-011)
+
+  The card should be a bordered rounded container with padding, using bg-card.
+
+  When "Logs" is toggled, render `<JobLogPanel />` below the card content.
+
+  The Cancel button should call `backgroundJobsService.cancelJob(jobId)` and then
+  trigger a refresh.
+
+  The Download button should call `backgroundJobsService.downloadJobBackup(jobId, instanceName)`.
+
+  ## Step 6: Create JobLogPanel
+  Create `frontend/src/components/management/JobLogPanel.tsx`:
+
+  A collapsible panel that shows the job's log entries in a scrollable monospace view.
+
+  ```typescript
+  interface JobLogPanelProps {
+    log: string[];
+    expanded: boolean;
+  }
+  ```
+
+  Render each log entry as a line in a monospace font container:
+  - Use `font-mono text-xs` for the log content.
+  - Parse the timestamp prefix `[ISO_DATE]` and display it in a muted color.
+  - The message portion follows in normal text color.
+  - Color-code entries containing "error" or "failed" in red, "warning" in yellow,
+    "success" or "complete" in green.
+  - Use a max height with overflow-y-auto for scrolling.
+  - Auto-scroll to the bottom when new entries appear.
+
+  ## Important notes
+  - All components use `"use client"` directive at the top.
+  - Follow the existing component file structure — functional components with named exports.
+  - Import UI components from `@/components/ui/` (button, badge, select, scroll-area).
+  - Use `cn()` from `@/lib/utils` for conditional classnames.
+  - Use `lucide-react` icons consistently with the rest of the app.
+  - The ManagementView is rendered in the sites page when `selectedSection === "management"`.
+
+acceptance_criteria:
+  - "frontend/src/hooks/useJobPolling.ts exists with polling logic that stops when no running jobs"
+  - "useJobPolling polls at 2.5s intervals by default"
+  - "useJobPolling returns jobs, loading, error, hasRunningJobs, and refresh"
+  - "ManagementView.tsx exists with tab bar (Jobs active, Audit Log and System Health disabled)"
+  - "BackgroundJobsView.tsx exists with site filter, status filter tabs, and trigger grouping"
+  - "Jobs are grouped by trigger_id and sorted by most recent created_at descending"
+  - "Within trigger groups, jobs are sorted by instance_name alphabetically"
+  - "JobCard.tsx shows instance name, status badge, progress bar, time, and action buttons"
+  - "JobCard status badges are color-coded per status"
+  - "Cancel button is only shown for queued/running jobs"
+  - "Download button is only shown for successful jobs"
+  - "JobLogPanel.tsx shows log entries in monospace font with color-coded lines"
+  - "Empty state message is shown when no jobs exist"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

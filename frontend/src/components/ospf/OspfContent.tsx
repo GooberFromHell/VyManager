@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FormField } from "@/components/ui/fieldset";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -579,17 +579,15 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Parameters</h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm">Router ID</Label>
+                      <FormField label="Router ID">
                         <Input
                           value={overviewEditing ? routerId : (config?.parameters.router_id ?? "")}
                           disabled={!overviewEditing}
                           onChange={(e) => setRouterId(e.target.value)}
                           placeholder="Auto-detected"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">ABR Type</Label>
+                      </FormField>
+                      <FormField label="ABR Type">
                         <Select
                           value={overviewEditing ? abrType : (config?.parameters.abr_type ?? "")}
                           onValueChange={setAbrType}
@@ -605,9 +603,8 @@ export function OspfContent() {
                             <SelectItem value="standard">Standard</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Maximum Paths</Label>
+                      </FormField>
+                      <FormField label="Maximum Paths">
                         <Input
                           type="number"
                           value={overviewEditing ? maxPaths : (config?.maximum_paths != null ? String(config.maximum_paths) : "")}
@@ -616,9 +613,8 @@ export function OspfContent() {
                           placeholder="Default"
                           min={1}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Reference Bandwidth</Label>
+                      </FormField>
+                      <FormField label="Reference Bandwidth">
                         <Input
                           type="number"
                           value={overviewEditing ? refBandwidth : (config?.auto_cost_reference_bandwidth != null ? String(config.auto_cost_reference_bandwidth) : "")}
@@ -626,7 +622,7 @@ export function OspfContent() {
                           onChange={(e) => setRefBandwidth(e.target.value)}
                           placeholder="Default (100 Mbps)"
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -636,51 +632,46 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Options</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Passive Interface Default" htmlFor="passive-default" horizontal>
                         <Checkbox
                           id="passive-default"
                           checked={overviewEditing ? passiveDefault : config?.passive_interface_default}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setPassiveDefault(!!checked)}
                         />
-                        <Label htmlFor="passive-default">Passive Interface Default</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Log Adjacency Changes" htmlFor="log-adj" horizontal>
                         <Checkbox
                           id="log-adj"
                           checked={overviewEditing ? logAdjChanges : config?.log_adjacency_changes === true}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setLogAdjChanges(!!checked)}
                         />
-                        <Label htmlFor="log-adj">Log Adjacency Changes</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Log Adjacency Changes (Detail)" htmlFor="log-adj-detail" horizontal>
                         <Checkbox
                           id="log-adj-detail"
                           checked={overviewEditing ? logAdjDetail : config?.log_adjacency_changes_detail}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setLogAdjDetail(!!checked)}
                         />
-                        <Label htmlFor="log-adj-detail">Log Adjacency Changes (Detail)</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Opaque LSA" htmlFor="opaque-lsa" horizontal>
                         <Checkbox
                           id="opaque-lsa"
                           checked={overviewEditing ? opaqueLsa : config?.parameters.opaque_lsa}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setOpaqueLsa(!!checked)}
                         />
-                        <Label htmlFor="opaque-lsa">Opaque LSA</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="RFC 1583 Compatibility" htmlFor="rfc1583" horizontal>
                         <Checkbox
                           id="rfc1583"
                           checked={overviewEditing ? rfc1583 : config?.parameters.rfc1583_compatibility}
                           disabled={!overviewEditing}
                           onCheckedChange={(checked) => setRfc1583(!!checked)}
                         />
-                        <Label htmlFor="rfc1583">RFC 1583 Compatibility</Label>
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -710,26 +701,23 @@ export function OspfContent() {
                       )}
                     </div>
                     <div className="grid grid-cols-5 gap-4 items-end">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Enabled" htmlFor="di-enabled" horizontal>
                         <Checkbox
                           id="di-enabled"
                           checked={diEditing ? diEnabled : config?.default_information.enabled}
                           disabled={!diEditing}
                           onCheckedChange={(checked) => setDiEnabled(!!checked)}
                         />
-                        <Label htmlFor="di-enabled">Enabled</Label>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Always" htmlFor="di-always" horizontal>
                         <Checkbox
                           id="di-always"
                           checked={diEditing ? diAlways : config?.default_information.always}
                           disabled={!diEditing}
                           onCheckedChange={(checked) => setDiAlways(!!checked)}
                         />
-                        <Label htmlFor="di-always">Always</Label>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Metric</Label>
+                      </FormField>
+                      <FormField label="Metric">
                         <Input
                           type="number"
                           value={diEditing ? diMetric : (config?.default_information.metric != null ? String(config.default_information.metric) : "")}
@@ -737,9 +725,8 @@ export function OspfContent() {
                           onChange={(e) => setDiMetric(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Metric Type</Label>
+                      </FormField>
+                      <FormField label="Metric Type">
                         <Select
                           value={diEditing ? diMetricType : (config?.default_information.metric_type != null ? String(config.default_information.metric_type) : "")}
                           onValueChange={setDiMetricType}
@@ -753,9 +740,8 @@ export function OspfContent() {
                             <SelectItem value="2">Type 2</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Route Map</Label>
+                      </FormField>
+                      <FormField label="Route Map">
                         <Select
                           value={diEditing ? diRouteMap : (config?.default_information.route_map ?? "")}
                           onValueChange={(v) => setDiRouteMap(v === "__none__" ? "" : v)}
@@ -771,7 +757,7 @@ export function OspfContent() {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1184,8 +1170,7 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">SPF Throttle Timers</h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm">Delay (ms)</Label>
+                      <FormField label="Delay (ms)">
                         <Input
                           type="number"
                           value={advancedEditing ? spfDelay : (config?.timers_throttle_spf.delay != null ? String(config.timers_throttle_spf.delay) : "")}
@@ -1193,9 +1178,8 @@ export function OspfContent() {
                           onChange={(e) => setSpfDelay(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Initial Holdtime (ms)</Label>
+                      </FormField>
+                      <FormField label="Initial Holdtime (ms)">
                         <Input
                           type="number"
                           value={advancedEditing ? spfInitial : (config?.timers_throttle_spf.initial_holdtime != null ? String(config.timers_throttle_spf.initial_holdtime) : "")}
@@ -1203,9 +1187,8 @@ export function OspfContent() {
                           onChange={(e) => setSpfInitial(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Max Holdtime (ms)</Label>
+                      </FormField>
+                      <FormField label="Max Holdtime (ms)">
                         <Input
                           type="number"
                           value={advancedEditing ? spfMax : (config?.timers_throttle_spf.max_holdtime != null ? String(config.timers_throttle_spf.max_holdtime) : "")}
@@ -1213,7 +1196,7 @@ export function OspfContent() {
                           onChange={(e) => setSpfMax(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1223,8 +1206,7 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Administrative Distance</h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm">Global Distance</Label>
+                      <FormField label="Global Distance">
                         <Input
                           type="number"
                           value={advancedEditing ? distGlobal : (config?.distance.global_value != null ? String(config.distance.global_value) : "")}
@@ -1234,9 +1216,8 @@ export function OspfContent() {
                           min={1}
                           max={255}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">External</Label>
+                      </FormField>
+                      <FormField label="External">
                         <Input
                           type="number"
                           value={advancedEditing ? distExternal : (config?.distance.ospf.external != null ? String(config.distance.ospf.external) : "")}
@@ -1246,9 +1227,8 @@ export function OspfContent() {
                           min={1}
                           max={255}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Inter-Area</Label>
+                      </FormField>
+                      <FormField label="Inter-Area">
                         <Input
                           type="number"
                           value={advancedEditing ? distInterArea : (config?.distance.ospf.inter_area != null ? String(config.distance.ospf.inter_area) : "")}
@@ -1258,9 +1238,8 @@ export function OspfContent() {
                           min={1}
                           max={255}
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Intra-Area</Label>
+                      </FormField>
+                      <FormField label="Intra-Area">
                         <Input
                           type="number"
                           value={advancedEditing ? distIntraArea : (config?.distance.ospf.intra_area != null ? String(config.distance.ospf.intra_area) : "")}
@@ -1270,7 +1249,7 @@ export function OspfContent() {
                           min={1}
                           max={255}
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1280,17 +1259,15 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Max-Metric Router-LSA</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Administrative" htmlFor="max-metric-admin" horizontal>
                         <Checkbox
                           id="max-metric-admin"
                           checked={advancedEditing ? maxMetricAdmin : config?.max_metric_router_lsa.administrative}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setMaxMetricAdmin(!!checked)}
                         />
-                        <Label htmlFor="max-metric-admin">Administrative</Label>
-                      </div>
-                      <div>
-                        <Label className="text-sm">On Shutdown (seconds)</Label>
+                      </FormField>
+                      <FormField label="On Shutdown (seconds)">
                         <Input
                           type="number"
                           value={advancedEditing ? maxMetricShutdown : (config?.max_metric_router_lsa.on_shutdown != null ? String(config.max_metric_router_lsa.on_shutdown) : "")}
@@ -1298,9 +1275,8 @@ export function OspfContent() {
                           onChange={(e) => setMaxMetricShutdown(e.target.value)}
                           placeholder="Disabled"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">On Startup (seconds)</Label>
+                      </FormField>
+                      <FormField label="On Startup (seconds)">
                         <Input
                           type="number"
                           value={advancedEditing ? maxMetricStartup : (config?.max_metric_router_lsa.on_startup != null ? String(config.max_metric_router_lsa.on_startup) : "")}
@@ -1308,7 +1284,7 @@ export function OspfContent() {
                           onChange={(e) => setMaxMetricStartup(e.target.value)}
                           placeholder="Disabled"
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1318,17 +1294,15 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Graceful Restart</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
+                      <FormField label="Enable Graceful Restart" htmlFor="gr-enabled" horizontal>
                         <Checkbox
                           id="gr-enabled"
                           checked={advancedEditing ? grEnabled : config?.graceful_restart.enabled}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setGrEnabled(!!checked)}
                         />
-                        <Label htmlFor="gr-enabled">Enable Graceful Restart</Label>
-                      </div>
-                      <div>
-                        <Label className="text-sm">Grace Period (seconds)</Label>
+                      </FormField>
+                      <FormField label="Grace Period (seconds)">
                         <Input
                           type="number"
                           value={advancedEditing ? grPeriod : (config?.graceful_restart.grace_period != null ? String(config.graceful_restart.grace_period) : "")}
@@ -1336,16 +1310,15 @@ export function OspfContent() {
                           onChange={(e) => setGrPeriod(e.target.value)}
                           placeholder="Default (120)"
                         />
-                      </div>
-                      <div className="flex items-center gap-3">
+                      </FormField>
+                      <FormField label="Enable Helper" htmlFor="gr-helper" horizontal>
                         <Checkbox
                           id="gr-helper"
                           checked={advancedEditing ? grHelperEnable : config?.graceful_restart.helper.enable}
                           disabled={!advancedEditing}
                           onCheckedChange={(checked) => setGrHelperEnable(!!checked)}
                         />
-                        <Label htmlFor="gr-helper">Enable Helper</Label>
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -1355,8 +1328,7 @@ export function OspfContent() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold mb-4">Miscellaneous</h3>
                     <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <Label className="text-sm">LDP Sync Holddown</Label>
+                      <FormField label="LDP Sync Holddown">
                         <Input
                           type="number"
                           value={advancedEditing ? ldpSyncHolddown : (config?.ldp_sync_holddown != null ? String(config.ldp_sync_holddown) : "")}
@@ -1364,9 +1336,8 @@ export function OspfContent() {
                           onChange={(e) => setLdpSyncHolddown(e.target.value)}
                           placeholder="Disabled"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Refresh Timers</Label>
+                      </FormField>
+                      <FormField label="Refresh Timers">
                         <Input
                           type="number"
                           value={advancedEditing ? refreshTimers : (config?.refresh_timers != null ? String(config.refresh_timers) : "")}
@@ -1374,9 +1345,8 @@ export function OspfContent() {
                           onChange={(e) => setRefreshTimers(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Aggregation Timer</Label>
+                      </FormField>
+                      <FormField label="Aggregation Timer">
                         <Input
                           type="number"
                           value={advancedEditing ? aggregationTimer : (config?.aggregation_timer != null ? String(config.aggregation_timer) : "")}
@@ -1384,17 +1354,16 @@ export function OspfContent() {
                           onChange={(e) => setAggregationTimer(e.target.value)}
                           placeholder="Default"
                         />
-                      </div>
+                      </FormField>
                       <div className="flex items-end pb-1">
-                        <div className="flex items-center gap-3">
+                        <FormField label="Capability Opaque" htmlFor="cap-opaque" horizontal>
                           <Checkbox
                             id="cap-opaque"
                             checked={advancedEditing ? capabilityOpaque : config?.capability_opaque}
                             disabled={!advancedEditing}
                             onCheckedChange={(checked) => setCapabilityOpaque(!!checked)}
                           />
-                          <Label htmlFor="cap-opaque">Capability Opaque</Label>
-                        </div>
+                        </FormField>
                       </div>
                     </div>
                   </CardContent>

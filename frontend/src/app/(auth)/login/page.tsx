@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FormField } from "@/components/ui/fieldset";
 import { signIn, signOut, authClient } from "@/lib/auth-client";
-import { Shield, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { sessionService, AuthSessionInfo } from "@/lib/api/session";
 import { ActiveSessionWarningModal } from "@/components/auth/ActiveSessionWarningModal";
 import { OAuthProviderConfig } from "@/lib/api/oauth";
@@ -188,57 +188,37 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-cyan-400/20 opacity-50" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-cyan-400/30 via-transparent to-transparent opacity-40" />
-
-      {/* Animated grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-
-      {/* Login card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
-        {/* Glass morphism card */}
-        <div className="backdrop-blur-xl bg-card/50 border border-border/50 rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background">
+      <div className="w-full max-w-md mx-4">
+        <div className="bg-card border border-border rounded-xl p-8 animate-fade-up">
           {/* Logo and title */}
           <div className="flex flex-col items-center mb-8">
-            <div className="relative w-20 h-20 mb-4">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 blur-xl" />
-              <div className="relative w-20 h-20 rounded-2xl overflow-hidden shadow-lg shadow-primary/10">
-                <img
-                  src="/vy-icon.png"
-                  alt="VyManager Logo"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            <img
+              src="/vy-icon.png"
+              alt="VyManager Logo"
+              width={64}
+              height={64}
+              className="mb-4 animate-scale-fade"
+            />
+            <h1 className="text-2xl font-bold text-foreground animate-fade-up stagger-1">
               VyManager
             </h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Professional VyOS Management
+            <p className="text-sm text-muted-foreground mt-1 animate-fade-up stagger-2">
+              Sign in to manage your VyOS infrastructure
             </p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/50 flex items-start gap-3">
+            <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/50 flex items-start gap-3 animate-fade-up">
               <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
               <p className="text-sm text-destructive">{error}</p>
             </div>
           )}
 
           {/* Login form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-foreground"
-              >
-                Email
-              </Label>
+          <form onSubmit={handleSubmit} className="space-y-4 animate-fade-up stagger-3">
+            <FormField label="Email" htmlFor="email">
               <Input
                 id="email"
                 type="email"
@@ -248,18 +228,12 @@ export default function LoginPage() {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 required
-                className="h-11 bg-background/50 border-border/50 focus:border-primary transition-colors"
+                className="h-11"
                 disabled={isLoading}
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-foreground"
-              >
-                Password
-              </Label>
+            <FormField label="Password" htmlFor="password">
               <Input
                 id="password"
                 type="password"
@@ -269,10 +243,10 @@ export default function LoginPage() {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 required
-                className="h-11 bg-background/50 border-border/50 focus:border-primary transition-colors"
+                className="h-11"
                 disabled={isLoading}
               />
-            </div>
+            </FormField>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -295,7 +269,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all"
+              className="w-full h-11"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -318,7 +292,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-border/50" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card/80 px-2 text-muted-foreground backdrop-blur-sm">
+                  <span className="bg-card px-2 text-muted-foreground">
                     or continue with
                   </span>
                 </div>
@@ -333,7 +307,7 @@ export default function LoginPage() {
                       key={provider.providerId}
                       type="button"
                       variant="outline"
-                      className="h-11 gap-2 bg-background/50 border-border/50"
+                      className="h-11 gap-2"
                       disabled={!!oauthLoading || isLoading}
                       onClick={() => handleOAuthSignIn(provider.providerId)}
                     >
@@ -350,34 +324,7 @@ export default function LoginPage() {
             </>
           )}
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border/50" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Secure Access
-              </span>
-            </div>
-          </div>
-
-          {/* Footer info */}
-          <div className="text-center space-y-2">
-            <p className="text-xs text-muted-foreground">
-              Protected by enterprise-grade encryption
-            </p>
-            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground/60">
-              <Shield className="w-3 h-3" />
-              <span>VyOS Router Management System</span>
-            </div>
-          </div>
         </div>
-
-        {/* Bottom text */}
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </p>
       </div>
 
       {/* Active Session Warning Modal */}

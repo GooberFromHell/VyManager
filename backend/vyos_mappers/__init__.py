@@ -67,6 +67,18 @@ from .mpls.mpls_versions import get_mpls_mapper
 from .dns_forwarding.dns_forwarding_versions import get_dns_forwarding_mapper
 from .ntp.ntp_versions import get_ntp_mapper
 from .ssh.ssh_versions import get_ssh_mapper
+from .snmp import SNMPMapper
+from .snmp.snmp_versions import get_snmp_mapper
+from .dhcp_relay import DHCPRelayMapper
+from .dhcp_relay.dhcp_relay_versions import get_dhcp_relay_mapper
+from .lldp.lldp_versions import get_lldp_mapper
+from .dhcpv6_server import DHCPv6ServerMapper
+from .dhcpv6_server.dhcpv6_server_versions import get_dhcpv6_server_mapper
+from .tftp_server.tftp_server_versions import get_tftp_server_mapper
+from .broadcast_relay.broadcast_relay_versions import get_broadcast_relay_mapper
+from .router_advert.router_advert_versions import get_router_advert_mapper
+from .conntrack_sync.conntrack_sync_versions import get_conntrack_sync_mapper
+from .container.container_versions import get_container_mapper
 
 # Auto-register all mappers
 # Ethernet uses factory for version-specific mappers
@@ -155,6 +167,24 @@ CommandMapperRegistry.register_feature("dns_forwarding", get_dns_forwarding_mapp
 CommandMapperRegistry.register_feature("ntp", get_ntp_mapper)
 # SSH uses factory for version-specific mappers
 CommandMapperRegistry.register_feature("ssh", get_ssh_mapper)
+# DHCP Relay uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("dhcp_relay", get_dhcp_relay_mapper)
+# LLDP uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("lldp", get_lldp_mapper)
+# DHCPv6 Server uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("dhcpv6_server", get_dhcpv6_server_mapper)
+# SNMP uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("snmp", get_snmp_mapper)
+# TFTP Server uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("tftp_server", get_tftp_server_mapper)
+# Broadcast Relay uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("broadcast_relay", get_broadcast_relay_mapper)
+# Router Advertisement uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("router_advert", get_router_advert_mapper)
+# Conntrack Sync uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("conntrack_sync", get_conntrack_sync_mapper)
+# Container uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("container", get_container_mapper)
 
 __all__ = [
     "BaseFeatureMapper",
@@ -201,4 +231,7 @@ __all__ = [
     "HighAvailabilityMapper",
     "IsisMapper",
     "MplsMapper",
+    "DHCPRelayMapper",
+    "DHCPv6ServerMapper",
+    "SNMPMapper",
 ]

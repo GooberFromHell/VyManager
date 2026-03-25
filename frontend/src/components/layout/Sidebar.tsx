@@ -10,18 +10,32 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Activity, ChevronDown, HeartPulse, Shield, Network, Server, Settings, LayoutDashboard, Route, Lock, LogOut, User, FileText, Building2, Power, PowerOff, Scale, Wrench } from "lucide-react";
+import { Activity, Box, ChevronDown, FolderOpen, HeartPulse, Shield, Network, Server, Settings, LayoutDashboard, Route, Lock, LogOut, User, FileText, Building2, Power, PowerOff, Scale, SquareTerminal, Wrench } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useSessionStore } from "@/store/session-store";
 import { usePermissions } from "@/hooks/usePermissions";
 import { FeatureGroup } from "@/lib/api/user-management";
+import { useTheme } from "next-themes";
+import { MonitorIcon, MoonIcon, SunIcon, SparklesIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   title: string;
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
+  tooltip?: string;
   requiredPermission?: FeatureGroup; // If set, user must have READ access to this feature
   children?: {
     title: string;
@@ -39,6 +53,7 @@ const navigation: NavItem[] = [
   {
     title: "Firewall",
     icon: Shield,
+    tooltip: "Configure firewall rules, groups, zones, and global options",
     children: [
       {
         title: "Policies",
@@ -75,6 +90,7 @@ const navigation: NavItem[] = [
   {
     title: "Network",
     icon: Network,
+    tooltip: "Manage network interfaces, NAT, DHCP, and VRFs",
     children: [
       {
         title: "DHCP",
@@ -101,6 +117,7 @@ const navigation: NavItem[] = [
   {
     title: "Routing",
     icon: Route,
+    tooltip: "Set up routing protocols: BGP, OSPF, static routes",
     children: [
       {
         title: "Unicast Protocols",
@@ -127,6 +144,7 @@ const navigation: NavItem[] = [
   {
     title: "Policies",
     icon: FileText,
+    tooltip: "Define route maps, access lists, prefix lists, and communities",
     children: [
       {
         title: "Access List",
@@ -178,6 +196,7 @@ const navigation: NavItem[] = [
   {
     title: "VPN",
     icon: Lock,
+    tooltip: "Configure WireGuard and IPSec VPN tunnels",
     children: [
       {
         title: "IPsec",
@@ -194,6 +213,7 @@ const navigation: NavItem[] = [
   {
     title: "Load Balancing",
     icon: Scale,
+    tooltip: "Set up WAN load balancing and HAProxy",
     requiredPermission: FeatureGroup.LOAD_BALANCING,
     children: [
       {
@@ -215,10 +235,28 @@ const navigation: NavItem[] = [
     requiredPermission: FeatureGroup.HIGH_AVAILABILITY,
   },
   {
+    title: "Containers",
+    href: "/containers",
+    icon: Box,
+    requiredPermission: FeatureGroup.CONTAINER,
+  },
+  {
     title: "Monitoring",
     href: "/monitoring",
     icon: Activity,
     requiredPermission: FeatureGroup.MONITORING,
+  },
+  {
+    title: "Terminal",
+    href: "/system/terminal",
+    icon: SquareTerminal,
+    requiredPermission: FeatureGroup.MONITORING,
+  },
+  {
+    title: "File Browser",
+    href: "/system/file-browser",
+    icon: FolderOpen,
+    requiredPermission: FeatureGroup.FILE_BROWSER,
   },
   {
     title: "Services",
@@ -246,6 +284,7 @@ export function Sidebar() {
   const { data: session } = useSession();
   const { activeSession, loadSession, disconnectFromInstance } = useSessionStore();
   const { canRead } = usePermissions();
+  const { setTheme } = useTheme();
 
   // Load active session on mount
   useEffect(() => {
@@ -307,14 +346,14 @@ export function Sidebar() {
           // OR any individual routing protocol permission
           if (child.requiredPermission === FeatureGroup.UNICAST_PROTOCOLS) {
             return canRead(FeatureGroup.UNICAST_PROTOCOLS) ||
-                   canRead(FeatureGroup.BGP) ||
-                   canRead(FeatureGroup.OSPF) ||
-                   canRead(FeatureGroup.OSPFV3) ||
-                   canRead(FeatureGroup.ISIS) ||
-                   canRead(FeatureGroup.OPENFABRIC) ||
-                   canRead(FeatureGroup.RIP) ||
-                   canRead(FeatureGroup.RIPNG) ||
-                   canRead(FeatureGroup.BABEL);
+              canRead(FeatureGroup.BGP) ||
+              canRead(FeatureGroup.OSPF) ||
+              canRead(FeatureGroup.OSPFV3) ||
+              canRead(FeatureGroup.ISIS) ||
+              canRead(FeatureGroup.OPENFABRIC) ||
+              canRead(FeatureGroup.RIP) ||
+              canRead(FeatureGroup.RIPNG) ||
+              canRead(FeatureGroup.BABEL);
           }
 
           // Special case for Static & Failover: show if user has STATIC_ROUTES OR FAILOVER
@@ -326,20 +365,20 @@ export function Sidebar() {
           // OR any individual infrastructure component permission
           if (child.requiredPermission === FeatureGroup.ROUTING_INFRASTRUCTURE) {
             return canRead(FeatureGroup.ROUTING_INFRASTRUCTURE) ||
-                   canRead(FeatureGroup.BFD) ||
-                   canRead(FeatureGroup.MPLS) ||
-                   canRead(FeatureGroup.SEGMENT_ROUTING) ||
-                   canRead(FeatureGroup.NHRP) ||
-                   canRead(FeatureGroup.RPKI);
+              canRead(FeatureGroup.BFD) ||
+              canRead(FeatureGroup.MPLS) ||
+              canRead(FeatureGroup.SEGMENT_ROUTING) ||
+              canRead(FeatureGroup.NHRP) ||
+              canRead(FeatureGroup.RPKI);
           }
 
           // Special case for Multicast: show if user has MULTICAST
           // OR any individual multicast protocol permission
           if (child.requiredPermission === FeatureGroup.MULTICAST) {
             return canRead(FeatureGroup.MULTICAST) ||
-                   canRead(FeatureGroup.IGMP_PROXY) ||
-                   canRead(FeatureGroup.PIM) ||
-                   canRead(FeatureGroup.PIM6);
+              canRead(FeatureGroup.IGMP_PROXY) ||
+              canRead(FeatureGroup.PIM) ||
+              canRead(FeatureGroup.PIM6);
           }
 
           // Special cases for Firewall sub-features: show if user has FIREWALL OR the specific permission
@@ -462,12 +501,14 @@ export function Sidebar() {
                         isActive ? "text-foreground" : "text-muted-foreground"
                       )}>{item.title}</span>
                     </div>
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 text-muted-foreground transition-transform",
-                        isOpen && "rotate-180"
-                      )}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 text-muted-foreground transition-transform duration-200 ease-[var(--ease-out-quart)]",
+                          isOpen && "rotate-180"
+                        )}
+                      />
+                    </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-1 space-y-1 pl-4">
                     {item.children.map((child) => {
@@ -536,10 +577,10 @@ export function Sidebar() {
                     {activeSession.site_name}
                   </p>
                 </div>
-                <div
-                  className="h-2 w-2 rounded-full bg-green-500 animate-pulse"
-                  title="Connected"
-                />
+                <div className="relative" title="Connected">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <div className="absolute inset-0 h-2 w-2 rounded-full bg-green-500 animate-ping opacity-40" />
+                </div>
               </div>
               <Button
                 onClick={async () => {
@@ -590,16 +631,50 @@ export function Sidebar() {
 
         {/* User Info & Logout */}
         <div className="rounded-lg bg-muted/50 p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <User className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground truncate">
-                {session?.user?.name || session?.user?.email || "User"}
-              </p>
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex w-full items-center gap-2 mb-2 rounded-md hover:bg-muted p-1 transition-colors text-left outline-none">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">
+                    {session?.user?.name || session?.user?.email || "User"}
+                  </p>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 rounded-lg" align="end" side="right" sideOffset={4}>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <MonitorIcon className="mr-2 h-4 w-4" />
+                  Theme
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => setTheme("light")}>
+                      <SunIcon className="mr-2 h-4 w-4" />
+                      Light
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("dark")}>
+                      <MoonIcon className="mr-2 h-4 w-4" />
+                      Dark
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("system")}>
+                      <MonitorIcon className="mr-2 h-4 w-4" />
+                      System
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setTheme("interstellar")}>
+                      <SparklesIcon className="mr-2 h-4 w-4 text-emerald-300" />
+                      Interstellar
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
             onClick={handleLogout}
             variant="outline"

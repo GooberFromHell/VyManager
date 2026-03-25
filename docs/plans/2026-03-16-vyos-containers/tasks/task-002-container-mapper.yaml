@@ -1,0 +1,196 @@
+id: "task-002"
+title: "Create container mapper with version overrides"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: []
+blocks: ["task-003"]
+parallel_with: ["task-001"]
+
+files:
+  create:
+    - "backend/vyos_mappers/container/__init__.py"
+    - "backend/vyos_mappers/container/container.py"
+    - "backend/vyos_mappers/container/container_versions/__init__.py"
+    - "backend/vyos_mappers/container/container_versions/v1_4.py"
+    - "backend/vyos_mappers/container/container_versions/v1_5.py"
+  modify:
+    - "backend/vyos_mappers/__init__.py"
+
+context_files:
+  - "backend/vyos_mappers/base.py"
+  - "backend/vyos_mappers/ntp/ntp.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/__init__.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/v1_4.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/v1_5.py"
+  - "backend/vyos_mappers/__init__.py"
+
+instructions: |
+  Create the container mapper following the NTP mapper pattern. The mapper handles three entity types under `set container`: container names, container networks, and container registries.
+
+  ## 1. backend/vyos_mappers/container/__init__.py
+  ```python
+  from .container import ContainerMapper
+  ```
+
+  ## 2. backend/vyos_mappers/container/container.py
+
+  Create ContainerMapper class extending BaseFeatureMapper. Follow the NTP delegation pattern:
+  - Constructor takes `version: str`, creates internal `version_mapper` (v1.4 or v1.5)
+  - Base methods cover all v1.5 features directly
+  - Version-specific features delegated to `self.version_mapper`
+
+  ### Container Name command paths (all return List[str]):
+  Base path: ["container", "name", container_name, ...]
+
+  Methods needed:
+  - `get_container_image(name, image)` → ["container", "name", name, "image", image]
+  - `get_container_network(name, network)` → ["container", "name", name, "network", network]
+  - `get_container_network_address(name, network, address)` → ["container", "name", name, "network", network, "address", address]
+  - `get_container_port_source(name, port_name, port)` → ["container", "name", name, "port", port_name, "source", port]
+  - `get_container_port_destination(name, port_name, port)` → ["container", "name", name, "port", port_name, "destination", port]
+  - `get_container_port_protocol(name, port_name, protocol)` → ["container", "name", name, "port", port_name, "protocol", protocol]
+  - `get_container_volume_source(name, vol_name, path)` → ["container", "name", name, "volume", vol_name, "source", path]
+  - `get_container_volume_destination(name, vol_name, path)` → ["container", "name", name, "volume", vol_name, "destination", path]
+  - `get_container_volume_mode(name, vol_name, mode)` → ["container", "name", name, "volume", vol_name, "mode", mode]
+  - `get_container_environment(name, key, value)` → ["container", "name", name, "environment", key, "value", value]
+  - `get_container_capability(name, cap)` → version-dependent (see below)
+  - `get_container_restart(name, policy)` → ["container", "name", name, "restart", policy]
+  - `get_container_memory(name, mb)` → ["container", "name", name, "memory", str(mb)]
+  - `get_container_cpu_quota(name, pct)` → ["container", "name", name, "cpu-quota", str(pct)]
+  - `get_container_description(name, desc)` → ["container", "name", name, "description", desc]
+  - `get_container_host_name(name, hostname)` → ["container", "name", name, "host-name", hostname]
+  - `get_container_entrypoint(name, ep)` → ["container", "name", name, "entrypoint", ep]
+  - `get_container_command(name, cmd)` → ["container", "name", name, "command", cmd]
+  - `get_container_arguments(name, args)` → ["container", "name", name, "arguments", args]
+  - `get_container_uid(name, uid)` → ["container", "name", name, "uid", str(uid)]
+  - `get_container_gid(name, gid)` → ["container", "name", name, "gid", str(gid)]
+  - `get_container_label(name, key, value)` → ["container", "name", name, "label", key, "value", value]
+  - `get_container_device_source(name, dev_name, path)` → ["container", "name", name, "device", dev_name, "source", path]
+  - `get_container_device_destination(name, dev_name, path)` → ["container", "name", name, "device", dev_name, "destination", path]
+  - `get_container_allow_host_networks(name)` → ["container", "name", name, "allow-host-networks"]
+  - `get_container_allow_host_pid(name)` → ["container", "name", name, "allow-host-pid"]
+  - `get_container_disable(name)` → ["container", "name", name, "disable"]
+  - `get_container_name_server(name, addr)` → ["container", "name", name, "name-server", addr]
+
+  Delete paths (for removing entire entities):
+  - `get_container_path(name)` → ["container", "name", name]
+  - `get_container_port_path(name, port_name)` → ["container", "name", name, "port", port_name]
+  - `get_container_volume_path(name, vol_name)` → ["container", "name", name, "volume", vol_name]
+  - `get_container_environment_path(name, key)` → ["container", "name", name, "environment", key]
+  - `get_container_label_path(name, key)` → ["container", "name", name, "label", key]
+  - `get_container_device_path(name, dev_name)` → ["container", "name", name, "device", dev_name]
+  - `get_container_capability_path(name, cap)` → version-dependent
+  - `get_container_network_path(name, network)` → ["container", "name", name, "network", network]
+  - `get_container_name_server_path(name, addr)` → ["container", "name", name, "name-server", addr]
+
+  v1.5-only container methods (delegated to version_mapper, return [] if unsupported):
+  - `get_container_log_driver(name, driver)` → ["container", "name", name, "log-driver", driver]
+  - `get_container_sysctl(name, param, value)` → ["container", "name", name, "sysctl", "parameter", param, "value", value]
+  - `get_container_sysctl_path(name, param)` → ["container", "name", name, "sysctl", "parameter", param]
+  - `get_container_tmpfs_destination(name, tmpfs_name, path)` → ["container", "name", name, "tmpfs", tmpfs_name, "destination", path]
+  - `get_container_tmpfs_size(name, tmpfs_name, size)` → ["container", "name", name, "tmpfs", tmpfs_name, "size", str(size)]
+  - `get_container_tmpfs_path(name, tmpfs_name)` → ["container", "name", name, "tmpfs", tmpfs_name]
+
+  ### Container Network command paths:
+  - `get_network(net_name)` → ["container", "network", net_name]
+  - `get_network_prefix(net_name, prefix)` → ["container", "network", net_name, "prefix", prefix]
+  - `get_network_description(net_name, desc)` → ["container", "network", net_name, "description", desc]
+  - `get_network_mtu(net_name, mtu)` → ["container", "network", net_name, "mtu", str(mtu)]
+  - `get_network_vrf(net_name, vrf)` → ["container", "network", net_name, "vrf", vrf]
+  - `get_network_path(net_name)` → ["container", "network", net_name]
+  - `get_network_prefix_path(net_name, prefix)` → ["container", "network", net_name, "prefix", prefix]
+
+  v1.5-only network methods:
+  - `get_network_no_name_server(net_name)` → ["container", "network", net_name, "no-name-server"]
+
+  ### Container Registry command paths:
+  - `get_registry_auth_username(url, username)` → ["container", "registry", url, "authentication", "username", username]
+  - `get_registry_auth_password(url, password)` → ["container", "registry", url, "authentication", "password", password]
+  - `get_registry_disable(url)` → ["container", "registry", url, "disable"]
+  - `get_registry_insecure(url)` → ["container", "registry", url, "insecure"]
+  - `get_registry_path(url)` → ["container", "registry", url]
+
+  ### Version-dependent capability method:
+  - v1.5: `get_container_capability(name, cap)` → ["container", "name", name, "capability", cap]
+  - v1.4: `get_container_capability(name, cap)` → ["container", "name", name, "cap-add", cap]
+  - Same for `get_container_capability_path`
+
+  ### Capability flags (has_* methods):
+  - `has_log_driver()` → delegate to version_mapper
+  - `has_sysctl()` → delegate to version_mapper
+  - `has_tmpfs()` → delegate to version_mapper
+  - `has_network_no_name_server()` → delegate to version_mapper
+
+  ## 3. Version files
+
+  ### container_versions/__init__.py
+  Factory function:
+  ```python
+  def get_container_mapper(version: str):
+      from ..container import ContainerMapper
+      return ContainerMapper(version)
+  ```
+
+  ### container_versions/v1_4.py
+  ```python
+  class ContainerMapperV1_4:
+      def has_log_driver(self) -> bool: return False
+      def has_sysctl(self) -> bool: return False
+      def has_tmpfs(self) -> bool: return False
+      def has_network_no_name_server(self) -> bool: return False
+
+      def get_container_capability(self, name, cap):
+          return ["container", "name", name, "cap-add", cap]
+
+      def get_container_capability_path(self, name, cap):
+          return ["container", "name", name, "cap-add", cap]
+  ```
+
+  ### container_versions/v1_5.py
+  ```python
+  class ContainerMapperV1_5:
+      def has_log_driver(self) -> bool: return True
+      def has_sysctl(self) -> bool: return True
+      def has_tmpfs(self) -> bool: return True
+      def has_network_no_name_server(self) -> bool: return True
+
+      def get_container_capability(self, name, cap):
+          return ["container", "name", name, "capability", cap]
+
+      def get_container_capability_path(self, name, cap):
+          return ["container", "name", name, "capability", cap]
+  ```
+
+  ## 4. Register in backend/vyos_mappers/__init__.py
+
+  Add import after the conntrack_sync import line:
+  ```python
+  from .container.container_versions import get_container_mapper
+  ```
+
+  Add registration after conntrack_sync registration:
+  ```python
+  # Container uses factory for version-specific mappers
+  CommandMapperRegistry.register_feature("container", get_container_mapper)
+  ```
+
+acceptance_criteria:
+  - "File exists: backend/vyos_mappers/container/__init__.py"
+  - "File exists: backend/vyos_mappers/container/container.py"
+  - "File exists: backend/vyos_mappers/container/container_versions/__init__.py"
+  - "File exists: backend/vyos_mappers/container/container_versions/v1_4.py"
+  - "File exists: backend/vyos_mappers/container/container_versions/v1_5.py"
+  - "Grep match: 'class ContainerMapper' in backend/vyos_mappers/container/container.py"
+  - "Grep match: 'get_container_mapper' in backend/vyos_mappers/__init__.py"
+  - "Grep match: 'register_feature.*container.*get_container_mapper' in backend/vyos_mappers/__init__.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

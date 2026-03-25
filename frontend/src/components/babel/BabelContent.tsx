@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -523,10 +523,10 @@ export function BabelContent() {
                             paramsDraft && setParamsDraft({ ...paramsDraft, diversity: !!checked })
                           }
                         />
-                        <Label htmlFor="diversity">Enable diversity-aware routing</Label>
+                        <label htmlFor="diversity" className="text-sm font-medium cursor-pointer">Enable diversity-aware routing</label>
                       </div>
                       <div>
-                        <Label className="text-sm">Diversity Factor</Label>
+                        <p className="text-sm font-medium">Diversity Factor</p>
                         <p className="text-xs text-muted-foreground mb-1">Multiplicative factor (1-256, default: 256)</p>
                         <Input
                           type="number"
@@ -552,7 +552,7 @@ export function BabelContent() {
                     <h3 className="font-semibold mb-4">Timing</h3>
                     <div className="space-y-4">
                       <div>
-                        <Label className="text-sm">Resend Delay</Label>
+                        <p className="text-sm font-medium">Resend Delay</p>
                         <p className="text-xs text-muted-foreground mb-1">Time before resending (20-655340 ms, default: 2000)</p>
                         <Input
                           type="number"
@@ -570,7 +570,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Smoothing Half-life</Label>
+                        <p className="text-sm font-medium">Smoothing Half-life</p>
                         <p className="text-xs text-muted-foreground mb-1">Smoothing half-life (0-65534 seconds, default: 4)</p>
                         <Input
                           type="number"
@@ -636,9 +636,9 @@ export function BabelContent() {
                             disabled={!editingRedist}
                             onCheckedChange={() => toggleRedist("ipv4", proto)}
                           />
-                          <Label htmlFor={`redist-ipv4-${proto}`} className="font-mono text-sm">
+                          <label htmlFor={`redist-ipv4-${proto}`} className="font-mono text-sm cursor-pointer">
                             {proto}
-                          </Label>
+                          </label>
                         </div>
                       ))}
                     </div>
@@ -661,9 +661,9 @@ export function BabelContent() {
                             disabled={!editingRedist}
                             onCheckedChange={() => toggleRedist("ipv6", proto)}
                           />
-                          <Label htmlFor={`redist-ipv6-${proto}`} className="font-mono text-sm">
+                          <label htmlFor={`redist-ipv6-${proto}`} className="font-mono text-sm cursor-pointer">
                             {proto}
-                          </Label>
+                          </label>
                         </div>
                       ))}
                     </div>
@@ -705,7 +705,7 @@ export function BabelContent() {
                     <h3 className="font-semibold mb-4">IPv4 Global Filters</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm">Access List In</Label>
+                        <p className="text-sm font-medium">Access List In</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -721,7 +721,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Access List Out</Label>
+                        <p className="text-sm font-medium">Access List Out</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -737,7 +737,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Prefix List In</Label>
+                        <p className="text-sm font-medium">Prefix List In</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -753,7 +753,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Prefix List Out</Label>
+                        <p className="text-sm font-medium">Prefix List Out</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -778,7 +778,7 @@ export function BabelContent() {
                     <h3 className="font-semibold mb-4">IPv6 Global Filters</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm">Access List In</Label>
+                        <p className="text-sm font-medium">Access List In</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -794,7 +794,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Access List Out</Label>
+                        <p className="text-sm font-medium">Access List Out</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -810,7 +810,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Prefix List In</Label>
+                        <p className="text-sm font-medium">Prefix List In</p>
                         <Input
                           placeholder="Not set"
                           value={
@@ -826,7 +826,7 @@ export function BabelContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Prefix List Out</Label>
+                        <p className="text-sm font-medium">Prefix List Out</p>
                         <Input
                           placeholder="Not set"
                           value={

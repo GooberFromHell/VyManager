@@ -1,0 +1,101 @@
+id: "task-002"
+title: "Apply EmptyState component to all pages with empty states"
+phase: produce
+execution_phase: 2
+agent: react-specialist
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-008"]
+parallel_with: ["task-005", "task-006", "task-007"]
+
+files:
+  create: []
+  modify:
+    - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/ssh/page.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/dns-forwarding/page.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/broadcast-relay/page.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/router-advert/page.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/conntrack-sync/page.tsx"
+    - "frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+    - "frontend/src/app/(default)/(app)/page.tsx"
+
+context_files:
+  - "frontend/src/components/ui/empty-state.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+
+instructions: |
+  Replace all inline empty state implementations with the new EmptyState component.
+  Read each page file first, find its empty state JSX, and replace with EmptyState.
+
+  For each page:
+  1. Read the file to find the existing empty state pattern
+  2. Import EmptyState from "@/components/ui/empty-state"
+  3. Replace the inline empty state with <EmptyState ... />
+  4. Preserve permission-gating on the action prop (only pass action if canWrite)
+  5. Use `compact` prop when the empty state is inside a TableRow
+
+  Specific mappings (read each file to find exact locations):
+
+  **NTP page** — table empty row ("No NTP servers configured"):
+  - icon: Clock, title: "No NTP servers configured"
+  - description: "Add an NTP server to synchronize time"
+  - action: { label: "Add Server", onClick: () => setCreateOpen(true), icon: Plus }
+  - Use compact={true} since it's in a table cell
+
+  **TFTP page** — card empty state ("TFTP Server is not configured"):
+  - icon: FolderOpen, title: "TFTP Server is not configured"
+  - description: "Configure a directory and listen address to start serving files via TFTP"
+  - action: { label: "Configure TFTP Server", onClick: () => setEditOpen(true), icon: Pencil }
+
+  **DNS Forwarding page** — card empty state ("DNS Forwarding Not Configured"):
+  - icon: Globe, title: "DNS Forwarding Not Configured"
+  - description: "No DNS forwarding configuration found on this device."
+  - action: { label: "Configure DNS Forwarding", onClick: appropriate handler, icon: Pencil }
+
+  **Broadcast Relay page** — empty table/list:
+  - icon: ArrowLeftRight, title: "No broadcast relay instances configured"
+  - description: "Create a relay to forward UDP broadcasts between interfaces"
+  - action: { label: "Create Relay", onClick: () => setCreateOpen(true), icon: Plus }
+
+  **Router Advert page** — empty list:
+  - icon: Radio (or whatever icon the page uses), title: "Router Advertisement is not configured on any interface"
+  - description: "Configure IPv6 router advertisements on network interfaces"
+  - action: { label: "Add Interface", onClick: appropriate handler, icon: Plus }
+
+  **Conntrack Sync page** — empty state:
+  - icon: RefreshCw (or similar), title: "Conntrack Sync is not configured"
+  - description: "Synchronize connection tracking state for high availability"
+  - action: { label: "Configure", onClick: appropriate handler, icon: Pencil }
+
+  **Firewall Groups page** — empty state ("No firewall groups configured"):
+  - icon: Shield, title: "No firewall groups configured"
+  - description: "Create address, network, or port groups to reuse across firewall rules"
+  - action: { label: "Create Group", onClick: () => setCreateModalOpen(true), icon: Plus }
+
+  **Dashboard page** — empty dashboard ("Your dashboard is empty"):
+  - icon: LayoutDashboard, title: "Your dashboard is empty"
+  - description: "Add monitoring cards to track your VyOS router's performance"
+  - action: if canWrite dashboard permission { label: "Edit Dashboard", onClick: edit handler }
+
+  IMPORTANT: Don't change the SSH page — it shows config cards even when empty (no empty state needed).
+  IMPORTANT: Keep all existing permission checks (canWrite guards on actions).
+
+acceptance_criteria:
+  - "Grep match: 'EmptyState' in frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "Grep match: 'EmptyState' in frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+  - "Grep match: 'EmptyState' in frontend/src/app/(default)/(app)/system/services/dns-forwarding/page.tsx"
+  - "Grep match: 'EmptyState' in frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+  - "Grep match: 'EmptyState' in frontend/src/app/(default)/(app)/system/services/broadcast-relay/page.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

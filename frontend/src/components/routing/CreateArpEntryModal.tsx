@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { staticRoutesService } from "@/lib/api/static-routes";
 import { showService } from "@/lib/api/show";
 
@@ -135,51 +135,49 @@ export function CreateArpEntryModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="interface">Interface</Label>
-            <Select value={interfaceName} onValueChange={setInterfaceName}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select interface..." />
-              </SelectTrigger>
-              <SelectContent>
-                {availableInterfaces.map((iface) => (
-                  <SelectItem key={iface} value={iface}>
-                    {iface}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Fieldset>
+            <FormField label="Interface" htmlFor="interface">
+              <Select value={interfaceName} onValueChange={setInterfaceName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select interface..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableInterfaces.map((iface) => (
+                    <SelectItem key={iface} value={iface}>
+                      {iface}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="ip-address">IP Address</Label>
-            <Input
-              id="ip-address"
-              placeholder="192.168.1.100"
-              value={ipAddress}
-              onChange={(e) => setIpAddress(e.target.value)}
-            />
-          </div>
+            <FormField label="IP Address" htmlFor="ip-address">
+              <Input
+                id="ip-address"
+                placeholder="192.168.1.100"
+                value={ipAddress}
+                onChange={(e) => setIpAddress(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="mac-address">MAC Address</Label>
-            <Input
-              id="mac-address"
-              placeholder="00:11:22:33:44:55"
-              value={macAddress}
-              onChange={(e) => setMacAddress(e.target.value)}
-            />
-          </div>
+            <FormField label="MAC Address" htmlFor="mac-address">
+              <Input
+                id="mac-address"
+                placeholder="00:11:22:33:44:55"
+                value={macAddress}
+                onChange={(e) => setMacAddress(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Input
-              id="description"
-              placeholder="Description for this ARP entry"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Description for this ARP entry (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

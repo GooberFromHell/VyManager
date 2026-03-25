@@ -124,7 +124,7 @@ export default function FlowtablesPage() {
                 <Zap className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Flowtables</h1>
+                <h1 className="text-3xl font-bold text-foreground">Flowtables</h1>
                 <p className="text-sm text-muted-foreground">
                   Manage fast-path packet offloading for established connections
                 </p>

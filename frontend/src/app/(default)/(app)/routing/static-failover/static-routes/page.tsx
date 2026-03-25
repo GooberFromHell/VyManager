@@ -171,7 +171,7 @@ export default function StaticRoutesPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Static Routes</h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-1">
                 Manage static routes, ARP entries, multicast routes, and neighbor proxies
               </p>
             </div>

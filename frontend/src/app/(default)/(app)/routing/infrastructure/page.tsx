@@ -40,36 +40,36 @@ export default function InfrastructurePage() {
   }, [infrastructure, selectedInfra]);
 
   return (
-      <div className="flex h-full">
-        {/* Left Sidebar - Infrastructure Selector */}
-        <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-          <div className="p-6 pb-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Settings className="h-6 w-6 text-primary" />
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Routing Infrastructure</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Advanced routing features
-                </p>
-              </div>
+    <div className="flex h-full">
+      {/* Left Sidebar - Infrastructure Selector */}
+      <div className="w-80 border-r border-border bg-card flex flex-col h-full">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <Settings className="h-6 w-6 text-primary" />
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Routing Infrastructure</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Advanced routing features
+              </p>
             </div>
           </div>
+        </div>
 
-          <Separator />
+        <Separator />
 
-          {/* Infrastructure List */}
-          <ScrollArea className="flex-1 px-3">
-            <div className="space-y-1 py-3">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-sm text-muted-foreground">Loading infrastructure...</p>
-                </div>
-              ) : infrastructure.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-sm text-muted-foreground">No accessible infrastructure</p>
-                </div>
-              ) : (
-                infrastructure.map((infra) => {
+        {/* Infrastructure List */}
+        <ScrollArea className="flex-1 px-3">
+          <div className="space-y-1 py-3">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-sm text-muted-foreground">Loading infrastructure...</p>
+              </div>
+            ) : infrastructure.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-sm text-muted-foreground">No accessible infrastructure</p>
+              </div>
+            ) : (
+              infrastructure.map((infra) => {
                 const Icon = infra.icon;
                 return (
                   <button
@@ -112,21 +112,21 @@ export default function InfrastructurePage() {
                   </button>
                 );
               })
-              )}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1">
-          {selectedInfra === "bfd" ? (
-            <BfdContent />
-          ) : selectedInfra === "mpls" ? (
-            <MplsContent />
-          ) : (
-            <InProgress />
-          )}
-        </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1">
+        {selectedInfra === "bfd" ? (
+          <BfdContent />
+        ) : selectedInfra === "mpls" ? (
+          <MplsContent />
+        ) : (
+          <InProgress />
+        )}
+      </div>
+    </div>
   );
 }

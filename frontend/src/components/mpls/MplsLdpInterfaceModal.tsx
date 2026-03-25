@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -99,10 +99,8 @@ export function MplsLdpInterfaceModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {/* Interface Name */}
-          <div className="space-y-2">
-            <Label htmlFor="ldp-iface-name">Interface</Label>
+        <Fieldset className="py-2">
+          <FormField label="Interface" htmlFor="ldp-iface-name" required={!isEditMode}>
             {isEditMode ? (
               <p className="text-sm font-mono font-medium px-3 py-2 bg-muted rounded-md">
                 {existingInterface?.name}
@@ -129,25 +127,21 @@ export function MplsLdpInterfaceModal({
                 placeholder="e.g. eth0"
               />
             )}
-          </div>
+          </FormField>
 
-          {/* Disable Establish Hello */}
-          <div className="flex items-center gap-3">
+          <FormField
+            label="Disable Establish Hello"
+            htmlFor="ldp-iface-disable-hello"
+            description="Suppress LDP hello messages on this interface"
+            horizontal
+          >
             <Checkbox
               id="ldp-iface-disable-hello"
               checked={disableHello}
               onCheckedChange={(checked) => setDisableHello(checked === true)}
             />
-            <div className="space-y-0.5">
-              <Label htmlFor="ldp-iface-disable-hello" className="cursor-pointer">
-                Disable Establish Hello
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Suppress LDP hello messages on this interface
-              </p>
-            </div>
-          </div>
-        </div>
+          </FormField>
+        </Fieldset>
 
         {error && (
           <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3">

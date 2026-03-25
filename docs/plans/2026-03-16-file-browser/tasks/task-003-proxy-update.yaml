@@ -1,0 +1,101 @@
+id: "task-003"
+title: "Update VyOS proxy route for binary responses and multipart uploads"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-005", "task-006"]
+parallel_with: ["task-002", "task-004"]
+
+files:
+  create: []
+  modify:
+    - "frontend/src/app/api/vyos/[...path]/route.ts"
+
+context_files:
+  - "frontend/src/app/api/vyos/[...path]/route.ts"
+
+instructions: |
+  Update the VyOS proxy route to handle binary responses (for file downloads) and
+  multipart form uploads (for file uploads). Currently it forces JSON on all POST bodies
+  and tries to JSON-parse all responses.
+
+  ## Modify frontend/src/app/api/vyos/[...path]/route.ts
+
+  ### 1. Fix request body handling for multipart uploads
+
+  Replace the body handling block (lines 86-94) that always sets Content-Type to
+  application/json and calls request.json(). Instead:
+
+  ```typescript
+  let body: BodyInit | undefined;
+  const incomingContentType = request.headers.get("content-type") || "";
+
+  if (["POST", "PUT", "PATCH"].includes(method)) {
+    if (incomingContentType.includes("multipart/form-data")) {
+      // Pass multipart form data through as-is (for file uploads)
+      body = await request.arrayBuffer();
+      headers["Content-Type"] = incomingContentType;
+    } else {
+      // Default: JSON body
+      headers["Content-Type"] = "application/json";
+      try {
+        const json = await request.json();
+        body = JSON.stringify(json);
+      } catch {
+        // No body or invalid JSON
+      }
+    }
+  }
+  ```
+
+  ### 2. Handle binary/octet-stream responses (for file downloads)
+
+  After the SSE handling block (lines 103-115) and BEFORE the `const responseText = await response.text()` line,
+  add handling for binary responses:
+
+  ```typescript
+  // Stream binary responses directly (for file downloads)
+  if (
+    contentType.includes("application/octet-stream") ||
+    contentType.includes("application/zip") ||
+    contentType.includes("application/gzip")
+  ) {
+    const responseHeaders: Record<string, string> = {
+      "Content-Type": contentType,
+    };
+
+    // Pass through Content-Disposition for downloads
+    const contentDisposition = response.headers.get("Content-Disposition");
+    if (contentDisposition) {
+      responseHeaders["Content-Disposition"] = contentDisposition;
+    }
+
+    // Pass through Content-Length if available
+    const contentLength = response.headers.get("Content-Length");
+    if (contentLength) {
+      responseHeaders["Content-Length"] = contentLength;
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      headers: responseHeaders,
+    });
+  }
+  ```
+
+acceptance_criteria:
+  - "Grep match: 'multipart/form-data' in frontend/src/app/api/vyos/[...path]/route.ts"
+  - "Grep match: 'application/octet-stream' in frontend/src/app/api/vyos/[...path]/route.ts"
+  - "Grep match: 'Content-Disposition' in frontend/src/app/api/vyos/[...path]/route.ts"
+  - "Grep match: 'arrayBuffer' in frontend/src/app/api/vyos/[...path]/route.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

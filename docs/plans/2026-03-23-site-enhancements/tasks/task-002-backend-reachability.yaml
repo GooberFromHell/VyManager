@@ -1,0 +1,140 @@
+id: "task-002"
+title: "Add instance reachability status endpoint"
+archetype: backend-service
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: []
+blocks: ["task-005"]
+parallel_with: ["task-004"]
+files:
+  create: []
+  modify:
+    - backend/routers/session/session.py
+context_files:
+  - backend/routers/session/session.py
+  - backend/vyos_service.py
+  - backend/pyvyos/core/device.py
+instructions: |
+  1. Read `backend/routers/session/session.py` fully to understand existing patterns
+  2. Read `backend/vyos_service.py` to understand VyOSService and VyOSDeviceConfig
+  3. Read `backend/pyvyos/core/device.py` to understand VyDevice API (especially retrieve_show_config)
+
+  Add the following to `backend/routers/session/session.py`:
+
+  **New Pydantic models** (near the other response models):
+  ```python
+  class InstanceStatusResponse(BaseModel):
+      instance_id: str
+      status: str  # "online", "offline", "error"
+      latency_ms: Optional[int] = None
+      error: Optional[str] = None
+
+  class SiteStatusResponse(BaseModel):
+      site_id: str
+      instances: List[InstanceStatusResponse]
+  ```
+
+  **New private helper function:**
+  ```python
+  async def _check_instance_reachability(instance_row) -> InstanceStatusResponse:
+      """Check if a VyOS instance is reachable via a lightweight API call."""
+      instance_id = instance_row["id"]
+      api_key = instance_row.get("apiKey")
+
+      if not api_key:
+          return InstanceStatusResponse(
+              instance_id=instance_id,
+              status="error",
+              error="No API key configured"
+          )
+
+      try:
+          import time
+          from pyvyos import VyDevice
+
+          device = VyDevice(
+              hostname=instance_row["host"],
+              apikey=api_key,
+              port=instance_row["port"],
+              protocol=instance_row.get("protocol", "https"),
+              verify=instance_row.get("verifySsl", False),
+              timeout=3
+          )
+
+          start = time.monotonic()
+          result = await run_in_threadpool(
+              device.retrieve_show_config,
+              path=["system", "host-name"]
+          )
+          elapsed_ms = int((time.monotonic() - start) * 1000)
+
+          return InstanceStatusResponse(
+              instance_id=instance_id,
+              status="online",
+              latency_ms=elapsed_ms
+          )
+      except Exception as e:
+          return InstanceStatusResponse(
+              instance_id=instance_id,
+              status="offline",
+              error=str(e)[:200]
+          )
+  ```
+
+  **New endpoint** `GET /session/sites/{site_id}/instances/status`:
+  ```python
+  @router.get("/session/sites/{site_id}/instances/status")
+  async def get_site_instances_status(site_id: str, request: Request):
+      """Check reachability of all instances in a site."""
+      user = request.state.user
+      pool = request.app.state.pool
+
+      # Same RBAC logic as list_site_instances — get instances the user can see
+      # Query instances with their connection details (host, port, apiKey, protocol, verifySsl)
+      # Use the same ADMIN vs non-ADMIN logic from list_site_instances
+
+      # Run concurrent checks with semaphore
+      sem = asyncio.Semaphore(10)
+
+      async def check_with_semaphore(inst):
+          async with sem:
+              return await _check_instance_reachability(inst)
+
+      results = await asyncio.gather(
+          *[check_with_semaphore(inst) for inst in instances],
+          return_exceptions=True
+      )
+
+      # Convert exceptions to error responses
+      statuses = []
+      for i, result in enumerate(results):
+          if isinstance(result, Exception):
+              statuses.append(InstanceStatusResponse(
+                  instance_id=instances[i]["id"],
+                  status="error",
+                  error=str(result)[:200]
+              ))
+          else:
+              statuses.append(result)
+
+      return SiteStatusResponse(site_id=site_id, instances=statuses)
+  ```
+
+  IMPORTANT: Look at how `list_site_instances` queries for instances with RBAC filtering. The new endpoint should use the same SQL query pattern but SELECT the connection fields (host, port, apiKey, protocol, verifySsl) instead of the display fields. Make sure to handle both platform ADMIN and regular user cases.
+
+  Make sure `asyncio` and `time` are imported at the top of the file. `run_in_threadpool` should already be imported from starlette.concurrency.
+acceptance_criteria:
+  - "Grep match: 'instances/status' in backend/routers/session/session.py"
+  - "Grep match: 'InstanceStatusResponse' in backend/routers/session/session.py"
+  - "Grep match: '_check_instance_reachability' in backend/routers/session/session.py"
+  - "Grep match: 'asyncio.Semaphore' in backend/routers/session/session.py"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

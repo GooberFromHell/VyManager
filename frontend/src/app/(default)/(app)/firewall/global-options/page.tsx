@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -428,7 +427,7 @@ export default function FirewallGlobalOptionsPage() {
               <Settings className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Global Options</h1>
+              <h1 className="text-3xl font-bold text-foreground">Global Options</h1>
               <p className="text-sm text-muted-foreground">
                 Configure global firewall settings
               </p>
@@ -605,7 +604,7 @@ export default function FirewallGlobalOptionsPage() {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Action</Label>
+                      <p className="text-xs text-muted-foreground">Action</p>
                       <Select value={establishedAction} onValueChange={setEstablishedAction}>
                         <SelectTrigger className="h-8 text-xs mt-1">
                           <SelectValue />
@@ -618,7 +617,7 @@ export default function FirewallGlobalOptionsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Log Level</Label>
+                      <p className="text-xs text-muted-foreground">Log Level</p>
                       <Select value={establishedLogLevel} onValueChange={setEstablishedLogLevel}>
                         <SelectTrigger className="h-8 text-xs mt-1">
                           <SelectValue />
@@ -637,7 +636,7 @@ export default function FirewallGlobalOptionsPage() {
                           checked={establishedLog}
                           onCheckedChange={(c) => setEstablishedLog(c === true)}
                         />
-                        <Label htmlFor="est-log" className="text-xs">Log</Label>
+                        <label htmlFor="est-log" className="text-xs">Log</label>
                       </div>
                     </div>
                   </div>
@@ -650,7 +649,7 @@ export default function FirewallGlobalOptionsPage() {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Action</Label>
+                      <p className="text-xs text-muted-foreground">Action</p>
                       <Select value={invalidAction} onValueChange={setInvalidAction}>
                         <SelectTrigger className="h-8 text-xs mt-1">
                           <SelectValue />
@@ -663,7 +662,7 @@ export default function FirewallGlobalOptionsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Log Level</Label>
+                      <p className="text-xs text-muted-foreground">Log Level</p>
                       <Select value={invalidLogLevel} onValueChange={setInvalidLogLevel}>
                         <SelectTrigger className="h-8 text-xs mt-1">
                           <SelectValue />
@@ -682,7 +681,7 @@ export default function FirewallGlobalOptionsPage() {
                           checked={invalidLog}
                           onCheckedChange={(c) => setInvalidLog(c === true)}
                         />
-                        <Label htmlFor="inv-log" className="text-xs">Log</Label>
+                        <label htmlFor="inv-log" className="text-xs">Log</label>
                       </div>
                     </div>
                   </div>
@@ -695,7 +694,7 @@ export default function FirewallGlobalOptionsPage() {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Action</Label>
+                      <p className="text-xs text-muted-foreground">Action</p>
                       <Select value={relatedAction} onValueChange={setRelatedAction}>
                         <SelectTrigger className="h-8 text-xs mt-1">
                           <SelectValue />
@@ -708,7 +707,7 @@ export default function FirewallGlobalOptionsPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Log Level</Label>
+                      <p className="text-xs text-muted-foreground">Log Level</p>
                       <Select value={relatedLogLevel} onValueChange={setRelatedLogLevel}>
                         <SelectTrigger className="h-8 text-xs mt-1">
                           <SelectValue />
@@ -727,7 +726,7 @@ export default function FirewallGlobalOptionsPage() {
                           checked={relatedLog}
                           onCheckedChange={(c) => setRelatedLog(c === true)}
                         />
-                        <Label htmlFor="rel-log" className="text-xs">Log</Label>
+                        <label htmlFor="rel-log" className="text-xs">Log</label>
                       </div>
                     </div>
                   </div>
@@ -770,7 +769,7 @@ export default function FirewallGlobalOptionsPage() {
                   {/* General */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">ICMP (sec)</Label>
+                      <p className="text-xs text-muted-foreground">ICMP (sec)</p>
                       <Input
                         type="number"
                         placeholder="30"
@@ -780,7 +779,7 @@ export default function FirewallGlobalOptionsPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground">Other (sec)</Label>
+                      <p className="text-xs text-muted-foreground">Other (sec)</p>
                       <Input
                         type="number"
                         placeholder="600"
@@ -793,38 +792,38 @@ export default function FirewallGlobalOptionsPage() {
 
                   {/* TCP */}
                   <div className="pt-2 border-t border-border/50">
-                    <Label className="text-xs font-medium text-muted-foreground mb-2 block">TCP</Label>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 block">TCP</p>
                     <div className="grid grid-cols-4 gap-2">
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">Established</Label>
+                        <p className="text-[10px] text-muted-foreground">Established</p>
                         <Input type="number" placeholder="432000" value={timeoutTcpEstablished} onChange={(e) => setTimeoutTcpEstablished(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">Close</Label>
+                        <p className="text-[10px] text-muted-foreground">Close</p>
                         <Input type="number" placeholder="10" value={timeoutTcpClose} onChange={(e) => setTimeoutTcpClose(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">Close Wait</Label>
+                        <p className="text-[10px] text-muted-foreground">Close Wait</p>
                         <Input type="number" placeholder="60" value={timeoutTcpCloseWait} onChange={(e) => setTimeoutTcpCloseWait(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">FIN Wait</Label>
+                        <p className="text-[10px] text-muted-foreground">FIN Wait</p>
                         <Input type="number" placeholder="120" value={timeoutTcpFinWait} onChange={(e) => setTimeoutTcpFinWait(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">Last ACK</Label>
+                        <p className="text-[10px] text-muted-foreground">Last ACK</p>
                         <Input type="number" placeholder="30" value={timeoutTcpLastAck} onChange={(e) => setTimeoutTcpLastAck(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">SYN Recv</Label>
+                        <p className="text-[10px] text-muted-foreground">SYN Recv</p>
                         <Input type="number" placeholder="60" value={timeoutTcpSynRecv} onChange={(e) => setTimeoutTcpSynRecv(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">SYN Sent</Label>
+                        <p className="text-[10px] text-muted-foreground">SYN Sent</p>
                         <Input type="number" placeholder="120" value={timeoutTcpSynSent} onChange={(e) => setTimeoutTcpSynSent(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">TIME Wait</Label>
+                        <p className="text-[10px] text-muted-foreground">TIME Wait</p>
                         <Input type="number" placeholder="120" value={timeoutTcpTimeWait} onChange={(e) => setTimeoutTcpTimeWait(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                     </div>
@@ -832,14 +831,14 @@ export default function FirewallGlobalOptionsPage() {
 
                   {/* UDP */}
                   <div className="pt-2 border-t border-border/50">
-                    <Label className="text-xs font-medium text-muted-foreground mb-2 block">UDP</Label>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 block">UDP</p>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">Stream</Label>
+                        <p className="text-[10px] text-muted-foreground">Stream</p>
                         <Input type="number" placeholder="180" value={timeoutUdpStream} onChange={(e) => setTimeoutUdpStream(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-muted-foreground">Other</Label>
+                        <p className="text-[10px] text-muted-foreground">Other</p>
                         <Input type="number" placeholder="30" value={timeoutUdpOther} onChange={(e) => setTimeoutUdpOther(e.target.value)} className="h-7 text-xs mt-0.5" />
                       </div>
                     </div>

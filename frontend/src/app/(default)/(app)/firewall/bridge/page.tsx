@@ -329,9 +329,9 @@ export default function BridgeFirewallPage() {
   // Loading state
   if (loading && !config) {
     return (
-        <div className="flex items-center justify-center h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+      <div className="flex items-center justify-center h-96">
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
@@ -340,7 +340,7 @@ export default function BridgeFirewallPage() {
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-72 border-r border-border bg-card/50 flex flex-col h-full">
-          <div className="p-6 pb-4">
+          <div className="p-4">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Network className="h-5 w-5 text-primary" />

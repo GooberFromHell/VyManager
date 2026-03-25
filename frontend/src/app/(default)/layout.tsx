@@ -24,9 +24,12 @@ export default function DefaultLayout({
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <div className="text-center">
+            <p className="text-sm font-medium text-foreground">Loading VyManager</p>
+            <p className="text-xs text-muted-foreground mt-1">Initializing your session...</p>
+          </div>
         </div>
       </div>
     );

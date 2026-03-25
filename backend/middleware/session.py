@@ -133,6 +133,11 @@ class SessionMiddleware(BaseHTTPMiddleware):
                             i."verifySsl" as verify_ssl,
                             i."commitConfirmEnabled" as commit_confirm_enabled,
                             i."commitConfirmMinutes" as commit_confirm_minutes,
+                            i."prometheusEnabled" as prometheus_enabled,
+                            i."prometheusPort" as prometheus_port,
+                            i."prometheusAuth" as prometheus_auth,
+                            i."prometheusUsername" as prometheus_username,
+                            i."prometheusPassword" as prometheus_password,
                             s.name as site_name,
                             'ADMIN' as user_role
                         FROM active_sessions a
@@ -162,6 +167,11 @@ class SessionMiddleware(BaseHTTPMiddleware):
                             i."verifySsl" as verify_ssl,
                             i."commitConfirmEnabled" as commit_confirm_enabled,
                             i."commitConfirmMinutes" as commit_confirm_minutes,
+                            i."prometheusEnabled" as prometheus_enabled,
+                            i."prometheusPort" as prometheus_port,
+                            i."prometheusAuth" as prometheus_auth,
+                            i."prometheusUsername" as prometheus_username,
+                            i."prometheusPassword" as prometheus_password,
                             s.name as site_name,
                             uir.role as user_role
                         FROM active_sessions a
@@ -221,6 +231,11 @@ class SessionMiddleware(BaseHTTPMiddleware):
                         "verify_ssl": session.get("verify_ssl"),
                         "commit_confirm_enabled": session.get("commit_confirm_enabled") or False,
                         "commit_confirm_minutes": session.get("commit_confirm_minutes") or 5,
+                        "prometheusEnabled": session.get("prometheus_enabled") or False,
+                        "prometheusPort": session.get("prometheus_port"),
+                        "prometheusAuth": session.get("prometheus_auth") or False,
+                        "prometheusUsername": session.get("prometheus_username"),
+                        "prometheusPassword": session.get("prometheus_password"),
                     }
                     request.state.site = {
                         "id": session["site_id"],

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -272,12 +272,15 @@ export function BabelInterfaceModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
+          <div className="space-y-4 pb-2">
             {/* Basic Settings */}
-            <div className="space-y-4">
+            <Fieldset>
               {/* Interface Name */}
-              <div className="space-y-2">
-                <Label htmlFor="babel-iface-name">Interface</Label>
+              <FormField
+                label="Interface"
+                htmlFor="babel-iface-name"
+                description="The VyOS interface to enable Babel on."
+              >
                 <Select
                   value={name}
                   onValueChange={setName}
@@ -297,14 +300,14 @@ export function BabelInterfaceModal({
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  The VyOS interface to enable Babel on.
-                </p>
-              </div>
+              </FormField>
 
               {/* Type */}
-              <div className="space-y-2">
-                <Label htmlFor="babel-iface-type">Type</Label>
+              <FormField
+                label="Type"
+                htmlFor="babel-iface-type"
+                description="Interface type determines default cost and hello interval."
+              >
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger id="babel-iface-type">
                     <SelectValue placeholder="Select type (optional)" />
@@ -315,29 +318,28 @@ export function BabelInterfaceModal({
                     <SelectItem value="wireless">Wireless</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Interface type determines default cost and hello interval.
-                </p>
-              </div>
+              </FormField>
 
               {/* Channel */}
-              <div className="space-y-2">
-                <Label htmlFor="babel-iface-channel">Channel</Label>
+              <FormField
+                label="Channel"
+                htmlFor="babel-iface-channel"
+                description={`Babel channel number (1-254) or "interfering" / "non-interfering".`}
+              >
                 <Input
                   id="babel-iface-channel"
                   value={channel}
                   onChange={(e) => setChannel(e.target.value)}
                   placeholder="1-254, interfering, or non-interfering"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Babel channel number (1-254) or &quot;interfering&quot; /
-                  &quot;non-interfering&quot;.
-                </p>
-              </div>
+              </FormField>
 
               {/* Split Horizon */}
-              <div className="space-y-2">
-                <Label htmlFor="babel-iface-split-horizon">Split Horizon</Label>
+              <FormField
+                label="Split Horizon"
+                htmlFor="babel-iface-split-horizon"
+                description="Controls the split-horizon optimization for this interface."
+              >
                 <Select value={splitHorizon} onValueChange={setSplitHorizon}>
                   <SelectTrigger id="babel-iface-split-horizon">
                     <SelectValue placeholder="Select split horizon (optional)" />
@@ -348,13 +350,15 @@ export function BabelInterfaceModal({
                     <SelectItem value="disable">Disable</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Controls the split-horizon optimization for this interface.
-                </p>
-              </div>
+              </FormField>
 
               {/* Enable Timestamps */}
-              <div className="flex items-center space-x-3 rounded-lg border p-3">
+              <FormField
+                label="Enable Timestamps"
+                htmlFor="babel-iface-timestamps"
+                description="Enable timestamps on Hello and IHU packets for RTT estimation."
+                horizontal
+              >
                 <Checkbox
                   id="babel-iface-timestamps"
                   checked={enableTimestamps}
@@ -362,28 +366,15 @@ export function BabelInterfaceModal({
                     setEnableTimestamps(checked === true)
                   }
                 />
-                <div className="flex-1">
-                  <Label
-                    htmlFor="babel-iface-timestamps"
-                    className="cursor-pointer"
-                  >
-                    Enable Timestamps
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Enable timestamps on Hello and IHU packets for RTT
-                    estimation.
-                  </p>
-                </div>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Timing & Cost Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Timing &amp; Cost</h4>
+            <Fieldset label="Timing and Cost">
               <div className="grid grid-cols-2 gap-4">
-                {/* Hello Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-hello">Hello Interval (ms)</Label>
+                <FormField label="Hello Interval (ms)" htmlFor="babel-iface-hello">
                   <Input
                     id="babel-iface-hello"
                     type="number"
@@ -393,13 +384,9 @@ export function BabelInterfaceModal({
                     min={20}
                     max={655340}
                   />
-                </div>
+                </FormField>
 
-                {/* Update Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-update">
-                    Update Interval (ms)
-                  </Label>
+                <FormField label="Update Interval (ms)" htmlFor="babel-iface-update">
                   <Input
                     id="babel-iface-update"
                     type="number"
@@ -409,11 +396,9 @@ export function BabelInterfaceModal({
                     min={20}
                     max={655340}
                   />
-                </div>
+                </FormField>
 
-                {/* RX Cost */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-rxcost">RX Cost</Label>
+                <FormField label="RX Cost" htmlFor="babel-iface-rxcost">
                   <Input
                     id="babel-iface-rxcost"
                     type="number"
@@ -423,19 +408,16 @@ export function BabelInterfaceModal({
                     min={1}
                     max={65534}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* RTT Settings Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">RTT Settings</h4>
+            <Fieldset label="RTT Settings">
               <div className="grid grid-cols-2 gap-4">
-                {/* Max RTT Penalty */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-max-rtt">
-                    Max RTT Penalty (ms)
-                  </Label>
+                <FormField label="Max RTT Penalty (ms)" htmlFor="babel-iface-max-rtt">
                   <Input
                     id="babel-iface-max-rtt"
                     type="number"
@@ -445,11 +427,9 @@ export function BabelInterfaceModal({
                     min={0}
                     max={65535}
                   />
-                </div>
+                </FormField>
 
-                {/* RTT Decay */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-rtt-decay">RTT Decay</Label>
+                <FormField label="RTT Decay" htmlFor="babel-iface-rtt-decay">
                   <Input
                     id="babel-iface-rtt-decay"
                     type="number"
@@ -459,11 +439,9 @@ export function BabelInterfaceModal({
                     min={1}
                     max={256}
                   />
-                </div>
+                </FormField>
 
-                {/* RTT Min */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-rtt-min">RTT Min (ms)</Label>
+                <FormField label="RTT Min (ms)" htmlFor="babel-iface-rtt-min">
                   <Input
                     id="babel-iface-rtt-min"
                     type="number"
@@ -473,11 +451,9 @@ export function BabelInterfaceModal({
                     min={1}
                     max={65535}
                   />
-                </div>
+                </FormField>
 
-                {/* RTT Max */}
-                <div className="space-y-2">
-                  <Label htmlFor="babel-iface-rtt-max">RTT Max (ms)</Label>
+                <FormField label="RTT Max (ms)" htmlFor="babel-iface-rtt-max">
                   <Input
                     id="babel-iface-rtt-max"
                     type="number"
@@ -487,9 +463,9 @@ export function BabelInterfaceModal({
                     min={1}
                     max={65535}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
           </div>
         </ScrollArea>
 

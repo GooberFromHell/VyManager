@@ -1,0 +1,119 @@
+id: "task-001"
+title: "Create FileGridView component with tile grid and hover actions"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: []
+blocks: ["task-002", "task-003"]
+parallel_with: []
+
+files:
+  create:
+    - "frontend/src/components/file-browser/FileGridView.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "frontend/src/lib/api/types/file-browser.ts"
+  - "frontend/src/components/ui/empty-state.tsx"
+
+instructions: |
+  Create a grid/tile view component for the file browser that displays files and directories
+  as visual cards in a responsive grid layout.
+
+  ## Create frontend/src/components/file-browser/FileGridView.tsx
+
+  ### Props Interface:
+  ```tsx
+  interface FileGridViewProps {
+    entries: FileEntry[];
+    currentPath: string;
+    isRoot: boolean;
+    writeAllowed: boolean;
+    onNavigate: (path: string) => void;
+    onEntryClick: (entry: FileEntry) => void;
+    onDownload: (entry: FileEntry) => void;
+    onRename: (entry: FileEntry) => void;
+    onDelete: (entry: FileEntry) => void;
+    onUpload: () => void;
+  }
+  ```
+
+  ### Grid Layout:
+  - Use CSS grid: `grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3`
+  - Each tile is a div with: `group relative rounded-lg border border-border p-4 flex flex-col items-center gap-2 cursor-pointer transition-colors hover:bg-accent/50`
+  - Directories get additional: `hover:border-blue-500/30`
+
+  ### Parent Directory Tile (".."):
+  - Show as first tile when `!isRoot`
+  - Large Folder icon (h-10 w-10 text-blue-400)
+  - Label: ".." in font-mono
+  - On click: call `onNavigate(navigateToParent(currentPath))`
+  - Import `navigateToParent` logic inline or as a helper
+
+  ### File/Directory Tiles:
+  - Large icon centered:
+    - Directory: `<Folder className="h-10 w-10 text-blue-400" />`
+    - File: `<File className="h-10 w-10 text-muted-foreground" />`
+    - Symlink: `<FileSymlink className="h-10 w-10 text-yellow-400" />`
+  - Filename: `<span className="text-sm font-mono truncate w-full text-center" title={entry.name}>{entry.name}</span>`
+  - Size label (files only): `<span className="text-xs text-muted-foreground">{formatFileSize(entry.size)}</span>`
+  - Directories show no size label
+
+  ### Hover Action Overlay:
+  - Only visible on hover (use `group` and `opacity-0 group-hover:opacity-100` pattern)
+  - Positioned at top-right: `absolute top-1 right-1 flex gap-0.5`
+  - Background: `bg-background/80 backdrop-blur-sm rounded-md p-0.5`
+  - Contains icon buttons (size="sm", variant="ghost", h-7 w-7):
+    - Download (files only): Download icon
+    - Rename: Pencil icon
+    - Delete: Trash2 icon with `text-destructive` class
+  - Each button calls `e.stopPropagation()` before its handler
+  - Only render the overlay when `writeAllowed` is true
+
+  ### Empty State:
+  - When `entries.length === 0`, show EmptyState component (same as table view):
+    ```tsx
+    <EmptyState
+      icon={FolderOpen}
+      title="This directory is empty"
+      description={writeAllowed ? "Upload a file or create a new folder to get started" : undefined}
+      action={writeAllowed ? { label: "Upload File", onClick: onUpload, icon: Upload } : undefined}
+    />
+    ```
+
+  ### Click Handling:
+  - Clicking a tile calls `onEntryClick(entry)` (parent handles navigation vs preview logic)
+  - Parent directory tile calls `onNavigate(parentPath)` directly
+
+  ### Helper Functions:
+  Include inline copies of `formatFileSize` and a `navigateToParent` function, OR import them.
+  Since they're in FileBrowserContent.tsx (not exported), copy them as local helpers.
+
+  ### Imports:
+  ```tsx
+  import { Download, File, FileSymlink, Folder, FolderOpen, Pencil, Trash2, Upload } from "lucide-react";
+  import { Button } from "@/components/ui/button";
+  import { EmptyState } from "@/components/ui/empty-state";
+  import type { FileEntry } from "@/lib/api/types/file-browser";
+  ```
+
+  Export: `export function FileGridView({ ... }: FileGridViewProps)`
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/file-browser/FileGridView.tsx"
+  - "Grep match: 'FileGridView' in frontend/src/components/file-browser/FileGridView.tsx"
+  - "Grep match: 'grid' in frontend/src/components/file-browser/FileGridView.tsx"
+  - "Grep match: 'group-hover:opacity-100' in frontend/src/components/file-browser/FileGridView.tsx"
+  - "Grep match: 'FileEntry' in frontend/src/components/file-browser/FileGridView.tsx"
+  - "Grep match: 'onEntryClick' in frontend/src/components/file-browser/FileGridView.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

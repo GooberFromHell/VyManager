@@ -1,0 +1,290 @@
+id: task-006-backup-refactor
+title: "Refactor backup endpoint to fire-and-forget with per-instance background jobs"
+archetype: custom
+phase: 2
+depends_on: [task-003, task-005]
+parallel_with: []
+agent: general-purpose
+status: not_started
+
+files:
+  create: []
+  modify:
+    - "backend/routers/site_tools/backup.py"
+
+context_files:
+  - ".derpo/architecture.md"
+  - "backend/routers/site_tools/backup.py"
+  - "backend/background_jobs.py"
+  - "backend/routers/site_tools/container_backup.py"
+  - "backend/app.py"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Refactor the existing `POST /{site_id}/backup` endpoint in `backup.py` to use the fire-and-forget
+  pattern with per-instance background jobs. The endpoint will return HTTP 202 immediately with
+  trigger_id and job_ids, while backup coroutines run in the background.
+
+  ## Step 1: Read current backup.py
+  Read `backend/routers/site_tools/backup.py` thoroughly. Understand the current synchronous flow:
+  1. Validate ADMIN role
+  2. Look up site and instances
+  3. Run `_backup_instance()` concurrently for all instances
+  4. Return `SiteBackupResponse` with all results
+
+  Also read `backend/background_jobs.py` and `backend/routers/site_tools/container_backup.py`.
+
+  ## Step 2: Add new imports
+  Add these imports at the top of backup.py:
+
+  ```python
+  from uuid import uuid4
+  import background_jobs
+  from routers.site_tools.container_backup import collect_container_backup
+  ```
+
+  ## Step 3: Add a module-level set for tracking running tasks
+
+  ```python
+  # Track running backup job asyncio.Tasks for graceful shutdown
+  _running_job_tasks: set[asyncio.Task] = set()
+  ```
+
+  ## Step 4: Add the TriggerBackupResponse model
+  Add a new Pydantic model alongside the existing ones:
+
+  ```python
+  class TriggerBackupResponse(BaseModel):
+      """Response from triggering a site backup (HTTP 202)."""
+      trigger_id: str
+      job_ids: List[str]
+  ```
+
+  ## Step 5: Create the run_instance_backup_job coroutine
+  Add this as a new async function (not an endpoint) in the module:
+
+  ```python
+  async def run_instance_backup_job(
+      job_id: str,
+      instance_row: dict,
+      db_pool: asyncpg.Pool,
+  ) -> None:
+      """
+      Background coroutine that backs up a single VyOS instance.
+
+      Runs the config fetch + container enrichment, updating job state
+      in the database throughout. Handles cancellation between steps.
+      """
+      try:
+          # Mark job as running
+          await background_jobs.update_job(
+              db_pool, job_id,
+              status="running",
+              started_at=datetime.now(timezone.utc),
+          )
+          await background_jobs.append_log(
+              db_pool, job_id,
+              f"Backup started for instance '{instance_row['name']}' ({instance_row['host']})",
+          )
+
+          # --- Step 1: Config fetch (0% -> 33%) ---
+          if background_jobs.is_cancelled(job_id):
+              await _finish_cancelled(db_pool, job_id)
+              return
+
+          result = await _backup_instance(instance_row)
+          await background_jobs.update_job(db_pool, job_id, progress=33)
+          await background_jobs.append_log(db_pool, job_id, "Config fetch complete")
+
+          if result.status == "failed":
+              await background_jobs.update_job(
+                  db_pool, job_id,
+                  status="failed",
+                  progress=33,
+                  finished_at=datetime.now(timezone.utc),
+                  result=result.model_dump(),
+                  error=result.error,
+              )
+              await background_jobs.append_log(db_pool, job_id, f"Failed: {result.error}")
+              return
+
+          if result.status == "skipped":
+              await background_jobs.update_job(
+                  db_pool, job_id,
+                  status="failed",
+                  progress=100,
+                  finished_at=datetime.now(timezone.utc),
+                  result=result.model_dump(),
+                  error=result.error or "Skipped",
+              )
+              await background_jobs.append_log(db_pool, job_id, f"Skipped: {result.error}")
+              return
+
+          # --- Step 2: Container backup enrichment (33% -> 66%) ---
+          if background_jobs.is_cancelled(job_id):
+              await _finish_cancelled(db_pool, job_id)
+              return
+
+          ssh_configured = instance_row.get("sshKeyConfigured", False)
+          has_containers = bool(result.config and result.config.get("container", {}).get("name"))
+
+          if ssh_configured and has_containers:
+              await background_jobs.append_log(db_pool, job_id, "Starting container backup via SSH...")
+
+              # Build config_commands_map: container_name -> set commands
+              container_config = result.config.get("container", {})
+              config_commands_map = {}
+              for cname, cdata in container_config.get("name", {}).items():
+                  cmds = _config_to_commands(cdata, ["container", "name", cname])
+                  config_commands_map[cname] = "\n".join(cmds)
+
+              containers, container_errors = await collect_container_backup(
+                  instance_row, container_config, config_commands_map,
+              )
+              result.containers = containers
+              result.container_backup_errors = container_errors
+
+              if container_errors:
+                  await background_jobs.append_log(
+                      db_pool, job_id,
+                      f"Container backup completed with {len(container_errors)} warning(s)",
+                  )
+              else:
+                  await background_jobs.append_log(
+                      db_pool, job_id,
+                      f"Container backup complete — {len(containers)} container(s) captured",
+                  )
+          elif has_containers and not ssh_configured:
+              await background_jobs.append_log(
+                  db_pool, job_id,
+                  "SSH not configured — container volume data skipped",
+              )
+              result.container_backup_errors = [
+                  "SSH credentials not configured — container volume data skipped"
+              ]
+          else:
+              await background_jobs.append_log(db_pool, job_id, "No containers detected")
+
+          await background_jobs.update_job(db_pool, job_id, progress=66)
+
+          # --- Step 3: Finalise (66% -> 100%) ---
+          if background_jobs.is_cancelled(job_id):
+              await _finish_cancelled(db_pool, job_id)
+              return
+
+          # Determine final status
+          final_status = "success"
+          if result.container_backup_errors:
+              final_status = "partial"
+
+          await background_jobs.update_job(
+              db_pool, job_id,
+              status=final_status,
+              progress=100,
+              finished_at=datetime.now(timezone.utc),
+              result=result.model_dump(),
+          )
+          await background_jobs.append_log(db_pool, job_id, f"Backup complete — status: {final_status}")
+
+      except asyncio.CancelledError:
+          await _finish_cancelled(db_pool, job_id)
+      except Exception as e:
+          logger.exception("Backup job %s failed unexpectedly", job_id)
+          await background_jobs.update_job(
+              db_pool, job_id,
+              status="failed",
+              finished_at=datetime.now(timezone.utc),
+              error=str(e)[:500],
+          )
+          await background_jobs.append_log(db_pool, job_id, f"Unexpected error: {e}")
+      finally:
+          background_jobs.cleanup_cancel_event(job_id)
+  ```
+
+  ## Step 6: Add the _finish_cancelled helper
+
+  ```python
+  async def _finish_cancelled(db_pool: asyncpg.Pool, job_id: str) -> None:
+      """Mark a job as cancelled."""
+      await background_jobs.update_job(
+          db_pool, job_id,
+          status="cancelled",
+          finished_at=datetime.now(timezone.utc),
+      )
+      await background_jobs.append_log(db_pool, job_id, "Job cancelled by user")
+  ```
+
+  ## Step 7: Refactor the endpoint
+  Replace the existing `backup_site` endpoint implementation. The function signature stays
+  the same but the logic changes significantly:
+
+  1. Keep the ADMIN validation and site/instance lookup (same DB queries).
+  2. The instance query must now include SSH fields:
+     ```sql
+     SELECT id, name, host, port, "apiKey", protocol, "verifySsl", "vyosVersion",
+            "sshPort", "sshUsername", "sshEncryptedPrivKey", "sshKeyNonce", "sshKeyConfigured"
+     FROM instances WHERE "siteId" = $1 ORDER BY name
+     ```
+  3. Generate `trigger_id = str(uuid4())`.
+  4. For each instance, call `background_jobs.create_job(...)` to register a job.
+  5. Launch `asyncio.create_task(run_instance_backup_job(...))` per instance.
+  6. Add each task to `_running_job_tasks` set with a done callback that removes it.
+  7. Return `TriggerBackupResponse(trigger_id=trigger_id, job_ids=job_ids)` with
+     status_code=202.
+
+  Update the endpoint decorator:
+  ```python
+  @router.post("/{site_id}/backup", response_model=TriggerBackupResponse, status_code=202)
+  ```
+
+  Remove the old `SiteBackupResponse` model since it is no longer returned by the endpoint.
+  Keep it if other code references it, but it should no longer be the response model.
+
+  ## Step 8: Add task cleanup callback
+  ```python
+  def _task_done_callback(task: asyncio.Task) -> None:
+      _running_job_tasks.discard(task)
+  ```
+
+  And in the endpoint, after creating each task:
+  ```python
+  task = asyncio.create_task(run_instance_backup_job(job_id, inst, db_pool))
+  task.add_done_callback(_task_done_callback)
+  _running_job_tasks.add(task)
+  ```
+
+  ## Step 9: Export _running_job_tasks
+  The `_running_job_tasks` set needs to be accessible from `app.py` for graceful shutdown
+  (task-013). It is a module-level variable so it can be imported directly.
+
+  ## Important notes
+  - Keep the existing `_backup_instance()` function unchanged — it is called within the job coroutine.
+  - Keep the existing `_config_to_commands()` function unchanged — it is used to generate
+    container-specific config commands.
+  - The semaphore(5) concurrency limit is removed from the endpoint since individual jobs
+    are fire-and-forget. If throttling is needed, it can be added inside `run_instance_backup_job`.
+  - The `SiteBackupResponse` model can be kept for backward compatibility but is no longer
+    the response model of the endpoint.
+
+acceptance_criteria:
+  - "POST /{site_id}/backup returns HTTP 202 with TriggerBackupResponse (trigger_id + job_ids)"
+  - "TriggerBackupResponse Pydantic model is defined with trigger_id and job_ids fields"
+  - "One BackgroundJob record is created per instance in the site"
+  - "One asyncio.Task is launched per instance via asyncio.create_task"
+  - "run_instance_backup_job updates progress at 33%, 66%, and 100%"
+  - "run_instance_backup_job checks is_cancelled() between each major step"
+  - "Container backup enrichment runs when sshKeyConfigured is true and containers exist in config"
+  - "Instance query includes SSH fields (sshPort, sshUsername, sshEncryptedPrivKey, sshKeyNonce, sshKeyConfigured)"
+  - "_running_job_tasks set tracks all active backup tasks"
+  - "Jobs are marked as 'partial' when container_backup_errors exist but config fetch succeeded"
+  - "_finish_cancelled helper marks cancelled jobs properly"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

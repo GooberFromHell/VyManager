@@ -1,0 +1,57 @@
+id: "task-001"
+title: "Add FILE_BROWSER to FeatureGroup and built-in permissions"
+phase: produce
+execution_phase: 1
+agent: "general-purpose"
+status: not_started
+depends_on: []
+blocks: ["task-002", "task-003", "task-004", "task-005", "task-006"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "backend/rbac_permissions.py"
+    - "frontend/src/lib/api/user-management.ts"
+
+context_files:
+  - "backend/rbac_permissions.py"
+  - "frontend/src/lib/api/user-management.ts"
+
+instructions: |
+  Add FILE_BROWSER as a new FeatureGroup in both backend and frontend.
+
+  ## Backend: backend/rbac_permissions.py
+
+  1. Add `FILE_BROWSER = "FILE_BROWSER"` to the `FeatureGroup` enum.
+     Place it in the Services section, after `CONTAINER = "CONTAINER"` (around line 104).
+
+  2. Add `FeatureGroup.FILE_BROWSER: PermissionLevel.WRITE` to the ADMIN built-in permissions dict (around line 196, after CONTAINER).
+
+  3. Add `FeatureGroup.FILE_BROWSER: PermissionLevel.WRITE` to the OPERATOR built-in permissions dict (around line 267, after CONTAINER).
+
+  4. Add `FeatureGroup.FILE_BROWSER: PermissionLevel.NONE` to the VIEWER built-in permissions dict (after CONTAINER around line 339). Viewers should NOT have file browser access.
+
+  5. Add `FeatureGroup.FILE_BROWSER` to the `all_features` list in the site-admin section of `get_user_permissions()` (around line 452, after CONTAINER).
+
+  6. Add `FeatureGroup.FILE_BROWSER` to the `vyos_features` list in the instance-admin section of `get_user_permissions()` (around line 547, after CONTAINER).
+
+  ## Frontend: frontend/src/lib/api/user-management.ts
+
+  7. Add `FILE_BROWSER = "FILE_BROWSER"` to the `FeatureGroup` enum.
+     Place it in the Services section, after `CONTAINER = "CONTAINER"` (around line 185).
+
+acceptance_criteria:
+  - "Grep match: 'FILE_BROWSER' in backend/rbac_permissions.py"
+  - "Grep match: 'FILE_BROWSER' in frontend/src/lib/api/user-management.ts"
+  - "Grep match: 'FILE_BROWSER.*WRITE' in backend/rbac_permissions.py (ADMIN role)"
+  - "Grep match: 'FILE_BROWSER.*NONE' in backend/rbac_permissions.py (VIEWER role)"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

@@ -1,0 +1,285 @@
+id: task-008-frontend-api-service
+title: "Create frontend API service and types for background jobs"
+archetype: custom
+phase: 3
+depends_on: [task-004]
+parallel_with: [task-009]
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "frontend/src/lib/api/background-jobs.ts"
+    - "frontend/src/lib/api/types/background-jobs.ts"
+  modify: []
+
+context_files:
+  - ".derpo/architecture.md"
+  - ".derpo/pattern-snippets/frontend-service.ts"
+  - ".derpo/pattern-snippets/frontend-types.ts"
+  - "frontend/src/lib/api/client.ts"
+  - "frontend/src/lib/api/session.ts"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Create the frontend API service module and TypeScript types for the background jobs system.
+  Follow the patterns in `.derpo/pattern-snippets/frontend-service.ts` and
+  `.derpo/pattern-snippets/frontend-types.ts`.
+
+  ## Step 1: Read reference files
+  - Read `.derpo/pattern-snippets/frontend-service.ts` for the service class pattern.
+  - Read `.derpo/pattern-snippets/frontend-types.ts` for the types pattern.
+  - Read `frontend/src/lib/api/client.ts` for the `apiClient` singleton and its methods.
+  - Read `frontend/src/lib/api/session.ts` for how session-scoped services are structured.
+
+  ## Step 2: Create the types file
+  Create `frontend/src/lib/api/types/background-jobs.ts`:
+
+  ```typescript
+  // ============================================================================
+  // Background Job Types
+  // ============================================================================
+
+  export type JobStatus = "queued" | "running" | "success" | "partial" | "failed" | "cancelled";
+
+  export interface BackgroundJob {
+    job_id: string;
+    trigger_id: string;
+    job_type: string;
+    instance_id: string;
+    instance_name: string;
+    site_id: string;
+    site_name: string;
+    user_id: string;
+    status: JobStatus;
+    progress: number;          // 0-100
+    created_at: string;        // ISO timestamp
+    started_at: string | null;
+    finished_at: string | null;
+    result: InstanceBackupResult | null;
+    log: string[];
+    error: string | null;
+    cancel_requested: boolean;
+  }
+
+  export interface TriggerBackupResponse {
+    trigger_id: string;
+    job_ids: string[];
+  }
+
+  // ============================================================================
+  // Container Backup Detail Types
+  // ============================================================================
+
+  export interface VolumeBackupData {
+    volume_name: string;
+    source_path: string;
+    size_bytes: number | null;
+    data_base64: string | null;
+    error: string | null;
+  }
+
+  export interface ContainerImageManifest {
+    container_name: string;
+    image_ref: string;
+    image_digest: string | null;
+    image_archive_path: string | null;
+    error: string | null;
+  }
+
+  export interface ContainerRuntimeStatus {
+    container_name: string;
+    running: boolean;
+    exit_code: number | null;
+    uptime_seconds: number | null;
+  }
+
+  export interface ContainerFullBackup {
+    container_name: string;
+    config_commands: string;
+    volumes: VolumeBackupData[];
+    image_manifest: ContainerImageManifest;
+    runtime_status: ContainerRuntimeStatus | null;
+  }
+
+  export interface InstanceBackupResult {
+    instance_id: string;
+    instance_name: string;
+    host: string;
+    vyos_version: string | null;
+    status: string;
+    config: Record<string, unknown> | null;
+    config_commands: string | null;
+    error: string | null;
+    backed_up_at: string | null;
+    containers: ContainerFullBackup[] | null;
+    container_backup_errors: string[];
+  }
+
+  // ============================================================================
+  // Restore Types
+  // ============================================================================
+
+  export interface RestoreStepResult {
+    step: string;
+    success: boolean;
+    message: string;
+    error: string | null;
+  }
+
+  export interface ContainerRestoreResponse {
+    success: boolean;
+    container_name: string;
+    steps: RestoreStepResult[];
+  }
+
+  // ============================================================================
+  // Trigger Group (UI helper type)
+  // ============================================================================
+
+  export interface TriggerGroup {
+    trigger_id: string;
+    site_name: string;
+    created_at: string;
+    jobs: BackgroundJob[];
+  }
+  ```
+
+  ## Step 3: Create the service file
+  Create `frontend/src/lib/api/background-jobs.ts`:
+
+  ```typescript
+  /**
+   * Background Jobs API Service
+   *
+   * Manages background job operations: listing, viewing, cancelling,
+   * and downloading backup results.
+   *
+   * Jobs are accessible at /session/jobs (goes through session catch-all proxy).
+   */
+
+  import { apiClient } from "./client";
+  import type {
+    BackgroundJob,
+    TriggerBackupResponse,
+    ContainerRestoreResponse,
+    ContainerFullBackup,
+  } from "./types/background-jobs";
+
+  class BackgroundJobsService {
+    /**
+     * List all background jobs visible to the current user.
+     * ADMIN sees all jobs; non-ADMIN sees own jobs only.
+     */
+    async listJobs(opts?: {
+      siteId?: string;
+      triggerId?: string;
+    }): Promise<BackgroundJob[]> {
+      const params: Record<string, string> = {};
+      if (opts?.siteId) params.site_id = opts.siteId;
+      if (opts?.triggerId) params.trigger_id = opts.triggerId;
+      return apiClient.get<BackgroundJob[]>("/session/jobs", params);
+    }
+
+    /**
+     * Get a single background job by ID.
+     */
+    async getJob(jobId: string): Promise<BackgroundJob> {
+      return apiClient.get<BackgroundJob>(`/session/jobs/${jobId}`);
+    }
+
+    /**
+     * Cancel a running or queued background job.
+     */
+    async cancelJob(jobId: string): Promise<{ success: boolean; message: string }> {
+      return apiClient.delete<{ success: boolean; message: string }>(
+        `/session/jobs/${jobId}`,
+      );
+    }
+
+    /**
+     * Download the backup result of a completed job as a JSON file.
+     * Triggers a browser download.
+     */
+    async downloadJobBackup(jobId: string, instanceName: string): Promise<void> {
+      // Use fetch directly for blob download (apiClient parses JSON)
+      const response = await fetch(`/api/session/jobs/${jobId}/download`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: "Download failed" }));
+        throw new Error(error.detail || `HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_${instanceName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
+
+    /**
+     * Trigger a site backup (fire-and-forget).
+     * Returns trigger_id and job_ids for tracking.
+     */
+    async triggerSiteBackup(siteId: string): Promise<TriggerBackupResponse> {
+      return apiClient.post<TriggerBackupResponse>(
+        `/session/sites/${siteId}/backup`,
+      );
+    }
+
+    /**
+     * Restore a container to a target instance from backup data.
+     */
+    async restoreContainer(
+      siteId: string,
+      instanceId: string,
+      container: ContainerFullBackup,
+    ): Promise<ContainerRestoreResponse> {
+      return apiClient.post<ContainerRestoreResponse>(
+        `/session/sites/${siteId}/instances/${instanceId}/container-restore`,
+        { container },
+      );
+    }
+  }
+
+  export const backgroundJobsService = new BackgroundJobsService();
+  ```
+
+  ## Important notes
+  - The service uses the `/session/jobs` prefix which routes through the existing
+    `src/app/api/session/[...path]/route.ts` catch-all proxy. No new API routes needed.
+  - The `downloadJobBackup` method uses `fetch` directly (not apiClient) because it needs
+    to handle a blob response, not JSON.
+  - The `triggerSiteBackup` method replaces the old `sessionService.backupSite()` call.
+  - The `TriggerGroup` type in the types file is a UI-only helper for grouping jobs by trigger_id.
+
+acceptance_criteria:
+  - "frontend/src/lib/api/types/background-jobs.ts exists with all type definitions"
+  - "BackgroundJob interface has all fields matching the backend response"
+  - "JobStatus type union includes: queued, running, success, partial, failed, cancelled"
+  - "ContainerFullBackup, VolumeBackupData, ContainerImageManifest, ContainerRuntimeStatus interfaces exist"
+  - "InstanceBackupResult interface includes containers and container_backup_errors fields"
+  - "TriggerGroup helper interface exists for UI grouping"
+  - "frontend/src/lib/api/background-jobs.ts exists with BackgroundJobsService class"
+  - "listJobs method supports optional siteId and triggerId filters"
+  - "cancelJob method calls DELETE on /session/jobs/{jobId}"
+  - "downloadJobBackup method triggers a browser file download"
+  - "triggerSiteBackup method POSTs to /session/sites/{siteId}/backup"
+  - "restoreContainer method POSTs ContainerFullBackup to the restore endpoint"
+  - "backgroundJobsService singleton is exported"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

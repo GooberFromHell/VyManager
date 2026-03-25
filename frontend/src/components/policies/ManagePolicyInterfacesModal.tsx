@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, Network, Loader2 } from "lucide-react";
 import { routeService } from "@/lib/api/route";
@@ -205,7 +204,7 @@ export function ManagePolicyInterfacesModal({
                       onCheckedChange={() => handleToggleInterface(iface.name)}
                       disabled={loading}
                     />
-                    <Label
+                    <label
                       htmlFor={`iface-${iface.name}`}
                       className="flex-1 cursor-pointer"
                     >
@@ -222,7 +221,7 @@ export function ManagePolicyInterfacesModal({
                           </span>
                         )}
                       </div>
-                    </Label>
+                    </label>
                   </div>
                 ))
               )}

@@ -6,7 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, RefreshCw, AlertCircle, Search, Shield, Pencil, Trash2, Link2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { useState, useEffect } from "react";
+import { useFirstVisit } from "@/hooks/useFirstVisit";
+import { ContextualHint } from "@/components/ui/contextual-hint";
 import { firewallGroupsService } from "@/lib/api/firewall-groups";
 import type { FirewallGroup, GroupsConfigResponse, FirewallGroupsCapabilities, GroupType } from "@/lib/api/types/firewall-groups";
 import { CreateGroupModal } from "@/components/firewall/CreateGroupModal";
@@ -20,6 +24,7 @@ export default function FirewallGroupsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<GroupType | "all">("all");
+  const { isFirstVisit: isFirstGroupsVisit, dismiss: dismissGroupsHint } = useFirstVisit("firewall-groups");
 
   // Modal states
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -133,14 +138,18 @@ export default function FirewallGroupsPage() {
       <TooltipProvider>
       <div className="space-y-6 p-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Firewall Groups</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage firewall groups for use in firewall rules
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title="Firewall Groups"
+          description="Manage firewall groups for use in firewall rules"
+        />
+
+        {isFirstGroupsVisit && (
+          <ContextualHint onDismiss={dismissGroupsHint}>
+            Firewall groups let you reuse sets of addresses, networks, and ports across
+            multiple firewall rules. Create groups here, then reference them in your
+            firewall policies.
+          </ContextualHint>
+        )}
 
         {/* Stats Dashboard */}
         <div className="grid grid-cols-4 gap-4">
@@ -270,15 +279,20 @@ export default function FirewallGroupsPage() {
           <div className="space-y-4">
             {filteredGroups.length === 0 ? (
               <Card className="border-border">
-                <CardContent className="py-12">
-                  <div className="flex flex-col items-center gap-2">
-                    <Shield className="h-12 w-12 text-muted-foreground/30" />
-                    <p className="text-muted-foreground">
-                      {searchQuery || typeFilter !== "all"
-                        ? "No groups found matching your filters"
-                        : "No firewall groups configured"}
-                    </p>
-                  </div>
+                <CardContent>
+                  {searchQuery || typeFilter !== "all" ? (
+                    <EmptyState
+                      icon={Shield}
+                      title="No groups found matching your filters"
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={Shield}
+                      title="No firewall groups configured"
+                      description="Create address, network, or port groups to reuse across firewall rules"
+                      action={{ label: "Create Group", onClick: () => setCreateModalOpen(true), icon: Plus }}
+                    />
+                  )}
                 </CardContent>
               </Card>
             ) : (

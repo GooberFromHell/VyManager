@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle, Power } from "lucide-react";
 import { powerService } from "@/lib/api/power";
@@ -92,61 +92,58 @@ export function RebootModal({ open, onOpenChange, onSuccess }: RebootModalProps)
 
           {/* Reboot Options */}
           <div className="space-y-4">
-            <Label>Reboot Options</Label>
-            <RadioGroup value={action} onValueChange={(value) => setAction(value as any)}>
+            <p className="text-sm font-medium">Reboot Options</p>
+            <RadioGroup value={action} onValueChange={(value) => setAction(value as "now" | "at" | "in")}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="now" id="now" />
-                <Label htmlFor="now" className="font-normal cursor-pointer">
+                <label htmlFor="now" className="text-sm font-normal cursor-pointer">
                   Reboot now (immediately without confirmation)
-                </Label>
+                </label>
               </div>
 
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="at" id="at" />
-                <Label htmlFor="at" className="font-normal cursor-pointer">
+                <label htmlFor="at" className="text-sm font-normal cursor-pointer">
                   Reboot at specific time
-                </Label>
+                </label>
               </div>
 
               {action === "at" && (
                 <div className="ml-6 mt-2">
-                  <Label htmlFor="time" className="text-sm text-muted-foreground">
-                    Time (HH:MM)
-                  </Label>
-                  <Input
-                    id="time"
-                    value={timeValue}
-                    onChange={(e) => setTimeValue(e.target.value)}
-                    placeholder="19:30"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    24-hour format. Hours: 00-23 (e.g., 19:30, 00:00 for midnight)
-                  </p>
+                  <FormField
+                    label="Time (HH:MM)"
+                    htmlFor="time"
+                    description="24-hour format. Hours: 00-23 (e.g., 19:30, 00:00 for midnight)"
+                  >
+                    <Input
+                      id="time"
+                      value={timeValue}
+                      onChange={(e) => setTimeValue(e.target.value)}
+                      placeholder="19:30"
+                    />
+                  </FormField>
                 </div>
               )}
 
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="in" id="in" />
-                <Label htmlFor="in" className="font-normal cursor-pointer">
+                <label htmlFor="in" className="text-sm font-normal cursor-pointer">
                   Reboot in X minutes
-                </Label>
+                </label>
               </div>
 
               {action === "in" && (
                 <div className="ml-6 mt-2">
-                  <Label htmlFor="minutes" className="text-sm text-muted-foreground">
-                    Minutes
-                  </Label>
-                  <Input
-                    id="minutes"
-                    type="number"
-                    min="1"
-                    value={minutesValue}
-                    onChange={(e) => setMinutesValue(e.target.value)}
-                    placeholder="5"
-                    className="mt-1"
-                  />
+                  <FormField label="Minutes" htmlFor="minutes">
+                    <Input
+                      id="minutes"
+                      type="number"
+                      min="1"
+                      value={minutesValue}
+                      onChange={(e) => setMinutesValue(e.target.value)}
+                      placeholder="5"
+                    />
+                  </FormField>
                 </div>
               )}
             </RadioGroup>

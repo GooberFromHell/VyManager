@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -96,7 +96,7 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
         onRefresh();
       }
     } catch {
-      toast.error("Delete failed", "An unexpected error occurred");
+      toast.error("Delete failed", "Something went wrong. Please try again.");
     } finally {
       setDeleting(false);
       setDeleteUserTarget(null);
@@ -118,7 +118,7 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
         onRefresh();
       }
     } catch {
-      toast.error("Delete failed", "An unexpected error occurred");
+      toast.error("Delete failed", "Something went wrong. Please try again.");
     } finally {
       setDeletingSsh(false);
       setDeleteSshTarget(null);
@@ -157,7 +157,7 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
       setEditingLogin(false);
       onRefresh();
     } catch {
-      setLoginError("An unexpected error occurred");
+      setLoginError("Something went wrong. Please try again.");
     } finally {
       setLoginSaving(false);
     }
@@ -315,10 +315,10 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
             </div>
           )}
           <div className="grid sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Session Timeout (seconds)</Label>
+            <FormField label="Session Timeout (seconds)" htmlFor="login-timeout">
               {editingLogin ? (
                 <Input
+                  id="login-timeout"
                   type="number"
                   min="0"
                   value={loginTimeout}
@@ -332,14 +332,14 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
                     : <span className="text-muted-foreground">Not set</span>}
                 </p>
               )}
-            </div>
+            </FormField>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Pre-Login Banner</Label>
+            <FormField label="Pre-Login Banner" htmlFor="pre-banner">
               {editingLogin ? (
                 <Textarea
+                  id="pre-banner"
                   value={preBanner}
                   onChange={(e) => setPreBanner(e.target.value)}
                   placeholder="Shown before login prompt"
@@ -350,11 +350,11 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
                   {config.login.banners.pre_login || <span className="text-muted-foreground font-sans">Not set</span>}
                 </p>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label>Post-Login Banner</Label>
+            </FormField>
+            <FormField label="Post-Login Banner" htmlFor="post-banner">
               {editingLogin ? (
                 <Textarea
+                  id="post-banner"
                   value={postBanner}
                   onChange={(e) => setPostBanner(e.target.value)}
                   placeholder="Shown after successful login"
@@ -365,19 +365,18 @@ export function UserManagementPanel({ config, capabilities, isReadOnly, onRefres
                   {config.login.banners.post_login || <span className="text-muted-foreground font-sans">Not set</span>}
                 </p>
               )}
-            </div>
+            </FormField>
           </div>
 
           {/* Operator Groups (1.5 only) */}
           {capabilities.login.supports_operator_group && config.login.operator_groups.length > 0 && (
-            <div className="space-y-2">
-              <Label>Operator Groups</Label>
+            <FormField label="Operator Groups">
               <div className="flex flex-wrap gap-2">
                 {config.login.operator_groups.map((g) => (
                   <Badge key={g} variant="secondary">{g}</Badge>
                 ))}
               </div>
-            </div>
+            </FormField>
           )}
         </CardContent>
       </Card>

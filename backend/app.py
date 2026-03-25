@@ -1,4 +1,5 @@
 import os
+import logging
 import asyncpg
 import asyncio
 from datetime import datetime, timedelta
@@ -6,6 +7,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from middleware.auth import AuthenticationMiddleware
 from middleware.session import SessionMiddleware
@@ -49,6 +52,7 @@ from routers import show as show_router
 from routers import dashboard as dashboard_router
 from routers import user_management as user_management_router
 from routers.monitoring import monitoring as monitoring_router
+from routers.terminal import terminal as terminal_router
 from routers.high_availability import high_availability as high_availability_router
 from routers.load_balancing import load_balancing as load_balancing_router
 from routers.isis import isis as isis_router
@@ -56,10 +60,26 @@ from routers.mpls import mpls as mpls_router
 from routers.dns_forwarding import dns_forwarding as dns_forwarding_router
 from routers.ntp import ntp as ntp_router
 from routers.ssh import ssh as ssh_router
+from routers.dhcp_relay import dhcp_relay as dhcp_relay_router
+from routers.lldp import lldp as lldp_router
+from routers.dhcpv6_server import dhcpv6_server as dhcpv6_server_router
+from routers.snmp import snmp as snmp_router
+from routers.tftp_server import tftp_server as tftp_server_router
+from routers.broadcast_relay import broadcast_relay as broadcast_relay_router
+from routers.router_advert import router_advert as router_advert_router
+from routers.conntrack_sync import conntrack_sync as conntrack_sync_router
+from routers.container import container as container_router
+from routers.file_browser import file_browser as file_browser_router
+from routers.prometheus import prometheus as prometheus_router
+from routers.site_tools import backup as site_backup_router
+from routers.site_tools.jobs import router as site_jobs_router
+from background_jobs import prune_old_jobs
+from routers.site_tools.backup import _running_job_tasks
 
 # Global variables
 db_pool: Optional[asyncpg.Pool] = None
 cleanup_task: Optional[asyncio.Task] = None
+job_prune_task: Optional[asyncio.Task] = None
 
 # Configuration
 SESSION_INACTIVITY_TIMEOUT = int(os.getenv("SESSION_INACTIVITY_TIMEOUT", "30"))  # Minutes
@@ -137,7 +157,7 @@ async def lifespan(app: FastAPI):
     FastAPI lifespan event handler.
     Manages database connections and application startup/shutdown.
     """
-    global db_pool, cleanup_task
+    global db_pool, cleanup_task, job_prune_task
 
     # Startup
     print("\n" + "=" * 60)
@@ -171,6 +191,25 @@ async def lifespan(app: FastAPI):
     if db_pool:
         cleanup_task = asyncio.create_task(cleanup_inactive_sessions())
         print(f"  ✓ Session cleanup task started")
+
+        # Prune old background jobs periodically
+        async def _job_prune_loop():
+            """Periodically prune old background jobs."""
+            # Run initial prune to clean stale jobs from server restart
+            try:
+                await prune_old_jobs(app.state.db_pool)
+            except Exception as e:
+                logger.error("Initial job prune failed: %s", e)
+
+            while True:
+                await asyncio.sleep(3600)  # Run every hour
+                try:
+                    await prune_old_jobs(app.state.db_pool)
+                except Exception as e:
+                    logger.error("Job prune failed: %s", e)
+
+        job_prune_task = asyncio.create_task(_job_prune_loop())
+        print(f"  ✓ Job prune task started")
     else:
         print("  ⚠ Session cleanup task not started (no database)")
 
@@ -194,6 +233,22 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
         print("  ✓ Session cleanup task stopped")
+
+    # Cancel the job prune task
+    if job_prune_task and not job_prune_task.done():
+        job_prune_task.cancel()
+        try:
+            await job_prune_task
+        except asyncio.CancelledError:
+            pass
+        print("  ✓ Job prune task stopped")
+
+    # Cancel all running backup job tasks
+    for task in list(_running_job_tasks):
+        task.cancel()
+    if _running_job_tasks:
+        await asyncio.gather(*_running_job_tasks, return_exceptions=True)
+        print(f"  ✓ Cancelled {len(_running_job_tasks)} running backup job(s)")
 
     # Close database connection pool
     if hasattr(app.state, "db_pool") and app.state.db_pool:
@@ -294,6 +349,7 @@ app.include_router(show_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(user_management_router.router)
 app.include_router(monitoring_router.router)
+app.include_router(terminal_router.router)
 app.include_router(high_availability_router.router)
 app.include_router(load_balancing_router.router)
 app.include_router(isis_router.router)
@@ -301,6 +357,19 @@ app.include_router(mpls_router.router)
 app.include_router(dns_forwarding_router.router)
 app.include_router(ntp_router.router)
 app.include_router(ssh_router.router)
+app.include_router(dhcp_relay_router.router)
+app.include_router(lldp_router.router)
+app.include_router(dhcpv6_server_router.router)
+app.include_router(snmp_router.router)
+app.include_router(tftp_server_router.router)
+app.include_router(broadcast_relay_router.router)
+app.include_router(router_advert_router.router)
+app.include_router(conntrack_sync_router.router)
+app.include_router(container_router.router)
+app.include_router(file_browser_router.router)
+app.include_router(prometheus_router.router)
+app.include_router(site_backup_router.router)
+app.include_router(site_jobs_router)
 
 
 # ============================================================================

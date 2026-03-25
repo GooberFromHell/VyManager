@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { asPathListService, type AsPathListCapabilities, type AsPathListRule } from "@/lib/api/as-path-list";
 
 interface EditAsPathListRuleModalProps {
@@ -86,43 +86,44 @@ export function EditAsPathListRuleModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="action">Action *</Label>
-            <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
-              <SelectTrigger id="action">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="permit">Permit</SelectItem>
-                <SelectItem value="deny">Deny</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Fieldset>
+            <FormField label="Action" htmlFor="action" required>
+              <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
+                <SelectTrigger id="action">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="permit">Permit</SelectItem>
+                  <SelectItem value="deny">Deny</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="regex">Regex Pattern *</Label>
-            <Input
-              id="regex"
-              placeholder="e.g., ^65000_"
-              value={regex}
-              onChange={(e) => setRegex(e.target.value)}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Regular expression to match AS paths (e.g., "64501 64502")
-            </p>
-          </div>
+            <FormField
+              label="Regex Pattern"
+              htmlFor="regex"
+              description='Regular expression to match AS paths (e.g., "64501 64502")'
+              required
+            >
+              <Input
+                id="regex"
+                placeholder="e.g., ^65000_"
+                value={regex}
+                onChange={(e) => setRegex(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              placeholder="Optional description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Optional description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+          </Fieldset>
 
           {error && (
             <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">

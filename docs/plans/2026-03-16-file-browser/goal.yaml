@@ -1,0 +1,42 @@
+# DERPO Goal Contract
+# File Browser for VyOS Devices
+
+goal: "Add a file browser feature that allows administrators to navigate the VyOS router's file system and download/upload files through the VyManager UI."
+
+scope:
+  include:
+    - "backend/routers/**"
+    - "backend/pyvyos/**"
+    - "frontend/src/app/(default)/(app)/system/**"
+    - "frontend/src/components/**"
+    - "frontend/src/lib/api/**"
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must follow existing architecture patterns (see CLAUDE.md)"
+  - "No new dependencies without user approval"
+  - "Must support VyOS 1.4 and 1.5"
+  - "File operations must be restricted to administrators only (RBAC enforced)"
+  - "Must use the existing pyvyos SDK for communicating with VyOS devices"
+  - "Upload/download must handle binary files safely"
+  - "Must not expose sensitive system files without appropriate access controls"
+
+acceptance_criteria:
+  - "Backend endpoints for listing directories, downloading files, and uploading files exist and return correct responses"
+  - "Frontend file browser page renders with directory navigation, file listing, download, and upload functionality"
+  - "RBAC restricts file browser access to administrators only"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes (npm run lint)"
+  - "File browser is accessible from the sidebar navigation"
+
+human_checkpoints:
+  - after: evaluate
+  - after: resolve
+
+max_iterations: 3
+
+context: "VyOS routers expose file operations via their API. The file browser should feel like a lightweight file manager — tree navigation, breadcrumbs, file preview for text files, and drag-and-drop upload. This is an admin-only feature for managing router configuration backups, scripts, and other files."

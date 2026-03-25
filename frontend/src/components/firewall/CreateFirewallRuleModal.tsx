@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -616,300 +616,274 @@ export function CreateFirewallRuleModal({
 
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="ruleNumber">Rule Number</Label>
-              <Input
-                id="ruleNumber"
-                type="number"
-                value={ruleNumber}
-                onChange={(e) => setRuleNumber(parseInt(e.target.value) || 100)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Auto-calculated based on existing rules
-              </p>
-            </div>
+            <Fieldset label="Rule Settings">
+              <FormField label="Rule Number" htmlFor="ruleNumber" description="Auto-calculated based on existing rules">
+                <Input
+                  id="ruleNumber"
+                  type="number"
+                  value={ruleNumber}
+                  onChange={(e) => setRuleNumber(parseInt(e.target.value) || 100)}
+                />
+              </FormField>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="action">Action *</Label>
-                <Select value={action} onValueChange={setAction}>
-                  <SelectTrigger id="action">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="accept">Accept</SelectItem>
-                    <SelectItem value="drop">Drop</SelectItem>
-                    <SelectItem value="reject">Reject</SelectItem>
-                    <SelectItem value="continue">Continue</SelectItem>
-                    <SelectItem value="return">Return</SelectItem>
-                    <SelectItem value="jump">Jump</SelectItem>
-                    <SelectItem value="offload">Offload</SelectItem>
-                    <SelectItem value="queue">Queue</SelectItem>
-                    <SelectItem value="synproxy">Synproxy</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Action" htmlFor="action" required>
+                  <Select value={action} onValueChange={setAction}>
+                    <SelectTrigger id="action">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="accept">Accept</SelectItem>
+                      <SelectItem value="drop">Drop</SelectItem>
+                      <SelectItem value="reject">Reject</SelectItem>
+                      <SelectItem value="continue">Continue</SelectItem>
+                      <SelectItem value="return">Return</SelectItem>
+                      <SelectItem value="jump">Jump</SelectItem>
+                      <SelectItem value="offload">Offload</SelectItem>
+                      <SelectItem value="queue">Queue</SelectItem>
+                      <SelectItem value="synproxy">Synproxy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                {action === "jump" && (
+                  <FormField label="Jump Target" htmlFor="jumpTarget" required>
+                    <Select value={jumpTarget} onValueChange={setJumpTarget}>
+                      <SelectTrigger id="jumpTarget">
+                        <SelectValue placeholder="Select custom chain" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customChains.map((chainName) => (
+                          <SelectItem key={chainName} value={chainName}>
+                            {chainName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
+
+                {action === "offload" && (
+                  <FormField label="Flowtable" htmlFor="offloadTarget" required>
+                    <Select value={offloadTarget} onValueChange={setOffloadTarget}>
+                      <SelectTrigger id="offloadTarget">
+                        <SelectValue placeholder="Select flowtable" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {flowtables.map((ft) => (
+                          <SelectItem key={ft.name} value={ft.name}>
+                            {ft.name}
+                            {ft.description && (
+                              <span className="text-muted-foreground ml-2">
+                                - {ft.description}
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
               </div>
 
-              {action === "jump" && (
-                <div className="space-y-2">
-                  <Label htmlFor="jumpTarget">Jump Target *</Label>
-                  <Select value={jumpTarget} onValueChange={setJumpTarget}>
-                    <SelectTrigger id="jumpTarget">
-                      <SelectValue placeholder="Select custom chain" />
-                    </SelectTrigger>
+              <FormField label="Description" htmlFor="description">
+                <Input
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of this rule"
+                />
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
+
+            <Fieldset label="Protocol">
+              <FormField
+                label="Protocol"
+                htmlFor="protocol"
+                description={(sourcePort.trim() || destPort.trim() || sourcePortGroup.trim() || destPortGroup.trim()) ? "Only TCP/UDP protocols are available when using ports or port groups" : undefined}
+              >
+                <Select value={ruleProtocol} onValueChange={setRuleProtocol}>
+                  <SelectTrigger id="protocol">
+                    <SelectValue placeholder="Any protocol" />
+                  </SelectTrigger>
+                  {(sourcePort.trim() || destPort.trim() || sourcePortGroup.trim() || destPortGroup.trim()) ? (
                     <SelectContent>
-                      {customChains.map((chainName) => (
-                        <SelectItem key={chainName} value={chainName}>
-                          {chainName}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="tcp">TCP</SelectItem>
+                      <SelectItem value="udp">UDP</SelectItem>
+                      <SelectItem value="tcp_udp">TCP & UDP</SelectItem>
                     </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {action === "offload" && (
-                <div className="space-y-2">
-                  <Label htmlFor="offloadTarget">Flowtable *</Label>
-                  <Select value={offloadTarget} onValueChange={setOffloadTarget}>
-                    <SelectTrigger id="offloadTarget">
-                      <SelectValue placeholder="Select flowtable" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {flowtables.map((ft) => (
-                        <SelectItem key={ft.name} value={ft.name}>
-                          {ft.name}
-                          {ft.description && (
-                            <span className="text-muted-foreground ml-2">
-                              - {ft.description}
-                            </span>
-                          )}
-                        </SelectItem>
-                      ))}
+                  ) : (
+                    <SelectContent className="max-h-[300px]">
+                      <SelectItem value="all">All (default)</SelectItem>
+                      <SelectItem value="tcp_udp">TCP & UDP</SelectItem>
+                      <SelectItem value="tcp">TCP</SelectItem>
+                      <SelectItem value="udp">UDP</SelectItem>
+                      <SelectItem value="icmp">ICMP</SelectItem>
+                      <SelectItem value="ipv6-icmp">IPv6-ICMP</SelectItem>
+                      <SelectItem value="esp">ESP</SelectItem>
+                      <SelectItem value="ah">AH</SelectItem>
+                      <SelectItem value="gre">GRE</SelectItem>
+                      <SelectItem value="ipip">IPIP</SelectItem>
+                      <SelectItem value="sctp">SCTP</SelectItem>
+                      <SelectItem value="igmp">IGMP</SelectItem>
+                      <SelectItem value="ospf">OSPF</SelectItem>
+                      <SelectItem value="pim">PIM</SelectItem>
+                      <SelectItem value="vrrp">VRRP</SelectItem>
+                      <SelectItem value="l2tp">L2TP</SelectItem>
+                      <SelectItem value="ipv6">IPv6</SelectItem>
+                      <SelectItem value="eigrp">EIGRP</SelectItem>
+                      <SelectItem value="ax.25">AX.25</SelectItem>
+                      <SelectItem value="dccp">DCCP</SelectItem>
+                      <SelectItem value="ddp">DDP</SelectItem>
+                      <SelectItem value="egp">EGP</SelectItem>
+                      <SelectItem value="encap">ENCAP</SelectItem>
+                      <SelectItem value="etherip">EtherIP</SelectItem>
+                      <SelectItem value="ethernet">Ethernet</SelectItem>
+                      <SelectItem value="fc">FC</SelectItem>
+                      <SelectItem value="ggp">GGP</SelectItem>
+                      <SelectItem value="hip">HIP</SelectItem>
+                      <SelectItem value="hmp">HMP</SelectItem>
+                      <SelectItem value="hopopt">HOPOPT</SelectItem>
+                      <SelectItem value="idpr-cmtp">IDPR-CMTP</SelectItem>
+                      <SelectItem value="idrp">IDRP</SelectItem>
+                      <SelectItem value="igp">IGP</SelectItem>
+                      <SelectItem value="ip">IP</SelectItem>
+                      <SelectItem value="ipcomp">IPComp</SelectItem>
+                      <SelectItem value="ipencap">IP-ENCAP</SelectItem>
+                      <SelectItem value="ipv6-frag">IPv6-Frag</SelectItem>
+                      <SelectItem value="ipv6-nonxt">IPv6-NoNxt</SelectItem>
+                      <SelectItem value="ipv6-opts">IPv6-Opts</SelectItem>
+                      <SelectItem value="ipv6-route">IPv6-Route</SelectItem>
+                      <SelectItem value="isis">ISIS</SelectItem>
+                      <SelectItem value="iso-tp4">ISO-TP4</SelectItem>
+                      <SelectItem value="manet">MANET</SelectItem>
+                      <SelectItem value="mobility-header">Mobility-Header</SelectItem>
+                      <SelectItem value="mpls-in-ip">MPLS-in-IP</SelectItem>
+                      <SelectItem value="mptcp">MPTCP</SelectItem>
+                      <SelectItem value="pup">PUP</SelectItem>
+                      <SelectItem value="rdp">RDP</SelectItem>
+                      <SelectItem value="rohc">ROHC</SelectItem>
+                      <SelectItem value="rspf">RSPF</SelectItem>
+                      <SelectItem value="rsvp">RSVP</SelectItem>
+                      <SelectItem value="shim6">Shim6</SelectItem>
+                      <SelectItem value="skip">SKIP</SelectItem>
+                      <SelectItem value="st">ST</SelectItem>
+                      <SelectItem value="udplite">UDPLite</SelectItem>
+                      <SelectItem value="vmtp">VMTP</SelectItem>
+                      <SelectItem value="wesp">WESP</SelectItem>
+                      <SelectItem value="xns-idp">XNS-IDP</SelectItem>
+                      <SelectItem value="xtp">XTP</SelectItem>
                     </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
+                  )}
+                </Select>
+              </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of this rule"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="protocol">Protocol</Label>
-              <Select value={ruleProtocol} onValueChange={setRuleProtocol}>
-                <SelectTrigger id="protocol">
-                  <SelectValue placeholder="Any protocol" />
-                </SelectTrigger>
-                {(sourcePort.trim() || destPort.trim() || sourcePortGroup.trim() || destPortGroup.trim()) ? (
-                  <SelectContent>
-                    <SelectItem value="tcp">TCP</SelectItem>
-                    <SelectItem value="udp">UDP</SelectItem>
-                    <SelectItem value="tcp_udp">TCP & UDP</SelectItem>
-                  </SelectContent>
-                ) : (
-                  <SelectContent className="max-h-[300px]">
-                    <SelectItem value="all">All (default)</SelectItem>
-                    <SelectItem value="tcp_udp">TCP & UDP</SelectItem>
-                    <SelectItem value="tcp">TCP</SelectItem>
-                    <SelectItem value="udp">UDP</SelectItem>
-                    <SelectItem value="icmp">ICMP</SelectItem>
-                    <SelectItem value="ipv6-icmp">IPv6-ICMP</SelectItem>
-                    <SelectItem value="esp">ESP</SelectItem>
-                    <SelectItem value="ah">AH</SelectItem>
-                    <SelectItem value="gre">GRE</SelectItem>
-                    <SelectItem value="ipip">IPIP</SelectItem>
-                    <SelectItem value="sctp">SCTP</SelectItem>
-                    <SelectItem value="igmp">IGMP</SelectItem>
-                    <SelectItem value="ospf">OSPF</SelectItem>
-                    <SelectItem value="pim">PIM</SelectItem>
-                    <SelectItem value="vrrp">VRRP</SelectItem>
-                    <SelectItem value="l2tp">L2TP</SelectItem>
-                    <SelectItem value="ipv6">IPv6</SelectItem>
-                    <SelectItem value="eigrp">EIGRP</SelectItem>
-                    <SelectItem value="ax.25">AX.25</SelectItem>
-                    <SelectItem value="dccp">DCCP</SelectItem>
-                    <SelectItem value="ddp">DDP</SelectItem>
-                    <SelectItem value="egp">EGP</SelectItem>
-                    <SelectItem value="encap">ENCAP</SelectItem>
-                    <SelectItem value="etherip">EtherIP</SelectItem>
-                    <SelectItem value="ethernet">Ethernet</SelectItem>
-                    <SelectItem value="fc">FC</SelectItem>
-                    <SelectItem value="ggp">GGP</SelectItem>
-                    <SelectItem value="hip">HIP</SelectItem>
-                    <SelectItem value="hmp">HMP</SelectItem>
-                    <SelectItem value="hopopt">HOPOPT</SelectItem>
-                    <SelectItem value="idpr-cmtp">IDPR-CMTP</SelectItem>
-                    <SelectItem value="idrp">IDRP</SelectItem>
-                    <SelectItem value="igp">IGP</SelectItem>
-                    <SelectItem value="ip">IP</SelectItem>
-                    <SelectItem value="ipcomp">IPComp</SelectItem>
-                    <SelectItem value="ipencap">IP-ENCAP</SelectItem>
-                    <SelectItem value="ipv6-frag">IPv6-Frag</SelectItem>
-                    <SelectItem value="ipv6-nonxt">IPv6-NoNxt</SelectItem>
-                    <SelectItem value="ipv6-opts">IPv6-Opts</SelectItem>
-                    <SelectItem value="ipv6-route">IPv6-Route</SelectItem>
-                    <SelectItem value="isis">ISIS</SelectItem>
-                    <SelectItem value="iso-tp4">ISO-TP4</SelectItem>
-                    <SelectItem value="manet">MANET</SelectItem>
-                    <SelectItem value="mobility-header">Mobility-Header</SelectItem>
-                    <SelectItem value="mpls-in-ip">MPLS-in-IP</SelectItem>
-                    <SelectItem value="mptcp">MPTCP</SelectItem>
-                    <SelectItem value="pup">PUP</SelectItem>
-                    <SelectItem value="rdp">RDP</SelectItem>
-                    <SelectItem value="rohc">ROHC</SelectItem>
-                    <SelectItem value="rspf">RSPF</SelectItem>
-                    <SelectItem value="rsvp">RSVP</SelectItem>
-                    <SelectItem value="shim6">Shim6</SelectItem>
-                    <SelectItem value="skip">SKIP</SelectItem>
-                    <SelectItem value="st">ST</SelectItem>
-                    <SelectItem value="udplite">UDPLite</SelectItem>
-                    <SelectItem value="vmtp">VMTP</SelectItem>
-                    <SelectItem value="wesp">WESP</SelectItem>
-                    <SelectItem value="xns-idp">XNS-IDP</SelectItem>
-                    <SelectItem value="xtp">XTP</SelectItem>
-                  </SelectContent>
-                )}
-              </Select>
-              {(sourcePort.trim() || destPort.trim() || sourcePortGroup.trim() || destPortGroup.trim()) && (
-                <p className="text-xs text-muted-foreground text-orange-600 dark:text-orange-400">
-                  Only TCP/UDP protocols are available when using ports or port groups
-                </p>
-              )}
               {ruleProtocol && ruleProtocol !== "all" && (
-                <div className="flex items-center space-x-2 pt-2">
+                <FormField label="Invert match (match everything except this protocol)" htmlFor="protocolInvert" horizontal>
                   <Checkbox
                     id="protocolInvert"
                     checked={protocolInvert}
                     onCheckedChange={(checked) => setProtocolInvert(checked as boolean)}
                   />
-                  <Label htmlFor="protocolInvert" className="cursor-pointer font-normal">
-                    Invert match (match everything except this protocol)
-                  </Label>
-                </div>
+                </FormField>
               )}
-            </div>
+            </Fieldset>
 
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
+            <FieldsetDivider />
+
+            <Fieldset label="Rule Flags">
+              <FormField label="Disable rule" htmlFor="disable" horizontal>
                 <Checkbox
                   id="disable"
                   checked={disable}
                   onCheckedChange={(checked) => setDisable(checked as boolean)}
                 />
-                <Label htmlFor="disable" className="cursor-pointer">
-                  Disable rule
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
+              </FormField>
+              <FormField label="Enable logging" htmlFor="log" horizontal>
                 <Checkbox
                   id="log"
                   checked={log}
                   onCheckedChange={(checked) => setLog(checked as boolean)}
                 />
-                <Label htmlFor="log" className="cursor-pointer">
-                  Enable logging
-                </Label>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           {/* Source Tab */}
           <TabsContent value="source" className="space-y-4">
-            {/* Mode Selection */}
-            <div className="space-y-3">
-              <Label>Source Match Type</Label>
+            <Fieldset label="Source">
               <RadioGroup value={sourceMode} onValueChange={(value: "any" | "address" | "group" | "geoip" | "mac") => setSourceMode(value)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="any" id="source-any-mode" />
-                  <Label htmlFor="source-any-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-any-mode" className="text-sm cursor-pointer font-normal">
                     Any (no source restriction)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="address" id="source-address-mode" />
-                  <Label htmlFor="source-address-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-address-mode" className="text-sm cursor-pointer font-normal">
                     Address (IP, CIDR, or range)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="group" id="source-group-mode" />
-                  <Label htmlFor="source-group-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-group-mode" className="text-sm cursor-pointer font-normal">
                     Firewall Group
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="geoip" id="source-geoip-mode" />
-                  <Label htmlFor="source-geoip-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-geoip-mode" className="text-sm cursor-pointer font-normal">
                     GeoIP (country codes)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="mac" id="source-mac-mode" />
-                  <Label htmlFor="source-mac-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-mac-mode" className="text-sm cursor-pointer font-normal">
                     MAC Address
-                  </Label>
+                  </label>
                 </div>
               </RadioGroup>
-            </div>
 
-            {/* Address Mode */}
-            {sourceMode === "address" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
-                <div className="space-y-2">
-                  <Label htmlFor="sourceAddress">Source Address</Label>
-                  <Input
-                    id="sourceAddress"
-                    value={sourceAddress}
-                    onChange={(e) => {
-                      setSourceAddress(e.target.value);
-                      setSourceAddressError(null);
-                    }}
-                    placeholder={protocol === "ipv4" ? "192.168.1.0/24 or 192.168.1.10" : "2001:db8::/32 or 2001:db8::1"}
-                    className={sourceAddressError ? "border-destructive" : ""}
-                  />
-                  {sourceAddressError ? (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {sourceAddressError}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      {protocol === "ipv4"
-                        ? "IPv4 address, CIDR (x.x.x.x/x), or range (x.x.x.x-x.x.x.x)"
-                        : "IPv6 address, CIDR (xxxx:xxxx::/x), or range"
-                      }
-                    </p>
-                  )}
-                </div>
+              {sourceMode === "address" && (
+                <>
+                  <FormField
+                    label="Source Address"
+                    htmlFor="sourceAddress"
+                    description={sourceAddressError ? undefined : (protocol === "ipv4" ? "IPv4 address, CIDR (x.x.x.x/x), or range (x.x.x.x-x.x.x.x)" : "IPv6 address, CIDR (xxxx:xxxx::/x), or range")}
+                  >
+                    <Input
+                      id="sourceAddress"
+                      value={sourceAddress}
+                      onChange={(e) => {
+                        setSourceAddress(e.target.value);
+                        setSourceAddressError(null);
+                      }}
+                      placeholder={protocol === "ipv4" ? "192.168.1.0/24 or 192.168.1.10" : "2001:db8::/32 or 2001:db8::1"}
+                      className={sourceAddressError ? "border-destructive" : ""}
+                    />
+                    {sourceAddressError && (
+                      <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {sourceAddressError}
+                      </p>
+                    )}
+                  </FormField>
+                  <FormField label="Invert match (match everything except this address)" htmlFor="sourceAddressInvert" horizontal>
+                    <Checkbox
+                      id="sourceAddressInvert"
+                      checked={sourceAddressInvert}
+                      onCheckedChange={(checked) => setSourceAddressInvert(checked as boolean)}
+                    />
+                  </FormField>
+                </>
+              )}
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sourceAddressInvert"
-                    checked={sourceAddressInvert}
-                    onCheckedChange={(checked) => setSourceAddressInvert(checked as boolean)}
-                  />
-                  <Label htmlFor="sourceAddressInvert" className="cursor-pointer font-normal">
-                    Invert match (match everything except this address)
-                  </Label>
-                </div>
-              </div>
-            )}
-
-            {/* Group Mode */}
-            {sourceMode === "group" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
+              {sourceMode === "group" && (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sourceGroupType">Group Type</Label>
+                  <FormField label="Group Type" htmlFor="sourceGroupType">
                     <Select value={sourceGroupType} onValueChange={setSourceGroupType}>
                       <SelectTrigger id="sourceGroupType">
                         <SelectValue placeholder="Select type" />
@@ -924,10 +898,8 @@ export function CreateFirewallRuleModal({
                         )}
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="sourceGroupName">Group Name</Label>
+                  </FormField>
+                  <FormField label="Group Name" htmlFor="sourceGroupName">
                     <Select
                       value={sourceGroupName}
                       onValueChange={setSourceGroupName}
@@ -969,38 +941,34 @@ export function CreateFirewallRuleModal({
                           ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* GeoIP Mode */}
-            {sourceMode === "geoip" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
-                <CountryMultiSelect
-                  id="sourceGeoipCountry"
-                  label="Source GeoIP Countries"
-                  value={sourceGeoipCountry}
-                  onChange={setSourceGeoipCountry}
-                />
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sourceGeoipInverse"
-                    checked={sourceGeoipInverse}
-                    onCheckedChange={(checked) => setSourceGeoipInverse(checked as boolean)}
+              {sourceMode === "geoip" && (
+                <>
+                  <CountryMultiSelect
+                    id="sourceGeoipCountry"
+                    label="Source GeoIP Countries"
+                    value={sourceGeoipCountry}
+                    onChange={setSourceGeoipCountry}
                   />
-                  <Label htmlFor="sourceGeoipInverse" className="text-sm font-normal cursor-pointer">
-                    Exclude countries (inverse match)
-                  </Label>
-                </div>
-              </div>
-            )}
+                  <FormField label="Exclude countries (inverse match)" htmlFor="sourceGeoipInverse" horizontal>
+                    <Checkbox
+                      id="sourceGeoipInverse"
+                      checked={sourceGeoipInverse}
+                      onCheckedChange={(checked) => setSourceGeoipInverse(checked as boolean)}
+                    />
+                  </FormField>
+                </>
+              )}
 
-            {/* MAC Address Mode */}
-            {sourceMode === "mac" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
-                <div className="space-y-2">
-                  <Label htmlFor="sourceMac">Source MAC Address</Label>
+              {sourceMode === "mac" && (
+                <FormField
+                  label="Source MAC Address"
+                  htmlFor="sourceMac"
+                  description={sourceMacError ? undefined : "Format: aa:bb:cc:dd:ee:ff"}
+                >
                   <Input
                     id="sourceMac"
                     value={sourceMac}
@@ -1011,46 +979,46 @@ export function CreateFirewallRuleModal({
                     placeholder="aa:bb:cc:dd:ee:ff"
                     className={sourceMacError ? "border-destructive" : ""}
                   />
-                  {sourceMacError ? (
-                    <p className="text-xs text-destructive flex items-center gap-1">
+                  {sourceMacError && (
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {sourceMacError}
                     </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Format: aa:bb:cc:dd:ee:ff
-                    </p>
                   )}
-                </div>
-              </div>
-            )}
+                </FormField>
+              )}
+            </Fieldset>
 
-            {/* Port Selection (available for all modes) */}
-            <div className="space-y-3 pt-4 border-t">
-              <Label>Source Port</Label>
+            <FieldsetDivider />
+
+            <Fieldset label="Source Port">
               <RadioGroup value={sourcePortMode} onValueChange={(value: "any" | "port" | "group") => setSourcePortMode(value)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="any" id="source-port-any-mode" />
-                  <Label htmlFor="source-port-any-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-port-any-mode" className="text-sm cursor-pointer font-normal">
                     Any (no port restriction)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="port" id="source-port-mode" />
-                  <Label htmlFor="source-port-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-port-mode" className="text-sm cursor-pointer font-normal">
                     Port Number/Range
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="group" id="source-port-group-mode" />
-                  <Label htmlFor="source-port-group-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="source-port-group-mode" className="text-sm cursor-pointer font-normal">
                     Port Group
-                  </Label>
+                  </label>
                 </div>
               </RadioGroup>
 
               {sourcePortMode === "port" && (
-                <div className="pl-6 border-l-2 border-primary/20 space-y-2">
+                <FormField
+                  label="Port"
+                  htmlFor="sourcePort"
+                  description={sourcePortError ? undefined : "Port number, range, service name, or comma-separated list (e.g., 80,443,telnet,8080-8090)"}
+                >
                   <Input
                     id="sourcePort"
                     value={sourcePort}
@@ -1061,21 +1029,17 @@ export function CreateFirewallRuleModal({
                     placeholder="80,443,telnet,8080-8090"
                     className={sourcePortError ? "border-destructive" : ""}
                   />
-                  {sourcePortError ? (
-                    <p className="text-xs text-destructive flex items-center gap-1">
+                  {sourcePortError && (
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {sourcePortError}
                     </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Port number, range, service name, or comma-separated list (e.g., 80,443,telnet,8080-8090)
-                    </p>
                   )}
-                </div>
+                </FormField>
               )}
 
               {sourcePortMode === "group" && (
-                <div className="pl-6 border-l-2 border-primary/20">
+                <FormField label="Port Group" htmlFor="sourcePortGroup">
                   <Select value={sourcePortGroup} onValueChange={setSourcePortGroup}>
                     <SelectTrigger id="sourcePortGroup">
                       <SelectValue placeholder="Select port group" />
@@ -1088,7 +1052,7 @@ export function CreateFirewallRuleModal({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               )}
 
               {(sourcePortMode === "port" || sourcePortMode === "group") && (
@@ -1096,91 +1060,76 @@ export function CreateFirewallRuleModal({
                   Port specification requires TCP/UDP protocol
                 </p>
               )}
-            </div>
+            </Fieldset>
           </TabsContent>
 
           {/* Destination Tab */}
           <TabsContent value="destination" className="space-y-4">
-            {/* Mode Selection */}
-            <div className="space-y-3">
-              <Label>Destination Match Type</Label>
+            <Fieldset label="Destination">
               <RadioGroup value={destMode} onValueChange={(value: "any" | "address" | "group" | "geoip") => setDestMode(value)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="any" id="dest-any-mode" />
-                  <Label htmlFor="dest-any-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-any-mode" className="text-sm cursor-pointer font-normal">
                     Any (no destination restriction)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="address" id="dest-address-mode" />
-                  <Label htmlFor="dest-address-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-address-mode" className="text-sm cursor-pointer font-normal">
                     Address (IP, CIDR, or range)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="group" id="dest-group-mode" />
-                  <Label htmlFor="dest-group-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-group-mode" className="text-sm cursor-pointer font-normal">
                     Firewall Group
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="geoip" id="dest-geoip-mode" />
-                  <Label htmlFor="dest-geoip-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-geoip-mode" className="text-sm cursor-pointer font-normal">
                     GeoIP (country codes)
-                  </Label>
+                  </label>
                 </div>
               </RadioGroup>
-            </div>
 
-            {/* Address Mode */}
-            {destMode === "address" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
-                <div className="space-y-2">
-                  <Label htmlFor="destAddress">Destination Address</Label>
-                  <Input
-                    id="destAddress"
-                    value={destAddress}
-                    onChange={(e) => {
-                      setDestAddress(e.target.value);
-                      setDestAddressError(null);
-                    }}
-                    placeholder={protocol === "ipv4" ? "192.168.1.0/24 or 192.168.1.10" : "2001:db8::/32 or 2001:db8::1"}
-                    className={destAddressError ? "border-destructive" : ""}
-                  />
-                  {destAddressError ? (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {destAddressError}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      {protocol === "ipv4"
-                        ? "IPv4 address, CIDR (x.x.x.x/x), or range (x.x.x.x-x.x.x.x)"
-                        : "IPv6 address, CIDR (xxxx:xxxx::/x), or range"
-                      }
-                    </p>
-                  )}
-                </div>
+              {destMode === "address" && (
+                <>
+                  <FormField
+                    label="Destination Address"
+                    htmlFor="destAddress"
+                    description={destAddressError ? undefined : (protocol === "ipv4" ? "IPv4 address, CIDR (x.x.x.x/x), or range (x.x.x.x-x.x.x.x)" : "IPv6 address, CIDR (xxxx:xxxx::/x), or range")}
+                  >
+                    <Input
+                      id="destAddress"
+                      value={destAddress}
+                      onChange={(e) => {
+                        setDestAddress(e.target.value);
+                        setDestAddressError(null);
+                      }}
+                      placeholder={protocol === "ipv4" ? "192.168.1.0/24 or 192.168.1.10" : "2001:db8::/32 or 2001:db8::1"}
+                      className={destAddressError ? "border-destructive" : ""}
+                    />
+                    {destAddressError && (
+                      <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {destAddressError}
+                      </p>
+                    )}
+                  </FormField>
+                  <FormField label="Invert match (match everything except this address)" htmlFor="destAddressInvert" horizontal>
+                    <Checkbox
+                      id="destAddressInvert"
+                      checked={destAddressInvert}
+                      onCheckedChange={(checked) => setDestAddressInvert(checked as boolean)}
+                    />
+                  </FormField>
+                </>
+              )}
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="destAddressInvert"
-                    checked={destAddressInvert}
-                    onCheckedChange={(checked) => setDestAddressInvert(checked as boolean)}
-                  />
-                  <Label htmlFor="destAddressInvert" className="cursor-pointer font-normal">
-                    Invert match (match everything except this address)
-                  </Label>
-                </div>
-              </div>
-            )}
-
-            {/* Group Mode */}
-            {destMode === "group" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
+              {destMode === "group" && (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="destGroupType">Group Type</Label>
+                  <FormField label="Group Type" htmlFor="destGroupType">
                     <Select value={destGroupType} onValueChange={setDestGroupType}>
                       <SelectTrigger id="destGroupType">
                         <SelectValue placeholder="Select type" />
@@ -1195,10 +1144,8 @@ export function CreateFirewallRuleModal({
                         )}
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="destGroupName">Group Name</Label>
+                  </FormField>
+                  <FormField label="Group Name" htmlFor="destGroupName">
                     <Select
                       value={destGroupName}
                       onValueChange={setDestGroupName}
@@ -1240,59 +1187,59 @@ export function CreateFirewallRuleModal({
                           ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* GeoIP Mode */}
-            {destMode === "geoip" && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
-                <CountryMultiSelect
-                  id="destGeoipCountry"
-                  label="Destination GeoIP Countries"
-                  value={destGeoipCountry}
-                  onChange={setDestGeoipCountry}
-                />
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="destGeoipInverse"
-                    checked={destGeoipInverse}
-                    onCheckedChange={(checked) => setDestGeoipInverse(checked as boolean)}
+              {destMode === "geoip" && (
+                <>
+                  <CountryMultiSelect
+                    id="destGeoipCountry"
+                    label="Destination GeoIP Countries"
+                    value={destGeoipCountry}
+                    onChange={setDestGeoipCountry}
                   />
-                  <Label htmlFor="destGeoipInverse" className="text-sm font-normal cursor-pointer">
-                    Exclude countries (inverse match)
-                  </Label>
-                </div>
-              </div>
-            )}
+                  <FormField label="Exclude countries (inverse match)" htmlFor="destGeoipInverse" horizontal>
+                    <Checkbox
+                      id="destGeoipInverse"
+                      checked={destGeoipInverse}
+                      onCheckedChange={(checked) => setDestGeoipInverse(checked as boolean)}
+                    />
+                  </FormField>
+                </>
+              )}
+            </Fieldset>
 
-            {/* Port Selection (available for all modes) */}
-            <div className="space-y-3 pt-4 border-t">
-              <Label>Destination Port</Label>
+            <FieldsetDivider />
+
+            <Fieldset label="Destination Port">
               <RadioGroup value={destPortMode} onValueChange={(value: "any" | "port" | "group") => setDestPortMode(value)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="any" id="dest-port-any-mode" />
-                  <Label htmlFor="dest-port-any-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-port-any-mode" className="text-sm cursor-pointer font-normal">
                     Any (no port restriction)
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="port" id="dest-port-mode" />
-                  <Label htmlFor="dest-port-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-port-mode" className="text-sm cursor-pointer font-normal">
                     Port Number/Range
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="group" id="dest-port-group-mode" />
-                  <Label htmlFor="dest-port-group-mode" className="cursor-pointer font-normal">
+                  <label htmlFor="dest-port-group-mode" className="text-sm cursor-pointer font-normal">
                     Port Group
-                  </Label>
+                  </label>
                 </div>
               </RadioGroup>
 
               {destPortMode === "port" && (
-                <div className="pl-6 border-l-2 border-primary/20 space-y-2">
+                <FormField
+                  label="Port"
+                  htmlFor="destPort"
+                  description={destPortError ? undefined : "Port number, range, service name, or comma-separated list (e.g., 443,https,8080-8090)"}
+                >
                   <Input
                     id="destPort"
                     value={destPort}
@@ -1303,21 +1250,17 @@ export function CreateFirewallRuleModal({
                     placeholder="443,https,8080-8090"
                     className={destPortError ? "border-destructive" : ""}
                   />
-                  {destPortError ? (
-                    <p className="text-xs text-destructive flex items-center gap-1">
+                  {destPortError && (
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertCircle className="h-3 w-3" />
                       {destPortError}
                     </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Port number, range, service name, or comma-separated list (e.g., 443,https,8080-8090)
-                    </p>
                   )}
-                </div>
+                </FormField>
               )}
 
               {destPortMode === "group" && (
-                <div className="pl-6 border-l-2 border-primary/20">
+                <FormField label="Port Group" htmlFor="destPortGroup">
                   <Select value={destPortGroup} onValueChange={setDestPortGroup}>
                     <SelectTrigger id="destPortGroup">
                       <SelectValue placeholder="Select port group" />
@@ -1330,7 +1273,7 @@ export function CreateFirewallRuleModal({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               )}
 
               {(destPortMode === "port" || destPortMode === "group") && (
@@ -1338,108 +1281,83 @@ export function CreateFirewallRuleModal({
                   Port specification requires TCP/UDP protocol
                 </p>
               )}
-            </div>
+            </Fieldset>
           </TabsContent>
 
           {/* State Tab */}
           <TabsContent value="state" className="space-y-4">
-            <div className="space-y-4">
-              <Label>Connection State Matching</Label>
-              <p className="text-sm text-muted-foreground">
-                Match packets based on their connection tracking state
-              </p>
+            <Fieldset label="Connection State Matching" description="Match packets based on their connection tracking state">
+              <FormField label="Established - Match established connections" htmlFor="stateEstablished" horizontal>
+                <Checkbox
+                  id="stateEstablished"
+                  checked={stateEstablished}
+                  onCheckedChange={(checked) => setStateEstablished(checked as boolean)}
+                />
+              </FormField>
+              <FormField label="New - Match new connections" htmlFor="stateNew" horizontal>
+                <Checkbox
+                  id="stateNew"
+                  checked={stateNew}
+                  onCheckedChange={(checked) => setStateNew(checked as boolean)}
+                />
+              </FormField>
+              <FormField label="Related - Match related connections" htmlFor="stateRelated" horizontal>
+                <Checkbox
+                  id="stateRelated"
+                  checked={stateRelated}
+                  onCheckedChange={(checked) => setStateRelated(checked as boolean)}
+                />
+              </FormField>
+              <FormField label="Invalid - Match invalid packets" htmlFor="stateInvalid" horizontal>
+                <Checkbox
+                  id="stateInvalid"
+                  checked={stateInvalid}
+                  onCheckedChange={(checked) => setStateInvalid(checked as boolean)}
+                />
+              </FormField>
+            </Fieldset>
 
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="stateEstablished"
-                    checked={stateEstablished}
-                    onCheckedChange={(checked) => setStateEstablished(checked as boolean)}
-                  />
-                  <Label htmlFor="stateEstablished" className="cursor-pointer">
-                    Established - Match established connections
-                  </Label>
-                </div>
+            <FieldsetDivider />
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="stateNew"
-                    checked={stateNew}
-                    onCheckedChange={(checked) => setStateNew(checked as boolean)}
-                  />
-                  <Label htmlFor="stateNew" className="cursor-pointer">
-                    New - Match new connections
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="stateRelated"
-                    checked={stateRelated}
-                    onCheckedChange={(checked) => setStateRelated(checked as boolean)}
-                  />
-                  <Label htmlFor="stateRelated" className="cursor-pointer">
-                    Related - Match related connections
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="stateInvalid"
-                    checked={stateInvalid}
-                    onCheckedChange={(checked) => setStateInvalid(checked as boolean)}
-                  />
-                  <Label htmlFor="stateInvalid" className="cursor-pointer">
-                    Invalid - Match invalid packets
-                  </Label>
-                </div>
+            <Fieldset label="Interface Matching">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Inbound Interface" htmlFor="inboundInterface">
+                  <Select value={inboundInterface} onValueChange={setInboundInterface}>
+                    <SelectTrigger id="inboundInterface">
+                      <SelectValue placeholder="Any interface" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      {interfaces.map((iface) => (
+                        <SelectItem key={iface.name} value={iface.name}>
+                          {iface.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Outbound Interface" htmlFor="outboundInterface">
+                  <Select value={outboundInterface} onValueChange={setOutboundInterface}>
+                    <SelectTrigger id="outboundInterface">
+                      <SelectValue placeholder="Any interface" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      {interfaces.map((iface) => (
+                        <SelectItem key={iface.name} value={iface.name}>
+                          {iface.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="inboundInterface">Inbound Interface</Label>
-              <Select value={inboundInterface} onValueChange={setInboundInterface}>
-                <SelectTrigger id="inboundInterface">
-                  <SelectValue placeholder="Any interface" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  {interfaces.map((iface) => (
-                    <SelectItem key={iface.name} value={iface.name}>
-                      {iface.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="outboundInterface">Outbound Interface</Label>
-              <Select value={outboundInterface} onValueChange={setOutboundInterface}>
-                <SelectTrigger id="outboundInterface">
-                  <SelectValue placeholder="Any interface" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  {interfaces.map((iface) => (
-                    <SelectItem key={iface.name} value={iface.name}>
-                      {iface.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            </Fieldset>
           </TabsContent>
 
           {/* Advanced Tab */}
           <TabsContent value="advanced" className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <Label className="text-base font-semibold">TCP Flags</Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Set individual TCP flag matching rules (requires TCP protocol only)
-                </p>
-              </div>
+            <Fieldset label="TCP Flags" description="Set individual TCP flag matching rules (requires TCP protocol only)">
               {ruleProtocol !== "tcp" && (
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                   <p className="text-sm text-blue-600 dark:text-blue-400">
@@ -1449,10 +1367,7 @@ export function CreateFirewallRuleModal({
               )}
               <div className="grid grid-cols-2 gap-4">
                 {availableTcpFlags.map((flag) => (
-                  <div key={flag} className="space-y-2">
-                    <Label htmlFor={`tcp-${flag}`} className="uppercase font-medium text-sm">
-                      {flag}
-                    </Label>
+                  <FormField key={flag} label={flag.toUpperCase()} htmlFor={`tcp-${flag}`}>
                     <Select
                       value={tcpFlags[flag]}
                       onValueChange={(value: "disabled" | "enabled" | "not") => {
@@ -1473,18 +1388,14 @@ export function CreateFirewallRuleModal({
                         <SelectItem value="not">Match NOT Set</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 ))}
               </div>
-            </div>
+            </Fieldset>
 
-            <div className="space-y-2">
-              <div>
-                <Label htmlFor="icmpTypeName" className="text-base font-semibold">ICMP Type</Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Select ICMP type name to match (requires ICMP protocol)
-                </p>
-              </div>
+            <FieldsetDivider />
+
+            <Fieldset label="ICMP Type" description="Select ICMP type name to match (requires ICMP protocol)">
               {ruleProtocol !== "icmp" && ruleProtocol !== "ipv6-icmp" && (
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                   <p className="text-sm text-blue-600 dark:text-blue-400">
@@ -1492,84 +1403,81 @@ export function CreateFirewallRuleModal({
                   </p>
                 </div>
               )}
-              <div className="flex gap-2">
-                <Select
-                  key={icmpTypeName || "empty"}
-                  value={icmpTypeName || undefined}
-                  onValueChange={(value) => {
-                    // Auto-switch to ICMP protocol when selecting a type
-                    if (value && ruleProtocol !== "icmp" && ruleProtocol !== "ipv6-icmp") {
-                      setRuleProtocol("icmp");
-                    }
-                    setIcmpTypeName(value);
-                  }}
-                  disabled={ruleProtocol !== "icmp" && ruleProtocol !== "ipv6-icmp"}
-                >
-                  <SelectTrigger id="icmpTypeName" className="flex-1">
-                    <SelectValue placeholder="Select ICMP type..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {icmpTypeOptions.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {icmpTypeName && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIcmpTypeName("");
+              <FormField label="ICMP Type Name" htmlFor="icmpTypeName">
+                <div className="flex gap-2">
+                  <Select
+                    key={icmpTypeName || "empty"}
+                    value={icmpTypeName || undefined}
+                    onValueChange={(value) => {
+                      // Auto-switch to ICMP protocol when selecting a type
+                      if (value && ruleProtocol !== "icmp" && ruleProtocol !== "ipv6-icmp") {
+                        setRuleProtocol("icmp");
+                      }
+                      setIcmpTypeName(value);
                     }}
                     disabled={ruleProtocol !== "icmp" && ruleProtocol !== "ipv6-icmp"}
-                    className="shrink-0"
-                    title="Clear ICMP type"
                   >
-                    ×
-                  </Button>
-                )}
-              </div>
-            </div>
+                    <SelectTrigger id="icmpTypeName" className="flex-1">
+                      <SelectValue placeholder="Select ICMP type..." />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {icmpTypeOptions.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {icmpTypeName && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIcmpTypeName("");
+                      }}
+                      disabled={ruleProtocol !== "icmp" && ruleProtocol !== "ipv6-icmp"}
+                      className="shrink-0"
+                      title="Clear ICMP type"
+                    >
+                      ×
+                    </Button>
+                  )}
+                </div>
+              </FormField>
+            </Fieldset>
 
-            <div className="space-y-4">
-              <Label>Packet Modifications</Label>
+            <FieldsetDivider />
 
+            <Fieldset label="Packet Modifications">
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dscp">DSCP</Label>
+                <FormField label="DSCP" htmlFor="dscp">
                   <Input
                     id="dscp"
                     value={dscp}
                     onChange={(e) => setDscp(e.target.value)}
                     placeholder="0-63"
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="mark">Mark</Label>
+                </FormField>
+                <FormField label="Mark" htmlFor="mark">
                   <Input
                     id="mark"
                     value={mark}
                     onChange={(e) => setMark(e.target.value)}
                     placeholder="Packet mark"
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ttl">TTL</Label>
+                </FormField>
+                <FormField label="TTL" htmlFor="ttl">
                   <Input
                     id="ttl"
                     value={ttl}
                     onChange={(e) => setTtl(e.target.value)}
                     placeholder="0-255"
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
           </TabsContent>
         </Tabs>
 

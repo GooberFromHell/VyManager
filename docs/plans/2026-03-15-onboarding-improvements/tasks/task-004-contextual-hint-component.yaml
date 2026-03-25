@@ -1,0 +1,94 @@
+id: "task-004"
+title: "Create ContextualHint component for first-use callouts"
+phase: produce
+execution_phase: 1
+agent: react-specialist
+status: not_started
+depends_on: []
+blocks: ["task-005"]
+parallel_with: ["task-001", "task-003"]
+
+files:
+  create:
+    - "frontend/src/components/ui/contextual-hint.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/components/ui/card.tsx"
+
+instructions: |
+  Create a dismissable contextual hint component for first-use callouts.
+
+  File: frontend/src/components/ui/contextual-hint.tsx
+
+  This is a subtle, non-blocking callout that appears below page headers to teach
+  users about a feature on their first visit. NOT a modal, NOT a tour — just a
+  small card with an info icon, text, and dismiss button.
+
+  ```tsx
+  "use client";
+
+  import { useState } from "react";
+  import { Info, X } from "lucide-react";
+  import { cn } from "@/lib/utils";
+
+  interface ContextualHintProps {
+    children: React.ReactNode;   // The hint message
+    onDismiss: () => void;       // Called when user clicks X
+    className?: string;
+  }
+
+  export function ContextualHint({ children, onDismiss, className }: ContextualHintProps) {
+    const [dismissing, setDismissing] = useState(false);
+
+    const handleDismiss = () => {
+      setDismissing(true);
+      // Fade out animation, then call onDismiss
+      setTimeout(() => onDismiss(), 200);
+    };
+
+    return (
+      <div
+        className={cn(
+          "flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm transition-opacity duration-200",
+          dismissing && "opacity-0",
+          className
+        )}
+      >
+        <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+        <div className="flex-1 text-muted-foreground">{children}</div>
+        <button
+          onClick={handleDismiss}
+          className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+          aria-label="Dismiss hint"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+  ```
+
+  Design principles:
+  - Uses primary color at low opacity (bg-primary/5, border-primary/20) — subtle, not loud
+  - Info icon (not warning, not error) — this is guidance, not a problem
+  - X button to dismiss — always visible, always works
+  - Fade-out animation (200ms opacity transition) before removal
+  - Non-blocking — content below is fully visible and interactive
+  - Dark mode compatible (uses theme tokens, not hardcoded colors)
+  - aria-label on dismiss button for accessibility
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/ui/contextual-hint.tsx"
+  - "Grep match: 'ContextualHint' in frontend/src/components/ui/contextual-hint.tsx"
+  - "Grep match: 'onDismiss' in frontend/src/components/ui/contextual-hint.tsx"
+  - "Grep match: 'aria-label' in frontend/src/components/ui/contextual-hint.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

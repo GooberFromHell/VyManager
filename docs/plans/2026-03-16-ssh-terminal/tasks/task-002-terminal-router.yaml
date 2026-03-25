@@ -1,0 +1,352 @@
+id: "task-002"
+title: "Create terminal WebSocket router with interactive PTY SSH"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-005"]
+parallel_with: []
+
+files:
+  create:
+    - "backend/routers/terminal/__init__.py"
+    - "backend/routers/terminal/terminal.py"
+  modify:
+    - "backend/app.py"
+    - "backend/middleware/auth.py"
+
+context_files:
+  - "backend/ws_auth.py"
+  - "backend/routers/monitoring/monitoring.py"
+  - "backend/ssh_key_manager.py"
+  - "backend/app.py"
+  - "backend/middleware/auth.py"
+
+instructions: |
+  Create a WebSocket endpoint for interactive SSH terminal sessions.
+
+  ## 1. backend/routers/terminal/__init__.py
+  ```python
+  from . import terminal
+  ```
+
+  ## 2. backend/routers/terminal/terminal.py
+
+  Follow the monitoring WebSocket pattern but with key differences:
+  - Interactive shell (PTY) instead of single command
+  - Bidirectional I/O (input from browser, output from SSH)
+  - PTY resize support
+
+  ```python
+  """
+  Interactive SSH Terminal WebSocket endpoint.
+
+  Provides a full PTY shell session to the connected VyOS instance
+  via WebSocket, using the instance's configured SSH keys.
+  """
+
+  import os
+  import asyncio
+  import logging
+  from datetime import datetime
+  from typing import Optional
+
+  import asyncssh
+  from fastapi import APIRouter, WebSocket
+
+  from ws_auth import authenticate_websocket
+  from ssh_key_manager import decrypt_private_key
+  from rbac_permissions import FeatureGroup, PermissionLevel, check_permission
+
+  logger = logging.getLogger(__name__)
+
+  router = APIRouter(prefix="/vyos/terminal", tags=["terminal"])
+
+  # Session limits (configurable via env vars)
+  IDLE_TIMEOUT_SECONDS = int(os.getenv("TERMINAL_IDLE_TIMEOUT", "600"))  # 10 min
+  MAX_DURATION_SECONDS = int(os.getenv("TERMINAL_MAX_DURATION", "3600"))  # 1 hour
+
+  # Track active terminal sessions: user_id -> asyncio.Task
+  _active_terminal_sessions: dict[str, asyncio.Task] = {}
+
+
+  @router.websocket("/ws/shell")
+  async def websocket_shell(websocket: WebSocket):
+      """
+      Interactive SSH terminal via WebSocket.
+
+      Protocol:
+      1. Client connects (authenticated via session cookie)
+      2. Client sends: {"type": "resize", "cols": 80, "rows": 24} (initial size)
+      3. Server sends: {"type": "ready"} when shell is ready
+      4. Client sends: {"type": "input", "data": "..."} for keyboard input
+      5. Client sends: {"type": "resize", "cols": N, "rows": N} on terminal resize
+      6. Server sends: {"type": "output", "data": "..."} for shell output
+      7. Server sends: {"type": "closed", "reason": "..."} when session ends
+      """
+      await websocket.accept()
+
+      # Authenticate
+      user_info = await authenticate_websocket(websocket)
+      if not user_info:
+          return
+
+      user_id = user_info["user_id"]
+      instance_id = user_info["instance_id"]
+      db_pool = websocket.app.state.db_pool
+
+      # One terminal session per user
+      if user_id in _active_terminal_sessions and not _active_terminal_sessions[user_id].done():
+          await websocket.send_json({
+              "type": "error",
+              "data": "You already have an active terminal session. Close it first.",
+          })
+          await websocket.close()
+          return
+
+      # Check MONITORING WRITE permission
+      has_permission = await check_permission(
+          db_pool, user_id, instance_id, FeatureGroup.MONITORING, PermissionLevel.WRITE
+      )
+      if not has_permission:
+          await websocket.send_json({
+              "type": "error",
+              "data": "Insufficient permissions for terminal access.",
+          })
+          await websocket.close()
+          return
+
+      ssh_conn = None
+      ssh_process = None
+
+      try:
+          # Fetch instance SSH config
+          async with db_pool.acquire() as conn:
+              instance = await conn.fetchrow(
+                  """
+                  SELECT host, "sshPort", "sshUsername", "sshEncryptedPrivKey",
+                         "sshKeyNonce", "sshKeyConfigured"
+                  FROM instances WHERE id = $1
+                  """,
+                  instance_id,
+              )
+
+          if not instance:
+              await websocket.send_json({"type": "error", "data": "Instance not found"})
+              await websocket.close()
+              return
+
+          if not instance["sshKeyConfigured"]:
+              await websocket.send_json({
+                  "type": "error",
+                  "data": "SSH key not configured. Set it up via Sites > Edit Instance > SSH / Monitoring.",
+              })
+              await websocket.close()
+              return
+
+          if not instance["sshEncryptedPrivKey"] or not instance["sshKeyNonce"]:
+              await websocket.send_json({
+                  "type": "error",
+                  "data": "SSH private key not found. Regenerate the SSH key in instance settings.",
+              })
+              await websocket.close()
+              return
+
+          ssh_username = instance["sshUsername"] or "vyos"
+
+          # Decrypt private key
+          try:
+              private_key_pem = decrypt_private_key(
+                  instance["sshEncryptedPrivKey"],
+                  instance["sshKeyNonce"],
+              )
+              private_key = asyncssh.import_private_key(private_key_pem.decode("utf-8"))
+          except Exception as e:
+              await websocket.send_json({
+                  "type": "error",
+                  "data": f"Failed to decrypt SSH key: {str(e)}",
+              })
+              await websocket.close()
+              return
+
+          # Wait for initial resize message to get terminal dimensions
+          await websocket.send_json({"type": "status", "data": "Connecting..."})
+
+          try:
+              initial_msg = await asyncio.wait_for(websocket.receive_json(), timeout=15)
+          except (asyncio.TimeoutError, Exception):
+              await websocket.send_json({"type": "error", "data": "Timeout waiting for terminal size"})
+              await websocket.close()
+              return
+
+          cols = initial_msg.get("cols", 80)
+          rows = initial_msg.get("rows", 24)
+
+          # SSH connect
+          try:
+              ssh_conn = await asyncio.wait_for(
+                  asyncssh.connect(
+                      instance["host"],
+                      port=instance["sshPort"],
+                      username=ssh_username,
+                      client_keys=[private_key],
+                      known_hosts=None,
+                  ),
+                  timeout=15,
+              )
+          except asyncio.TimeoutError:
+              await websocket.send_json({"type": "error", "data": "SSH connection timed out"})
+              await websocket.close()
+              return
+          except (OSError, asyncssh.Error) as e:
+              await websocket.send_json({"type": "error", "data": f"SSH connection failed: {str(e)}"})
+              await websocket.close()
+              return
+
+          # Open interactive shell with PTY
+          ssh_process = await ssh_conn.create_process(
+              term_type="xterm-256color",
+              term_size=(cols, rows),
+          )
+
+          # Track session
+          _active_terminal_sessions[user_id] = asyncio.current_task()
+          start_time = asyncio.get_event_loop().time()
+          last_activity = asyncio.get_event_loop().time()
+
+          await websocket.send_json({"type": "ready"})
+
+          # === Concurrent I/O tasks ===
+
+          async def read_ssh_output():
+              """Read from SSH stdout and send to WebSocket."""
+              nonlocal last_activity
+              while True:
+                  data = await ssh_process.stdout.read(4096)
+                  if not data:
+                      break
+                  last_activity = asyncio.get_event_loop().time()
+                  await websocket.send_json({"type": "output", "data": data})
+
+          async def read_ws_input():
+              """Read from WebSocket and write to SSH stdin."""
+              nonlocal last_activity
+              while True:
+                  msg = await websocket.receive_json()
+                  msg_type = msg.get("type")
+
+                  if msg_type == "input":
+                      input_data = msg.get("data", "")
+                      if input_data:
+                          last_activity = asyncio.get_event_loop().time()
+                          ssh_process.stdin.write(input_data)
+
+                  elif msg_type == "resize":
+                      new_cols = msg.get("cols", 80)
+                      new_rows = msg.get("rows", 24)
+                      try:
+                          ssh_process.change_terminal_size(new_cols, new_rows)
+                      except Exception:
+                          pass  # resize failure is non-fatal
+
+                  elif msg_type == "ping":
+                      last_activity = asyncio.get_event_loop().time()
+
+          async def check_limits():
+              """Enforce idle timeout and max duration."""
+              while True:
+                  await asyncio.sleep(10)
+                  now = asyncio.get_event_loop().time()
+                  if now - last_activity > IDLE_TIMEOUT_SECONDS:
+                      await websocket.send_json({
+                          "type": "closed",
+                          "reason": "Session closed due to inactivity.",
+                      })
+                      return
+                  if now - start_time > MAX_DURATION_SECONDS:
+                      await websocket.send_json({
+                          "type": "closed",
+                          "reason": "Maximum session duration reached.",
+                      })
+                      return
+
+          # Run all three tasks concurrently
+          output_task = asyncio.create_task(read_ssh_output())
+          input_task = asyncio.create_task(read_ws_input())
+          limits_task = asyncio.create_task(check_limits())
+
+          done, pending = await asyncio.wait(
+              [output_task, input_task, limits_task],
+              return_when=asyncio.FIRST_COMPLETED,
+          )
+
+          for task in pending:
+              task.cancel()
+              try:
+                  await task
+              except (asyncio.CancelledError, Exception):
+                  pass
+
+      except Exception as e:
+          logger.exception("Terminal session error for user %s", user_id)
+          try:
+              await websocket.send_json({"type": "error", "data": str(e)})
+          except Exception:
+              pass
+      finally:
+          # Cleanup
+          if ssh_process:
+              try:
+                  ssh_process.terminate()
+              except Exception:
+                  pass
+          if ssh_conn:
+              try:
+                  ssh_conn.close()
+              except Exception:
+                  pass
+          _active_terminal_sessions.pop(user_id, None)
+          try:
+              await websocket.close()
+          except Exception:
+              pass
+          logger.info("Terminal session ended for user %s", user_id)
+  ```
+
+  ## 3. Modify backend/app.py
+
+  Add import after the monitoring import (~line 51):
+  ```python
+  from routers.terminal import terminal as terminal_router
+  ```
+
+  Add router inclusion after monitoring (~line 305):
+  ```python
+  app.include_router(terminal_router.router)
+  ```
+
+  ## 4. Modify backend/middleware/auth.py
+
+  Add to PUBLIC_PATHS set (after the monitoring WebSocket entry at line 40):
+  ```python
+  "/vyos/terminal/ws/shell",  # WebSocket auth handled inside handler
+  ```
+
+acceptance_criteria:
+  - "File exists: backend/routers/terminal/__init__.py"
+  - "File exists: backend/routers/terminal/terminal.py"
+  - "Grep match: 'websocket_shell' in backend/routers/terminal/terminal.py"
+  - "Grep match: 'terminal_router' in backend/app.py"
+  - "Grep match: '/vyos/terminal/ws/shell' in backend/middleware/auth.py"
+  - "Grep match: 'create_process' in backend/routers/terminal/terminal.py"
+  - "Grep match: 'term_type' in backend/routers/terminal/terminal.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

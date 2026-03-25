@@ -1,0 +1,48 @@
+id: "task-007"
+title: "Add proxy host types and API method updates"
+archetype: frontend-service
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-004"]
+blocks: ["task-008"]
+parallel_with: ["task-005", "task-003"]
+files:
+  create: []
+  modify:
+    - frontend/src/lib/api/session.ts
+context_files:
+  - frontend/src/lib/api/session.ts
+instructions: |
+  NOTE: This task modifies the SAME file as task-005. If task-005 runs first (likely), this task must read the already-modified file.
+
+  1. Read `frontend/src/lib/api/session.ts` fully (it may have been modified by task-005 already)
+  2. Find the `Site` interface and the `SiteCreateRequest`/`SiteUpdateRequest` types
+
+  **Modify `Site` interface** — add field:
+  ```typescript
+  proxy_host_id?: string | null;
+  ```
+
+  **Modify `SiteCreateRequest`** (if it exists as a type/interface) — add:
+  ```typescript
+  proxy_host_id?: string | null;
+  ```
+
+  **Modify `SiteUpdateRequest`** (if it exists as a type/interface) — add:
+  ```typescript
+  proxy_host_id?: string | null;
+  ```
+
+  If these request types don't exist as explicit interfaces (they might be inline), add them or find where site create/update data is passed and ensure proxy_host_id is included in the type.
+acceptance_criteria:
+  - "Grep match: 'proxy_host_id' in frontend/src/lib/api/session.ts"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

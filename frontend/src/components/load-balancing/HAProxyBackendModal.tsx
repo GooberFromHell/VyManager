@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -189,40 +189,38 @@ export function HAProxyBackendModal({ open, onOpenChange, backend, capabilities,
 
         <div className="space-y-5 py-2">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Name <span className="text-destructive">*</span></Label>
+            <FormField label="Name" htmlFor="backend-name" required>
               <Input
+                id="backend-name"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
                 placeholder="web-backends"
                 disabled={isEdit}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Description</Label>
+            </FormField>
+            <FormField label="Description" htmlFor="backend-desc">
               <Input
+                id="backend-desc"
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
                 placeholder="Optional description"
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Mode</Label>
+            <FormField label="Mode" htmlFor="backend-mode">
               <Select value={form.mode} onValueChange={(v) => set("mode", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="backend-mode"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="http">HTTP</SelectItem>
                   <SelectItem value="tcp">TCP</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Balance Algorithm</Label>
+            </FormField>
+            <FormField label="Balance Algorithm" htmlFor="backend-balance">
               <Select value={form.balance} onValueChange={(v) => set("balance", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="backend-balance"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="round-robin">Round Robin</SelectItem>
                   <SelectItem value="least-conn">Least Connections</SelectItem>
@@ -230,29 +228,28 @@ export function HAProxyBackendModal({ open, onOpenChange, backend, capabilities,
                   <SelectItem value="uri">URI</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Health Check</Label>
+          <FormField label="Health Check" htmlFor="backend-hc">
             <Select
               value={form.health_check || "_none"}
               onValueChange={(v) => set("health_check", v === "_none" ? "" : v)}
             >
-              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectTrigger id="backend-hc"><SelectValue placeholder="None" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="_none">None</SelectItem>
                 <SelectItem value="tcp">TCP</SelectItem>
                 <SelectItem value="http">HTTP</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
           <Separator />
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Servers</Label>
+              <span className="text-sm font-semibold">Servers</span>
               <Button type="button" variant="outline" size="sm" onClick={addServer}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add Server
               </Button>
@@ -274,21 +271,18 @@ export function HAProxyBackendModal({ open, onOpenChange, backend, capabilities,
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Name</Label>
-                    <Input className="h-8 text-sm" value={srv.name}
+                  <FormField label="Name" htmlFor={`srv-name-${idx}`}>
+                    <Input id={`srv-name-${idx}`} className="h-8 text-sm" value={srv.name}
                       onChange={(e) => setServer(idx, "name", e.target.value)} placeholder="web1" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Address</Label>
-                    <Input className="h-8 text-sm" value={srv.address}
+                  </FormField>
+                  <FormField label="Address" htmlFor={`srv-addr-${idx}`}>
+                    <Input id={`srv-addr-${idx}`} className="h-8 text-sm" value={srv.address}
                       onChange={(e) => setServer(idx, "address", e.target.value)} placeholder="10.0.0.10" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Port</Label>
-                    <Input className="h-8 text-sm" value={srv.port}
+                  </FormField>
+                  <FormField label="Port" htmlFor={`srv-port-${idx}`}>
+                    <Input id={`srv-port-${idx}`} className="h-8 text-sm" value={srv.port}
                       onChange={(e) => setServer(idx, "port", e.target.value)} placeholder="8080" />
-                  </div>
+                  </FormField>
                 </div>
 
                 <div className="flex flex-wrap gap-4">
@@ -298,7 +292,7 @@ export function HAProxyBackendModal({ open, onOpenChange, backend, capabilities,
                   </label>
                   {isV15 && srv.check && (
                     <div className="flex items-center gap-2">
-                      <Label className="text-xs whitespace-nowrap">Check port</Label>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">Check port</span>
                       <Input className="h-7 w-20 text-xs" value={srv.check_port}
                         onChange={(e) => setServer(idx, "check_port", e.target.value)} placeholder="80" />
                     </div>
@@ -326,11 +320,10 @@ export function HAProxyBackendModal({ open, onOpenChange, backend, capabilities,
             <CollapsibleContent className="space-y-4 pt-3">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">HTTP Health Check</p>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Method</Label>
+                <FormField label="Method" htmlFor="hc-method">
                   <Select value={form.http_check_method || "_none"}
                     onValueChange={(v) => set("http_check_method", v === "_none" ? "" : v)}>
-                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectTrigger id="hc-method"><SelectValue placeholder="None" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_none">None</SelectItem>
                       <SelectItem value="GET">GET</SelectItem>
@@ -338,34 +331,30 @@ export function HAProxyBackendModal({ open, onOpenChange, backend, capabilities,
                       <SelectItem value="OPTIONS">OPTIONS</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">URI</Label>
-                  <Input value={form.http_check_uri}
+                </FormField>
+                <FormField label="URI" htmlFor="hc-uri">
+                  <Input id="hc-uri" value={form.http_check_uri}
                     onChange={(e) => set("http_check_uri", e.target.value)} placeholder="/health" />
-                </div>
+                </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Expect Status</Label>
-                  <Input value={form.http_check_expect_status}
+                <FormField label="Expect Status" htmlFor="hc-expect-status">
+                  <Input id="hc-expect-status" value={form.http_check_expect_status}
                     onChange={(e) => set("http_check_expect_status", e.target.value)} placeholder="200" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Expect String</Label>
-                  <Input value={form.http_check_expect_string}
+                </FormField>
+                <FormField label="Expect String" htmlFor="hc-expect-string">
+                  <Input id="hc-expect-string" value={form.http_check_expect_string}
                     onChange={(e) => set("http_check_expect_string", e.target.value)} placeholder="OK" />
-                </div>
+                </FormField>
               </div>
 
               <Separator />
 
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">SSL/TLS (Backend)</p>
-              <div className="space-y-1.5">
-                <Label className="text-sm">CA Certificate</Label>
-                <Input value={form.ssl_ca_certificate}
+              <FormField label="CA Certificate" htmlFor="ssl-ca-cert">
+                <Input id="ssl-ca-cert" value={form.ssl_ca_certificate}
                   onChange={(e) => set("ssl_ca_certificate", e.target.value)} placeholder="ca-cert name" />
-              </div>
+              </FormField>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <Checkbox checked={form.ssl_no_verify}
                   onCheckedChange={(c) => set("ssl_no_verify", !!c)} />

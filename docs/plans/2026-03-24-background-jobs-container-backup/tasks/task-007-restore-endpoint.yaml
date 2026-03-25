@@ -1,0 +1,245 @@
+id: task-007-restore-endpoint
+title: "Add container restore API endpoint"
+archetype: custom
+phase: 2
+depends_on: [task-005]
+parallel_with: [task-006]
+agent: general-purpose
+status: not_started
+
+files:
+  create: []
+  modify:
+    - "backend/routers/site_tools/backup.py"
+
+context_files:
+  - ".derpo/architecture.md"
+  - "backend/routers/site_tools/backup.py"
+  - "backend/routers/site_tools/container_backup.py"
+  - "backend/routers/container/container.py"
+  - "backend/ssh_key_manager.py"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Add a container restore endpoint to backup.py that accepts a ContainerFullBackup payload
+  and restores a container to a target VyOS instance via the VyOS REST API and SSH.
+
+  ## Step 1: Read reference files
+  - Read `backend/routers/site_tools/backup.py` for the existing models and endpoint patterns.
+  - Read `backend/routers/site_tools/container_backup.py` for SSH connection helper.
+  - Read `backend/routers/container/container.py` to understand how VyOS container commands
+    are applied via the batch API (if it exists, otherwise follow the standard batch builder pattern).
+
+  ## Step 2: Add the restore request/response models
+  Add these models to backup.py alongside the existing models:
+
+  ```python
+  class ContainerRestoreRequest(BaseModel):
+      """Request body for restoring a single container."""
+      container: ContainerFullBackup
+
+  class RestoreStepResult(BaseModel):
+      """Result for a single step of the restore process."""
+      step: str
+      success: bool
+      message: str
+      error: Optional[str] = None
+
+  class ContainerRestoreResponse(BaseModel):
+      """Response from a container restore operation."""
+      success: bool
+      container_name: str
+      steps: List[RestoreStepResult]
+  ```
+
+  ## Step 3: Implement the restore endpoint
+  Add this endpoint to the router:
+
+  ```python
+  @router.post(
+      "/{site_id}/instances/{instance_id}/container-restore",
+      response_model=ContainerRestoreResponse,
+  )
+  async def restore_container(
+      request: Request,
+      site_id: str,
+      instance_id: str,
+      body: ContainerRestoreRequest,
+  ):
+      """
+      Restore a container to a VyOS instance from backup data.
+
+      Applies config commands via VyOS REST API, restores volume data via SSH,
+      and optionally restarts the container if it was running at backup time.
+
+      Requires platform ADMIN role.
+      """
+  ```
+
+  Implementation:
+  1. Validate authentication via `request.state.user` (raise 401 if missing).
+  2. Get `db_pool` from `request.app.state.db_pool`.
+  3. Verify user is ADMIN:
+     ```sql
+     SELECT role FROM users WHERE id = $1
+     ```
+     Raise 403 if not ADMIN.
+
+  4. Look up the target instance:
+     ```sql
+     SELECT id, name, host, port, "apiKey", protocol, "verifySsl", "vyosVersion",
+            "sshPort", "sshUsername", "sshEncryptedPrivKey", "sshKeyNonce", "sshKeyConfigured"
+     FROM instances
+     WHERE id = $1 AND "siteId" = $2
+     ```
+     Raise 404 if not found.
+
+  5. Build step results list.
+
+  6. **Step: Apply config commands** — Use the VyOS REST API to apply the set commands from
+     `body.container.config_commands`. Parse the commands string into individual lines,
+     then use the pyvyos SDK to execute them. Create a VyDevice, call
+     `device.configure_set(path=cmd_path)` for each command, then
+     `device.config_file_save()`.
+
+     Alternatively, if the `config_commands` are already in `set ...` format, you can
+     use the VyOS HTTP API's batch configure endpoint. The simplest approach:
+
+     ```python
+     from pyvyos import VyDevice
+     from starlette.concurrency import run_in_threadpool
+
+     device = VyDevice(
+         hostname=instance_row["host"],
+         apikey=instance_row.get("apiKey", ""),
+         port=instance_row["port"],
+         protocol=instance_row.get("protocol", "https"),
+         verify=instance_row.get("verifySsl", False),
+         timeout=30,
+     )
+
+     # Parse set commands and apply them
+     commands = body.container.config_commands.strip().splitlines()
+     for cmd in commands:
+         cmd = cmd.strip()
+         if cmd.startswith("set "):
+             path = cmd[4:].split()  # Remove "set " prefix
+             response = await run_in_threadpool(device.configure_set, path=path)
+             if response.status != 200:
+                 steps.append(RestoreStepResult(
+                     step="apply_config", success=False,
+                     message=f"Failed to apply: {cmd}",
+                     error=response.error,
+                 ))
+                 # Return early on config failure
+                 return ContainerRestoreResponse(
+                     success=False,
+                     container_name=body.container.container_name,
+                     steps=steps,
+                 )
+
+     # Save config
+     await run_in_threadpool(device.config_file_save)
+     steps.append(RestoreStepResult(
+         step="apply_config", success=True,
+         message=f"Applied {len(commands)} config commands",
+     ))
+     ```
+
+  7. **Step: Restore volumes** — If the container has volume data with `data_base64`, open SSH
+     and restore each volume:
+     ```python
+     from routers.site_tools.container_backup import open_ssh_connection
+
+     if any(v.data_base64 for v in body.container.volumes):
+         conn = await open_ssh_connection(dict(instance_row))
+         if conn:
+             for vol in body.container.volumes:
+                 if not vol.data_base64:
+                     continue
+                 try:
+                     # Create directory and extract
+                     await conn.run(
+                         f"sudo mkdir -p {shlex.quote(vol.source_path)}",
+                         check=True, timeout=30,
+                     )
+                     result = await conn.run(
+                         f"echo {shlex.quote(vol.data_base64)} | base64 -d | sudo tar -xzf - -C {shlex.quote(vol.source_path)}",
+                         check=False, timeout=300,
+                     )
+                     if result.exit_status == 0:
+                         steps.append(RestoreStepResult(
+                             step="restore_volume", success=True,
+                             message=f"Restored volume {vol.volume_name} to {vol.source_path}",
+                         ))
+                     else:
+                         steps.append(RestoreStepResult(
+                             step="restore_volume", success=False,
+                             message=f"Failed to restore volume {vol.volume_name}",
+                             error=result.stderr.strip(),
+                         ))
+                 except Exception as e:
+                     steps.append(RestoreStepResult(
+                         step="restore_volume", success=False,
+                         message=f"Volume {vol.volume_name} restore error",
+                         error=str(e),
+                     ))
+             conn.close()
+         else:
+             steps.append(RestoreStepResult(
+                 step="restore_volume", success=False,
+                 message="SSH connection failed — volumes not restored",
+             ))
+     ```
+
+  8. **Step: Restart container** — If `runtime_status.running` was True at backup time,
+     issue a restart. Use VyOS REST API:
+     ```python
+     if body.container.runtime_status and body.container.runtime_status.running:
+         try:
+             response = await run_in_threadpool(
+                 device.generate, path=["container", "restart", "name", body.container.container_name]
+             )
+             steps.append(RestoreStepResult(
+                 step="restart_container", success=True,
+                 message=f"Container {body.container.container_name} restart requested",
+             ))
+         except Exception as e:
+             steps.append(RestoreStepResult(
+                 step="restart_container", success=False,
+                 message="Failed to restart container",
+                 error=str(e),
+             ))
+     ```
+
+  9. Return `ContainerRestoreResponse(success=all_ok, container_name=..., steps=steps)`.
+
+  ## Important notes
+  - Add `import shlex` if not already imported.
+  - The restore endpoint is under the same router prefix (`/session/sites`) as the backup endpoint.
+  - Volume data can be very large — the `echo base64 | base64 -d | tar` approach has a shell
+    argument size limit. For very large volumes, a streaming approach would be needed, but for
+    the initial implementation this is acceptable (volumes are already capped by CONTAINER_VOLUME_BACKUP_MAX_MB).
+  - Config commands must be committed to VyOS — ensure `device.config_file_save()` is called
+    after applying all set commands.
+
+acceptance_criteria:
+  - "POST /{site_id}/instances/{instance_id}/container-restore endpoint exists"
+  - "Endpoint requires platform ADMIN role (403 for non-admin)"
+  - "Endpoint validates the target instance exists in the specified site"
+  - "Config commands are applied via VyOS REST API (pyvyos SDK)"
+  - "Volume data is restored via SSH when data_base64 is present"
+  - "Container is restarted if it was running at backup time"
+  - "Per-step results are returned in ContainerRestoreResponse"
+  - "ContainerRestoreRequest, RestoreStepResult, and ContainerRestoreResponse models exist"
+  - "SSH connection uses open_ssh_connection from container_backup module"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

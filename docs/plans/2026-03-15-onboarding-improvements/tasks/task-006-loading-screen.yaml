@@ -1,0 +1,78 @@
+id: "task-006"
+title: "Improve loading screens with contextual messages"
+phase: produce
+execution_phase: 2
+agent: react-specialist
+status: not_started
+depends_on: []
+blocks: ["task-008"]
+parallel_with: ["task-002", "task-005", "task-007"]
+
+files:
+  create: []
+  modify:
+    - "frontend/src/app/(default)/layout.tsx"
+    - "frontend/src/app/(default)/(app)/layout.tsx"
+
+context_files:
+  - "frontend/src/app/(default)/layout.tsx"
+  - "frontend/src/app/(default)/(app)/layout.tsx"
+  - "frontend/src/store/session-store.ts"
+
+instructions: |
+  Improve the two main loading screens to show contextual information instead of bare spinners.
+
+  ## 1. Default layout loading screen (frontend/src/app/(default)/layout.tsx)
+
+  Read the file. This layout loads the VyOS session on mount and shows a loading spinner.
+  The current loading screen is a bare Loader2 spinner with "Loading..." text.
+
+  Replace with:
+  ```tsx
+  <div className="flex h-screen items-center justify-center bg-background">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="text-center">
+        <p className="text-sm font-medium text-foreground">Loading VyManager</p>
+        <p className="text-xs text-muted-foreground mt-1">Initializing your session...</p>
+      </div>
+    </div>
+  </div>
+  ```
+
+  ## 2. App layout loading/redirect screen (frontend/src/app/(default)/(app)/layout.tsx)
+
+  Read the file. This layout checks for an active VyOS instance and redirects to /sites if none.
+  The current redirect screen shows a Loader2 with "Redirecting to site manager...".
+
+  This one is already decent — just verify it has contextual text. If it only shows a bare spinner,
+  update similarly to:
+  ```tsx
+  <div className="flex h-screen items-center justify-center bg-background">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="text-center">
+        <p className="text-sm font-medium text-foreground">No active connection</p>
+        <p className="text-xs text-muted-foreground mt-1">Redirecting to site manager...</p>
+      </div>
+    </div>
+  </div>
+  ```
+
+  Key changes:
+  - Add text-center wrapper with title + subtitle
+  - Use "text-primary" on spinner for main load, "text-muted-foreground" for redirect
+  - Descriptive messages that tell users what's happening
+
+acceptance_criteria:
+  - "Grep match: 'Loading VyManager' in frontend/src/app/(default)/layout.tsx"
+  - "Grep match: 'Initializing' in frontend/src/app/(default)/layout.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

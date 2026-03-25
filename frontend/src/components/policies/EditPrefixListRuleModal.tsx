@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { prefixListService, type PrefixListRule } from "@/lib/api/prefix-list";
 import { ApiError } from "@/lib/types/api";
 
@@ -195,94 +195,101 @@ export function EditPrefixListRuleModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="rule-number">Rule Number</Label>
-              <Input
-                id="rule-number"
-                type="number"
-                value={rule.rule_number}
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">Rule number cannot be changed</p>
+        <div className="space-y-5 py-4">
+          <Fieldset label="Rule Info">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Rule Number"
+                htmlFor="rule-number"
+                description="Rule number cannot be changed"
+              >
+                <Input
+                  id="rule-number"
+                  type="number"
+                  value={rule.rule_number}
+                  disabled
+                  className="bg-muted"
+                />
+              </FormField>
+
+              <FormField label="Action" htmlFor="action" required>
+                <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
+                  <SelectTrigger id="action">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="permit">Permit</SelectItem>
+                    <SelectItem value="deny">Deny</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="action">Action *</Label>
-              <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
-                <SelectTrigger id="action">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="permit">Permit</SelectItem>
-                  <SelectItem value="deny">Deny</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="rule-description">Rule Description</Label>
-            <Input
-              id="rule-description"
-              value={ruleDescription}
-              onChange={(e) => setRuleDescription(e.target.value)}
-              placeholder="Enter rule description (optional)"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="prefix">Prefix (CIDR) *</Label>
-            <Input
-              id="prefix"
-              value={prefix}
-              onChange={(e) => setPrefix(e.target.value)}
-              placeholder={listType === "ipv4" ? "e.g., 192.168.1.0/24" : "e.g., 2001:db8::/32"}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Enter prefix in CIDR notation
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ge">GE (Greater-than-or-equal)</Label>
+            <FormField label="Rule Description" htmlFor="rule-description">
               <Input
-                id="ge"
-                type="number"
-                value={ge}
-                onChange={(e) => setGe(e.target.value)}
-                placeholder="Optional"
+                id="rule-description"
+                value={ruleDescription}
+                onChange={(e) => setRuleDescription(e.target.value)}
+                placeholder="Enter rule description (optional)"
                 disabled={loading}
-                min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
-                max={listType === "ipv4" ? 32 : 128}
               />
-              <p className="text-xs text-muted-foreground">
-                Minimum prefix length to match
-              </p>
-            </div>
+            </FormField>
+          </Fieldset>
 
-            <div className="space-y-2">
-              <Label htmlFor="le">LE (Less-than-or-equal)</Label>
+          <FieldsetDivider />
+
+          <Fieldset label="Match Conditions">
+            <FormField
+              label="Prefix (CIDR)"
+              htmlFor="prefix"
+              description="Enter prefix in CIDR notation"
+              required
+            >
               <Input
-                id="le"
-                type="number"
-                value={le}
-                onChange={(e) => setLe(e.target.value)}
-                placeholder="Optional"
+                id="prefix"
+                value={prefix}
+                onChange={(e) => setPrefix(e.target.value)}
+                placeholder={listType === "ipv4" ? "e.g., 192.168.1.0/24" : "e.g., 2001:db8::/32"}
                 disabled={loading}
-                min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
-                max={listType === "ipv4" ? 32 : 128}
               />
-              <p className="text-xs text-muted-foreground">
-                Maximum prefix length to match
-              </p>
+            </FormField>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="GE (Greater-than-or-equal)"
+                htmlFor="ge"
+                description="Minimum prefix length to match"
+              >
+                <Input
+                  id="ge"
+                  type="number"
+                  value={ge}
+                  onChange={(e) => setGe(e.target.value)}
+                  placeholder="Optional"
+                  disabled={loading}
+                  min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
+                  max={listType === "ipv4" ? 32 : 128}
+                />
+              </FormField>
+
+              <FormField
+                label="LE (Less-than-or-equal)"
+                htmlFor="le"
+                description="Maximum prefix length to match"
+              >
+                <Input
+                  id="le"
+                  type="number"
+                  value={le}
+                  onChange={(e) => setLe(e.target.value)}
+                  placeholder="Optional"
+                  disabled={loading}
+                  min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
+                  max={listType === "ipv4" ? 32 : 128}
+                />
+              </FormField>
             </div>
-          </div>
+          </Fieldset>
 
           <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
             <div className="flex gap-2">

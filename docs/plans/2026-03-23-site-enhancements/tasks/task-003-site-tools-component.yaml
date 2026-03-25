@@ -1,0 +1,46 @@
+id: "task-003"
+title: "Create SiteToolsSection placeholder component"
+archetype: frontend-service
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: []
+blocks: ["task-009"]
+parallel_with: ["task-005", "task-007"]
+files:
+  create:
+    - frontend/src/components/sites/SiteToolsSection.tsx
+  modify: []
+context_files:
+  - frontend/src/components/sites/InstanceCard.tsx
+  - frontend/src/components/ui/page-header.tsx
+instructions: |
+  1. Read `frontend/src/components/sites/InstanceCard.tsx` for the existing card styling patterns (cn() usage, Tailwind classes, dark mode)
+  2. Create a new file `frontend/src/components/sites/SiteToolsSection.tsx`
+  3. The component should render a section with:
+     - A section header: "Site Tools" with a Wrench icon from lucide-react
+     - A grid of 4 placeholder tool cards (2 columns on desktop)
+     - Each card has: Lucide icon, tool name, brief description, "Coming Soon" Badge
+     - Cards use muted/disabled styling: reduced opacity, pointer-events-none, subtle border
+  4. Tool cards to include:
+     - **Site Backup** (Database icon): "Back up configurations from all routers in this site"
+     - **Bulk Config Push** (Send icon): "Push configuration templates across multiple routers"
+     - **Health Report** (Activity icon): "Generate aggregate health report for all site routers"
+     - **Firmware Management** (Download icon): "Coordinate firmware upgrades across site routers"
+  5. Use existing shadcn/ui components: Badge, Card (or just div with card-like styling)
+  6. Follow the project's dark-mode-only aesthetic with neutral colors
+  7. Export as named export: `export function SiteToolsSection()`
+  8. No props needed — this is a static placeholder
+acceptance_criteria:
+  - "File exists: frontend/src/components/sites/SiteToolsSection.tsx"
+  - "Grep match: 'SiteToolsSection' in frontend/src/components/sites/SiteToolsSection.tsx"
+  - "Grep match: 'Coming Soon' in frontend/src/components/sites/SiteToolsSection.tsx"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

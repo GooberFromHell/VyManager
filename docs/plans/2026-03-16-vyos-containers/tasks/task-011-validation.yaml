@@ -1,0 +1,81 @@
+id: "task-011"
+title: "Validate TypeScript compilation and linting"
+phase: observe
+execution_phase: 5
+agent: "general-purpose"
+status: not_started
+depends_on: ["task-007", "task-008", "task-009", "task-010"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify: []
+
+context_files: []
+
+instructions: |
+  Run validation checks to verify the entire container feature compiles and passes linting.
+
+  ## Steps:
+
+  1. Run TypeScript type checking:
+     ```bash
+     cd frontend && npx tsc --noEmit
+     ```
+     - Must pass with zero errors related to container files
+     - If there are pre-existing errors unrelated to containers, note them but don't fix
+
+  2. Run ESLint:
+     ```bash
+     cd frontend && npm run lint
+     ```
+     - Must pass with zero errors in container files
+
+  3. Verify all expected files exist:
+     - backend/vyos_mappers/container/container.py
+     - backend/vyos_mappers/container/container_versions/__init__.py
+     - backend/vyos_mappers/container/container_versions/v1_4.py
+     - backend/vyos_mappers/container/container_versions/v1_5.py
+     - backend/vyos_builders/container/container.py
+     - backend/routers/container/container.py
+     - frontend/src/lib/api/types/container.ts
+     - frontend/src/lib/api/container.ts
+     - frontend/src/app/(default)/(app)/containers/page.tsx
+     - frontend/src/components/containers/CreateContainerModal.tsx
+     - frontend/src/components/containers/EditContainerModal.tsx
+     - frontend/src/components/containers/DeleteContainerModal.tsx
+     - frontend/src/components/containers/CreateContainerNetworkModal.tsx
+     - frontend/src/components/containers/EditContainerNetworkModal.tsx
+     - frontend/src/components/containers/DeleteContainerNetworkModal.tsx
+     - frontend/src/components/containers/CreateContainerRegistryModal.tsx
+     - frontend/src/components/containers/EditContainerRegistryModal.tsx
+     - frontend/src/components/containers/DeleteContainerRegistryModal.tsx
+
+  4. Verify registrations:
+     - Grep for "container" registration in backend/vyos_mappers/__init__.py
+     - Grep for "ContainerBatchBuilder" in backend/vyos_builders/__init__.py
+     - Grep for "container_router" in backend/app.py
+     - Grep for "CONTAINER" in backend/rbac_permissions.py
+     - Grep for "CONTAINER" in frontend/src/lib/api/user-management.ts
+     - Grep for "/containers" in frontend/src/components/layout/Sidebar.tsx
+
+  5. If any errors are found, fix them directly. Common issues:
+     - Missing imports
+     - Type mismatches between backend response and frontend types
+     - Incorrect component prop types
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit (no new errors)"
+  - "Command passes: cd frontend && npm run lint (no new errors)"
+  - "All 18 new files exist"
+  - "All 6 registration points verified"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

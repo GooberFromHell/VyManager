@@ -1,0 +1,152 @@
+id: "task-006"
+title: "Create frontend API service for containers"
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-005"]
+blocks: ["task-007", "task-008", "task-009", "task-010"]
+parallel_with: []
+
+files:
+  create:
+    - "frontend/src/lib/api/container.ts"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/ntp.ts"
+  - "frontend/src/lib/api/snmp.ts"
+  - "frontend/src/lib/api/types/container.ts"
+  - "frontend/src/lib/api/client.ts"
+
+instructions: |
+  Create ContainerService API client class following the NTP/SNMP service pattern.
+
+  ## frontend/src/lib/api/container.ts
+
+  ```typescript
+  import { apiClient } from "./client";
+  import type {
+    ContainerConfig,
+    ContainerCapabilities,
+    ContainerBatchRequest,
+    ContainerBatchOperation,
+    VyOSResponse,
+  } from "./types/container";
+
+  class ContainerService {
+    // ========================================================================
+    // Core API Methods
+    // ========================================================================
+
+    async getCapabilities(): Promise<ContainerCapabilities> {
+      return apiClient.get<ContainerCapabilities>("/vyos/container/capabilities");
+    }
+
+    async getConfig(): Promise<ContainerConfig> {
+      return apiClient.get<ContainerConfig>("/vyos/container/config");
+    }
+
+    async batchConfigure(request: ContainerBatchRequest): Promise<VyOSResponse> {
+      return apiClient.post<VyOSResponse>("/vyos/container/batch", request);
+    }
+
+    async refreshConfig(): Promise<{ success: boolean }> {
+      return apiClient.post<{ success: boolean }>("/vyos/config/refresh");
+    }
+
+    // ========================================================================
+    // Container Name Convenience Methods
+    // ========================================================================
+
+    async createContainer(
+      name: string,
+      operations: ContainerBatchOperation[]
+    ): Promise<VyOSResponse> {
+      return this.batchConfigure({ item_name: name, operations });
+    }
+
+    async updateContainer(
+      name: string,
+      operations: ContainerBatchOperation[]
+    ): Promise<VyOSResponse> {
+      return this.batchConfigure({ item_name: name, operations });
+    }
+
+    async deleteContainer(name: string): Promise<VyOSResponse> {
+      return this.batchConfigure({
+        item_name: name,
+        operations: [{ op: "delete_container" }],
+      });
+    }
+
+    // ========================================================================
+    // Container Network Convenience Methods
+    // ========================================================================
+
+    async createNetwork(
+      name: string,
+      operations: ContainerBatchOperation[]
+    ): Promise<VyOSResponse> {
+      return this.batchConfigure({ item_name: name, operations });
+    }
+
+    async updateNetwork(
+      name: string,
+      operations: ContainerBatchOperation[]
+    ): Promise<VyOSResponse> {
+      return this.batchConfigure({ item_name: name, operations });
+    }
+
+    async deleteNetwork(name: string): Promise<VyOSResponse> {
+      return this.batchConfigure({
+        item_name: name,
+        operations: [{ op: "delete_network" }],
+      });
+    }
+
+    // ========================================================================
+    // Container Registry Convenience Methods
+    // ========================================================================
+
+    async createRegistry(
+      url: string,
+      operations: ContainerBatchOperation[]
+    ): Promise<VyOSResponse> {
+      return this.batchConfigure({ item_name: url, operations });
+    }
+
+    async updateRegistry(
+      url: string,
+      operations: ContainerBatchOperation[]
+    ): Promise<VyOSResponse> {
+      return this.batchConfigure({ item_name: url, operations });
+    }
+
+    async deleteRegistry(url: string): Promise<VyOSResponse> {
+      return this.batchConfigure({
+        item_name: url,
+        operations: [{ op: "delete_registry" }],
+      });
+    }
+  }
+
+  export const containerService = new ContainerService();
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/container.ts"
+  - "Grep match: 'class ContainerService' in frontend/src/lib/api/container.ts"
+  - "Grep match: 'containerService' in frontend/src/lib/api/container.ts"
+  - "Grep match: 'getCapabilities' in frontend/src/lib/api/container.ts"
+  - "Grep match: 'getConfig' in frontend/src/lib/api/container.ts"
+  - "Grep match: 'batchConfigure' in frontend/src/lib/api/container.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

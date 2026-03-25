@@ -112,6 +112,15 @@ class MonitoringService {
   }
 
   /**
+   * Test SSH connectivity to the active instance. If successful, auto-marks
+   * the instance as configured for monitoring. Use when SSH keys were set up
+   * outside of VyManager's UI.
+   */
+  async testSSHConnection(): Promise<GenericResponse> {
+    return apiClient.post<GenericResponse>("/vyos/monitoring/ssh-test");
+  }
+
+  /**
    * List available monitoring commands
    */
   async getCommands(): Promise<MonitoringCommandsResponse> {

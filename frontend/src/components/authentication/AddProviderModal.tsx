@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Loader2,
   Eye,
@@ -226,30 +226,28 @@ export function AddProviderModal({
 
               {/* Discovery URL for self-hosted providers */}
               {isCustomOrSelfHosted && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="discoveryUrl">
-                    Discovery URL{" "}
-                    <span className="text-muted-foreground font-normal">(OIDC well-known endpoint)</span>
-                  </Label>
+                <FormField
+                  label="Discovery URL"
+                  htmlFor="discoveryUrl"
+                  description={
+                    selected.providerId === "auth0" ? "Example: https://YOUR_DOMAIN.auth0.com/.well-known/openid-configuration" :
+                    selected.providerId === "okta" ? "Example: https://YOUR_DOMAIN.okta.com/.well-known/openid-configuration" :
+                    selected.providerId === "keycloak" ? "Example: https://keycloak.example.com/realms/REALM/.well-known/openid-configuration" :
+                    selected.providerId === "authentik" ? "Example: https://authentik.example.com/application/o/APP_SLUG/.well-known/openid-configuration" :
+                    "The full URL to your provider's OpenID Connect discovery document"
+                  }
+                >
                   <Input
                     id="discoveryUrl"
                     value={discoveryUrl}
                     onChange={(e) => setDiscoveryUrl(e.target.value)}
                     placeholder="https://your-provider/.well-known/openid-configuration"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {selected.providerId === "auth0" && "Example: https://YOUR_DOMAIN.auth0.com/.well-known/openid-configuration"}
-                    {selected.providerId === "okta" && "Example: https://YOUR_DOMAIN.okta.com/.well-known/openid-configuration"}
-                    {selected.providerId === "keycloak" && "Example: https://keycloak.example.com/realms/REALM/.well-known/openid-configuration"}
-                    {selected.providerId === "authentik" && "Example: https://authentik.example.com/application/o/APP_SLUG/.well-known/openid-configuration"}
-                    {selected.providerId === "custom-oidc" && "The full URL to your provider's OpenID Connect discovery document"}
-                  </p>
-                </div>
+                </FormField>
               )}
 
               {/* Client ID */}
-              <div className="space-y-1.5">
-                <Label htmlFor="clientId">Client ID</Label>
+              <FormField label="Client ID" htmlFor="clientId">
                 <Input
                   id="clientId"
                   value={clientId}
@@ -257,11 +255,10 @@ export function AddProviderModal({
                   placeholder="Paste your client ID here"
                   autoComplete="off"
                 />
-              </div>
+              </FormField>
 
               {/* Client Secret */}
-              <div className="space-y-1.5">
-                <Label htmlFor="clientSecret">Client Secret</Label>
+              <FormField label="Client Secret" htmlFor="clientSecret">
                 <div className="relative">
                   <Input
                     id="clientSecret"
@@ -280,19 +277,21 @@ export function AddProviderModal({
                     {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-              </div>
+              </FormField>
 
               {/* Scopes */}
-              <div className="space-y-1.5">
-                <Label htmlFor="scopes">Scopes</Label>
+              <FormField
+                label="Scopes"
+                htmlFor="scopes"
+                description="Space-separated list of OAuth scopes"
+              >
                 <Input
                   id="scopes"
                   value={scopes}
                   onChange={(e) => setScopes(e.target.value)}
                   placeholder="openid email profile"
                 />
-                <p className="text-xs text-muted-foreground">Space-separated list of OAuth scopes</p>
-              </div>
+              </FormField>
 
               {/* Advanced */}
               {!isCustomOrSelfHosted && (
@@ -308,30 +307,26 @@ export function AddProviderModal({
                   {showAdvanced && (
                     <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
                       {!requiresManualEndpoints && (
-                        <div className="space-y-1.5">
-                          <Label htmlFor="advDiscoveryUrl">Discovery URL (OIDC)</Label>
+                        <FormField label="Discovery URL (OIDC)" htmlFor="advDiscoveryUrl">
                           <Input
                             id="advDiscoveryUrl"
                             value={discoveryUrl}
                             onChange={(e) => setDiscoveryUrl(e.target.value)}
                             placeholder={selected.discoveryUrl ?? "Auto-configured"}
                           />
-                        </div>
+                        </FormField>
                       )}
                       {requiresManualEndpoints && (
                         <>
-                          <div className="space-y-1.5">
-                            <Label>Authorization URL</Label>
-                            <Input value={authorizationUrl} onChange={(e) => setAuthorizationUrl(e.target.value)} />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label>Token URL</Label>
-                            <Input value={tokenUrl} onChange={(e) => setTokenUrl(e.target.value)} />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label>User Info URL</Label>
-                            <Input value={userInfoUrl} onChange={(e) => setUserInfoUrl(e.target.value)} />
-                          </div>
+                          <FormField label="Authorization URL" htmlFor="authorizationUrl">
+                            <Input id="authorizationUrl" value={authorizationUrl} onChange={(e) => setAuthorizationUrl(e.target.value)} />
+                          </FormField>
+                          <FormField label="Token URL" htmlFor="tokenUrl">
+                            <Input id="tokenUrl" value={tokenUrl} onChange={(e) => setTokenUrl(e.target.value)} />
+                          </FormField>
+                          <FormField label="User Info URL" htmlFor="userInfoUrl">
+                            <Input id="userInfoUrl" value={userInfoUrl} onChange={(e) => setUserInfoUrl(e.target.value)} />
+                          </FormField>
                         </>
                       )}
                     </div>

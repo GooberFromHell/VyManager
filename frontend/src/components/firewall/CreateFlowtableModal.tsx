@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -143,7 +143,7 @@ export function CreateFlowtableModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-5 py-4">
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
@@ -151,72 +151,76 @@ export function CreateFlowtableModal({
             </div>
           )}
 
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., FT_LAN"
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              Must start with a letter. Use letters, numbers, hyphens, and underscores.
-            </p>
-          </div>
+          <Fieldset>
+            <FormField
+              label="Name"
+              htmlFor="name"
+              description="Must start with a letter. Use letters, numbers, hyphens, and underscores."
+              required
+            >
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., FT_LAN"
+                className="font-mono"
+              />
+            </FormField>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
-              rows={2}
-            />
-          </div>
+            <FormField
+              label="Description"
+              htmlFor="description"
+            >
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description"
+                rows={2}
+              />
+            </FormField>
+          </Fieldset>
 
-          {/* Interfaces */}
-          <div className="space-y-2">
-            <Label>
-              Interfaces <span className="text-destructive">*</span>
-            </Label>
-            <div className="flex gap-2">
-              <Select value={selectedInterface} onValueChange={setSelectedInterface}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select interface" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableInterfaces
-                    .filter((iface) => !interfaces.includes(iface.name))
-                    .map((iface) => (
-                      <SelectItem key={iface.name} value={iface.name}>
-                        {iface.name}
-                        {iface.description && (
-                          <span className="text-muted-foreground ml-2">
-                            - {iface.description}
-                          </span>
-                        )}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={handleAddInterface}
-                disabled={!selectedInterface}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+          <Fieldset label="Interfaces">
+            <FormField
+              label="Add Interface"
+              htmlFor="selectedInterface"
+              description="Select the network interfaces to include in this flowtable."
+              required
+            >
+              <div className="flex gap-2">
+                <Select value={selectedInterface} onValueChange={setSelectedInterface}>
+                  <SelectTrigger id="selectedInterface" className="flex-1">
+                    <SelectValue placeholder="Select interface" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableInterfaces
+                      .filter((iface) => !interfaces.includes(iface.name))
+                      .map((iface) => (
+                        <SelectItem key={iface.name} value={iface.name}>
+                          {iface.name}
+                          {iface.description && (
+                            <span className="text-muted-foreground ml-2">
+                              - {iface.description}
+                            </span>
+                          )}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleAddInterface}
+                  disabled={!selectedInterface}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </FormField>
             {interfaces.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2">
                 {interfaces.map((iface) => (
                   <Badge key={iface} variant="secondary" className="gap-1">
                     {iface}
@@ -231,28 +235,23 @@ export function CreateFlowtableModal({
                 ))}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Select the network interfaces to include in this flowtable.
-            </p>
-          </div>
 
-          {/* Offload Type */}
-          <div className="space-y-2">
-            <Label htmlFor="offload">Offload Type</Label>
-            <Select value={offload} onValueChange={setOffload}>
-              <SelectTrigger id="offload">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="software">Software (kernel-based)</SelectItem>
-                <SelectItem value="hardware">Hardware (NIC-based)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Software offload uses the kernel for processing. Hardware offload uses the NIC
-              (requires compatible hardware).
-            </p>
-          </div>
+            <FormField
+              label="Offload Type"
+              htmlFor="offload"
+              description="Software offload uses the kernel for processing. Hardware offload uses the NIC (requires compatible hardware)."
+            >
+              <Select value={offload} onValueChange={setOffload}>
+                <SelectTrigger id="offload">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="software">Software (kernel-based)</SelectItem>
+                  <SelectItem value="hardware">Hardware (NIC-based)</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

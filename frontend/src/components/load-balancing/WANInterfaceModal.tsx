@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Separator } from "@/components/ui/separator";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -152,44 +152,44 @@ export function WANInterfaceModal({ open, onOpenChange, iface, onSuccess }: Prop
 
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Interface <span className="text-destructive">*</span></Label>
+            <FormField label="Interface" htmlFor="wan-iface" required>
               <Input
+                id="wan-iface"
                 value={form.interface}
                 onChange={(e) => set("interface", e.target.value)}
                 placeholder="eth0"
                 disabled={isEdit}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Nexthop (Gateway) <span className="text-destructive">*</span></Label>
+            </FormField>
+            <FormField label="Nexthop (Gateway)" htmlFor="wan-nexthop" required>
               <Input
+                id="wan-nexthop"
                 value={form.nexthop}
                 onChange={(e) => set("nexthop", e.target.value)}
                 placeholder="203.0.113.1"
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Failure Count</Label>
+            <FormField label="Failure Count" htmlFor="wan-fail-count">
               <Input
+                id="wan-fail-count"
                 value={form.failure_count}
                 onChange={(e) => set("failure_count", e.target.value)}
                 placeholder="5"
                 type="number"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Success Count</Label>
+            </FormField>
+            <FormField label="Success Count" htmlFor="wan-succ-count">
               <Input
+                id="wan-succ-count"
                 value={form.success_count}
                 onChange={(e) => set("success_count", e.target.value)}
                 placeholder="5"
                 type="number"
               />
-            </div>
+            </FormField>
           </div>
 
           <Separator />
@@ -197,7 +197,7 @@ export function WANInterfaceModal({ open, onOpenChange, iface, onSuccess }: Prop
           {/* Tests */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Health Tests</Label>
+              <span className="text-sm font-semibold">Health Tests</span>
               <Button type="button" variant="outline" size="sm" onClick={addTest}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add Test
               </Button>
@@ -219,31 +219,31 @@ export function WANInterfaceModal({ open, onOpenChange, iface, onSuccess }: Prop
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Type</Label>
+                  <FormField label="Type" htmlFor={`test-type-${idx}`}>
                     <Select
                       value={test.type}
                       onValueChange={(v) => setTest(idx, "type", v)}
                     >
-                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id={`test-type-${idx}`} className="h-8 text-sm"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ping">Ping</SelectItem>
                         <SelectItem value="ttl">TTL</SelectItem>
                         <SelectItem value="user-defined">User Defined</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">
-                      {test.type === "user-defined" ? "Script" : "Target"}
-                    </Label>
+                  </FormField>
+                  <FormField
+                    label={test.type === "user-defined" ? "Script" : "Target"}
+                    htmlFor={`test-target-${idx}`}
+                  >
                     <Input
+                      id={`test-target-${idx}`}
                       className="h-8 text-sm"
                       value={test.target}
                       onChange={(e) => setTest(idx, "target", e.target.value)}
                       placeholder={test.type === "user-defined" ? "/etc/check.sh" : "8.8.8.8"}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             ))}

@@ -1,0 +1,92 @@
+id: "task-003"
+title: "Create Prometheus parser + router backend"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-002"]
+blocks: ["task-008", "task-009"]
+parallel_with: []
+
+files:
+  create:
+    - "backend/prometheus_parser.py"
+    - "backend/routers/prometheus/__init__.py"
+    - "backend/routers/prometheus/prometheus.py"
+  modify:
+    - "backend/app.py"
+
+context_files:
+  - "backend/routers/show.py"
+  - "backend/middleware/session.py"
+  - "backend/app.py"
+  - ".derpo/pattern-snippets/backend-router.py"
+
+instructions: |
+  ## 1. Create `backend/prometheus_parser.py`
+
+  Lightweight parser for Prometheus text exposition format. Must handle:
+  - Comment lines (# HELP, # TYPE)
+  - Metric lines: `metric_name{label="value",...} numeric_value [timestamp]`
+  - Metric lines without labels: `metric_name numeric_value`
+  - Return structured data grouped by metric family
+
+  ```python
+  def parse_prometheus_text(text: str) -> dict[str, list[dict]]:
+      """Parse Prometheus text format into structured dict.
+      Returns: { "metric_family": [{"name": str, "labels": dict, "value": float}, ...] }
+      """
+  ```
+
+  Focus on GAUGE and COUNTER types (what Telegraf exports). Skip HISTOGRAM/SUMMARY for now.
+
+  ## 2. Create `backend/routers/prometheus/prometheus.py`
+
+  FastAPI router at prefix `/vyos/prometheus`, tags `["prometheus"]`.
+
+  Endpoints:
+
+  ### GET /status
+  - Check if Prometheus is available on the connected VyOS instance
+  - Read `request.state.instance` for host and prometheusEnabled/prometheusPort
+  - If prometheusEnabled is False, return `{"available": false, "reason": "Prometheus not configured for this instance"}`
+  - Otherwise, make a HEAD request to `http://{host}:{port}/metrics` with httpx (timeout 3s)
+  - If Prometheus has auth configured, include Basic auth
+  - Return `{"available": true/false, "endpoint": "host:port"}`
+  - Requires: `require_read_permission(request, FeatureGroup.DASHBOARD)`
+
+  ### GET /metrics
+  - Fetch full metrics from VyOS Prometheus endpoint
+  - Accept query param `families` (comma-separated) to filter specific metric families
+  - Parse response with `parse_prometheus_text()`
+  - Return JSON: `{"metrics": {...}, "timestamp": unix_timestamp}`
+  - Requires: `require_read_permission(request, FeatureGroup.DASHBOARD)`
+  - Use `require_active_instance(request)` to ensure VyOS connection
+
+  ### GET /capabilities
+  - Fetch metrics once and return available metric family names
+  - Return `{"available_families": ["cpu_usage_idle", "mem_used", ...], "prometheus_enabled": true}`
+
+  Use `httpx.AsyncClient` for HTTP requests. Handle timeouts and connection errors gracefully.
+  Import `require_active_instance` from the session helpers (check how other routers do it).
+
+  ## 3. Register in `backend/app.py`
+
+  Add `from routers.prometheus.prometheus import router as prometheus_router` and include it.
+
+acceptance_criteria:
+  - "File exists: backend/prometheus_parser.py"
+  - "File exists: backend/routers/prometheus/prometheus.py"
+  - "Grep match: 'prometheus_router' in backend/app.py"
+  - "Grep match: 'parse_prometheus_text' in backend/prometheus_parser.py"
+  - "Grep match: '/status' in backend/routers/prometheus/prometheus.py"
+  - "Grep match: '/metrics' in backend/routers/prometheus/prometheus.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

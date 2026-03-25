@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, MapPin, Plus, X } from "lucide-react";
 import { systemSettingsService } from "@/lib/api/system-settings";
 
@@ -99,7 +99,7 @@ export function HostMappingModal({ open, onOpenChange, onSuccess }: Props) {
       handleClose();
       onSuccess();
     } catch {
-      setError("An unexpected error occurred");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -130,80 +130,78 @@ export function HostMappingModal({ open, onOpenChange, onSuccess }: Props) {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="hostname">Hostname</Label>
-            <Input
-              id="hostname"
-              value={hostname}
-              onChange={(e) => setHostname(e.target.value)}
-              placeholder="myserver.local"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>IP Address(es)</Label>
-            <div className="flex gap-2">
+          <Fieldset>
+            <FormField label="Hostname" htmlFor="hostname" required>
               <Input
-                value={inetInput}
-                onChange={(e) => setInetInput(e.target.value)}
-                placeholder="192.168.1.100"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addInet();
-                  }
-                }}
+                id="hostname"
+                value={hostname}
+                onChange={(e) => setHostname(e.target.value)}
+                placeholder="myserver.local"
               />
-              <Button type="button" variant="outline" size="sm" onClick={addInet}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {inetList.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {inetList.map((ip) => (
-                  <Badge key={ip} variant="secondary" className="flex items-center gap-1 font-mono">
-                    {ip}
-                    <button type="button" onClick={() => removeInet(ip)}>
-                      <X className="h-3 w-3 ml-1" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+            </FormField>
 
-          {/* Aliases */}
-          <div className="space-y-2">
-            <Label>Aliases (optional)</Label>
-            <div className="flex gap-2">
-              <Input
-                value={aliasInput}
-                onChange={(e) => setAliasInput(e.target.value)}
-                placeholder="myserver"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addAlias();
-                  }
-                }}
-              />
-              <Button type="button" variant="outline" size="sm" onClick={addAlias}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {aliases.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {aliases.map((a) => (
-                  <Badge key={a} variant="secondary" className="flex items-center gap-1">
-                    {a}
-                    <button type="button" onClick={() => removeAlias(a)}>
-                      <X className="h-3 w-3 ml-1" />
-                    </button>
-                  </Badge>
-                ))}
+            <FormField label="IP Address(es)">
+              <div className="flex gap-2">
+                <Input
+                  value={inetInput}
+                  onChange={(e) => setInetInput(e.target.value)}
+                  placeholder="192.168.1.100"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addInet();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={addInet}>
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
-            )}
-          </div>
+              {inetList.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {inetList.map((ip) => (
+                    <Badge key={ip} variant="secondary" className="flex items-center gap-1 font-mono">
+                      {ip}
+                      <button type="button" onClick={() => removeInet(ip)}>
+                        <X className="h-3 w-3 ml-1" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </FormField>
+
+            <FormField label="Aliases (optional)">
+              <div className="flex gap-2">
+                <Input
+                  value={aliasInput}
+                  onChange={(e) => setAliasInput(e.target.value)}
+                  placeholder="myserver"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addAlias();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={addAlias}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {aliases.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {aliases.map((a) => (
+                    <Badge key={a} variant="secondary" className="flex items-center gap-1">
+                      {a}
+                      <button type="button" onClick={() => removeAlias(a)}>
+                        <X className="h-3 w-3 ml-1" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </FormField>
+          </Fieldset>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>

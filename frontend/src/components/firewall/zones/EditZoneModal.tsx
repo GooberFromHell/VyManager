@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -166,28 +166,28 @@ export function EditZoneModal({
             </div>
           )}
 
-          {/* Basic */}
-          <div className="space-y-4">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic</p>
-
-            <div className="space-y-2">
-              <Label>Zone Name</Label>
+          <Fieldset label="Basic">
+            <FormField label="Zone Name">
               <Input value={zone.name} disabled className="font-mono bg-muted/50" />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+            <FormField
+              label="Description"
+              htmlFor="edit-description"
+            >
               <Input
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description"
               />
-            </div>
+            </FormField>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-default-action">Default Action</Label>
+              <FormField
+                label="Default Action"
+                htmlFor="edit-default-action"
+              >
                 <Select value={defaultAction} onValueChange={setDefaultAction}>
                   <SelectTrigger id="edit-default-action">
                     <SelectValue />
@@ -197,30 +197,29 @@ export function EditZoneModal({
                     <SelectItem value="reject">Reject</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Default Log</Label>
-                <div className="flex items-center gap-2 h-10">
-                  <Checkbox
-                    id="edit-default-log"
-                    checked={defaultLog}
-                    onCheckedChange={(v) => setDefaultLog(!!v)}
-                  />
-                  <label htmlFor="edit-default-log" className="text-sm cursor-pointer">
-                    Log default-action packets
-                  </label>
-                </div>
-              </div>
+              </FormField>
+
+              <FormField
+                label="Default Log"
+                htmlFor="edit-default-log"
+                description="Log default-action packets"
+                horizontal
+              >
+                <Checkbox
+                  id="edit-default-log"
+                  checked={defaultLog}
+                  onCheckedChange={(v) => setDefaultLog(!!v)}
+                />
+              </FormField>
             </div>
-          </div>
+          </Fieldset>
 
           {/* Interfaces (only for non-local zones) */}
           {!zone.local_zone && (
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Interfaces</p>
-
-              <div className="space-y-2">
-                <Label>Member Interfaces</Label>
+            <>
+            <FieldsetDivider />
+            <Fieldset label="Interfaces">
+              <FormField label="Member Interfaces">
                 {loadingInterfaces ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -252,7 +251,7 @@ export function EditZoneModal({
                 )}
 
                 {interfaces.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 mt-2">
                     {interfaces.map((iface) => (
                       <Badge key={iface} variant="secondary" className="font-mono gap-1">
                         {iface}
@@ -264,11 +263,10 @@ export function EditZoneModal({
                     ))}
                   </div>
                 )}
-              </div>
+              </FormField>
 
               {supportsVrf && (
-                <div className="space-y-2">
-                  <Label>Member VRFs</Label>
+                <FormField label="Member VRFs">
                   <div className="flex gap-2">
                     <Input
                       value={vrfInput}
@@ -287,7 +285,7 @@ export function EditZoneModal({
                     </Button>
                   </div>
                   {vrfs.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mt-2">
                       {vrfs.map((vrf) => (
                         <Badge key={vrf} variant="secondary" className="font-mono gap-1">
                           {vrf}
@@ -299,9 +297,10 @@ export function EditZoneModal({
                       ))}
                     </div>
                   )}
-                </div>
+                </FormField>
               )}
-            </div>
+            </Fieldset>
+            </>
           )}
 
           {/* Delete warning for last zone */}

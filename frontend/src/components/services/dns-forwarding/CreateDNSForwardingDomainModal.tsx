@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Plus, X } from "lucide-react";
 import { dnsForwardingService } from "@/lib/api/dns-forwarding";
 import type { DNSForwardingCapabilities } from "@/lib/api/types/dns-forwarding";
@@ -148,6 +148,9 @@ export function CreateDNSForwardingDomainModal({
     setServers(servers.filter((_, i) => i !== index));
   };
 
+  // Suppress unused capabilities warning — reserved for future conditional rendering
+  void capabilities;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -158,76 +161,86 @@ export function CreateDNSForwardingDomainModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="domainName" className="required">
-              Domain Name
-            </Label>
-            <Input
-              id="domainName"
-              value={domainName}
-              onChange={(e) => setDomainName(e.target.value)}
-              placeholder="e.g., example.com"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              DNS queries for this domain will be forwarded to the specified
-              servers
-            </p>
-          </div>
+        <div className="space-y-5">
+          <Fieldset label="Domain">
+            <FormField
+              label="Domain Name"
+              htmlFor="domainName"
+              description="DNS queries for this domain will be forwarded to the specified servers"
+              required
+            >
+              <Input
+                id="domainName"
+                value={domainName}
+                onChange={(e) => setDomainName(e.target.value)}
+                placeholder="e.g., example.com"
+              />
+            </FormField>
+          </Fieldset>
 
-          <div>
-            <Label className="required">DNS Servers</Label>
-            <div className="space-y-2 mt-2">
-              {servers.map((server, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={server}
-                    onChange={(e) => updateServer(index, e.target.value)}
-                    placeholder="e.g., 10.1.1.53"
-                  />
-                  {servers.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeServer(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addServer}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Server
-              </Button>
-            </div>
-          </div>
+          <FieldsetDivider />
 
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
+          <Fieldset label="DNS Servers">
+            <FormField
+              label="Servers"
+              description="IP addresses of the DNS servers to forward queries to"
+              required
+            >
+              <div className="space-y-2">
+                {servers.map((server, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={server}
+                      onChange={(e) => updateServer(index, e.target.value)}
+                      placeholder="e.g., 10.1.1.53"
+                    />
+                    {servers.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeServer(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addServer}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Server
+                </Button>
+              </div>
+            </FormField>
+          </Fieldset>
+
+          <FieldsetDivider />
+
+          <Fieldset label="Options">
+            <FormField
+              label="Add Negative Trust Anchor (ADDNTA)"
+              htmlFor="addnta"
+              description="Set a Negative Trust Anchor for this domain to disable DNSSEC validation"
+              horizontal
+            >
               <Checkbox
                 id="addnta"
                 checked={addnta}
                 onCheckedChange={(checked) => setAddnta(checked as boolean)}
               />
-              <div className="space-y-1">
-                <Label htmlFor="addnta" className="cursor-pointer">
-                  Add Negative Trust Anchor (ADDNTA)
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Set a Negative Trust Anchor for this domain to disable DNSSEC
-                  validation
-                </p>
-              </div>
-            </div>
+            </FormField>
 
-            <div className="flex items-start space-x-3">
+            <FormField
+              label="Recursion Desired"
+              htmlFor="recursionDesired"
+              description="Set the recursion desired (RD) bit in forwarded queries"
+              horizontal
+            >
               <Checkbox
                 id="recursionDesired"
                 checked={recursionDesired}
@@ -235,16 +248,8 @@ export function CreateDNSForwardingDomainModal({
                   setRecursionDesired(checked as boolean)
                 }
               />
-              <div className="space-y-1">
-                <Label htmlFor="recursionDesired" className="cursor-pointer">
-                  Recursion Desired
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Set the recursion desired (RD) bit in forwarded queries
-                </p>
-              </div>
-            </div>
-          </div>
+            </FormField>
+          </Fieldset>
 
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">

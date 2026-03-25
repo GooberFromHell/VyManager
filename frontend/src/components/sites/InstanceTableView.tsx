@@ -18,21 +18,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical, Power, PowerOff, Pencil, Trash2, MoveRight } from "lucide-react";
+import { Instance } from "@/lib/api/session";
 
-interface Instance {
-  id: string;
-  name: string;
-  description?: string | null;
-  host: string;
-  port: number;
-  is_active: boolean;
-  vyos_version?: string | null;
+interface ReachabilityEntry {
+  status: "online" | "offline" | "error" | "checking";
+  latency_ms?: number;
 }
 
 interface InstanceTableViewProps {
   instances: Instance[];
   isActiveInstance: (instanceId: string) => boolean;
   userRole: string;
+  statusMap?: Record<string, ReachabilityEntry>;
   onConnect: (instanceId: string) => void;
   onDisconnect: () => void;
   onEdit: (instance: Instance) => void;
@@ -44,6 +41,7 @@ export function InstanceTableView({
   instances,
   isActiveInstance,
   userRole,
+  statusMap,
   onConnect,
   onDisconnect,
   onEdit,
@@ -93,25 +91,66 @@ export function InstanceTableView({
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      {isConnected ? (
-                        <>
-                          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                            Connected
-                          </span>
-                        </>
-                      ) : instance.is_active ? (
-                        <>
-                          <div className="h-2 w-2 rounded-full bg-gray-400" />
-                          <span className="text-xs text-muted-foreground">Ready</span>
-                        </>
-                      ) : (
-                        <>
-                          <div className="h-2 w-2 rounded-full bg-destructive" />
-                          <span className="text-xs text-destructive">Inactive</span>
-                        </>
-                      )}
+                    <div className="flex flex-col gap-1">
+                      {/* Connection state */}
+                      <div className="flex items-center gap-1.5">
+                        {isConnected ? (
+                          <>
+                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                              Connected
+                            </span>
+                          </>
+                        ) : instance.is_active ? (
+                          <>
+                            <div className="h-2 w-2 rounded-full bg-gray-400" />
+                            <span className="text-xs text-muted-foreground">Ready</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="h-2 w-2 rounded-full bg-destructive" />
+                            <span className="text-xs text-destructive">Inactive</span>
+                          </>
+                        )}
+                      </div>
+                      {/* Reachability indicator */}
+                      {statusMap?.[instance.id] && (() => {
+                        const r = statusMap[instance.id];
+                        if (r.status === "online") {
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="text-xs font-medium text-emerald-500">Online</span>
+                              {r.latency_ms !== undefined && (
+                                <span className="text-xs text-muted-foreground">{r.latency_ms}ms</span>
+                              )}
+                            </div>
+                          );
+                        }
+                        if (r.status === "offline") {
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <div className="h-2 w-2 rounded-full bg-red-500" />
+                              <span className="text-xs font-medium text-red-500">Unreachable</span>
+                            </div>
+                          );
+                        }
+                        if (r.status === "error") {
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <div className="h-2 w-2 rounded-full bg-amber-500" />
+                              <span className="text-xs font-medium text-amber-500">Error</span>
+                            </div>
+                          );
+                        }
+                        // "checking"
+                        return (
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-2 w-2 rounded-full bg-zinc-500 animate-pulse" />
+                            <span className="text-xs text-muted-foreground">Checking...</span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

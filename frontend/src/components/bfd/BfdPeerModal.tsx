@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -244,126 +244,96 @@ export function BfdPeerModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
+          <div className="space-y-4 pb-2">
             {/* Peer Address */}
-            <div className="space-y-2">
-              <Label htmlFor="bfd-peer-address">Peer Address</Label>
-              <Input
-                id="bfd-peer-address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g. 192.0.2.1 or 2001:db8::1"
-                disabled={isEditMode}
-                className={isEditMode ? "bg-muted" : ""}
-              />
-              <p className="text-xs text-muted-foreground">
-                IPv4 or IPv6 address of the BFD peer.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Peer Address"
+                htmlFor="bfd-peer-address"
+                description="IPv4 or IPv6 address of the BFD peer."
+              >
+                <Input
+                  id="bfd-peer-address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g. 192.0.2.1 or 2001:db8::1"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                />
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Status & Mode Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Status &amp; Mode</h4>
-              <div className="space-y-3 rounded-lg border p-3">
-                {/* Shutdown */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-peer-shutdown"
-                    checked={shutdown}
-                    onCheckedChange={(checked) =>
-                      setShutdown(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-peer-shutdown"
-                      className="cursor-pointer text-destructive"
-                    >
-                      Shutdown
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Administratively disable this BFD peer.
-                    </p>
-                  </div>
-                </div>
+            <Fieldset label="Status & Mode">
+              <FormField
+                label="Shutdown"
+                htmlFor="bfd-peer-shutdown"
+                description="Administratively disable this BFD peer."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-peer-shutdown"
+                  checked={shutdown}
+                  onCheckedChange={(checked) =>
+                    setShutdown(checked === true)
+                  }
+                />
+              </FormField>
 
-                {/* Passive */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-peer-passive"
-                    checked={passive}
-                    onCheckedChange={(checked) =>
-                      setPassive(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-peer-passive"
-                      className="cursor-pointer"
-                    >
-                      Passive Mode
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Wait for the remote peer to initiate the BFD session.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Passive Mode"
+                htmlFor="bfd-peer-passive"
+                description="Wait for the remote peer to initiate the BFD session."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-peer-passive"
+                  checked={passive}
+                  onCheckedChange={(checked) =>
+                    setPassive(checked === true)
+                  }
+                />
+              </FormField>
 
-                {/* Echo Mode */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-peer-echo-mode"
-                    checked={echoMode}
-                    onCheckedChange={(checked) =>
-                      setEchoMode(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-peer-echo-mode"
-                      className="cursor-pointer"
-                    >
-                      Echo Mode
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enable BFD echo mode for faster failure detection.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Echo Mode"
+                htmlFor="bfd-peer-echo-mode"
+                description="Enable BFD echo mode for faster failure detection."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-peer-echo-mode"
+                  checked={echoMode}
+                  onCheckedChange={(checked) =>
+                    setEchoMode(checked === true)
+                  }
+                />
+              </FormField>
 
-                {/* Multihop */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-peer-multihop"
-                    checked={multihop}
-                    onCheckedChange={(checked) =>
-                      setMultihop(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-peer-multihop"
-                      className="cursor-pointer"
-                    >
-                      Multihop
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enable multihop BFD session (required for minimum TTL).
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="Multihop"
+                htmlFor="bfd-peer-multihop"
+                description="Enable multihop BFD session (required for minimum TTL)."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-peer-multihop"
+                  checked={multihop}
+                  onCheckedChange={(checked) =>
+                    setMultihop(checked === true)
+                  }
+                />
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Timer Intervals Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Timer Intervals</h4>
+            <Fieldset label="Timer Intervals">
               <div className="grid grid-cols-2 gap-4">
-                {/* Transmit Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-transmit">
-                    Transmit Interval (ms)
-                  </Label>
+                <FormField label="Transmit Interval (ms)" htmlFor="bfd-peer-transmit">
                   <Input
                     id="bfd-peer-transmit"
                     type="number"
@@ -373,13 +343,9 @@ export function BfdPeerModal({
                     min={10}
                     max={60000}
                   />
-                </div>
+                </FormField>
 
-                {/* Receive Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-receive">
-                    Receive Interval (ms)
-                  </Label>
+                <FormField label="Receive Interval (ms)" htmlFor="bfd-peer-receive">
                   <Input
                     id="bfd-peer-receive"
                     type="number"
@@ -389,13 +355,9 @@ export function BfdPeerModal({
                     min={10}
                     max={60000}
                   />
-                </div>
+                </FormField>
 
-                {/* Echo Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-echo-interval">
-                    Echo Interval (ms)
-                  </Label>
+                <FormField label="Echo Interval (ms)" htmlFor="bfd-peer-echo-interval">
                   <Input
                     id="bfd-peer-echo-interval"
                     type="number"
@@ -405,11 +367,9 @@ export function BfdPeerModal({
                     min={10}
                     max={60000}
                   />
-                </div>
+                </FormField>
 
-                {/* Multiplier */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-multiplier">Multiplier</Label>
+                <FormField label="Multiplier" htmlFor="bfd-peer-multiplier">
                   <Input
                     id="bfd-peer-multiplier"
                     type="number"
@@ -419,103 +379,91 @@ export function BfdPeerModal({
                     min={2}
                     max={255}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Advanced Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Advanced</h4>
-              <div className="space-y-4">
-                {/* Profile */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-profile">Profile</Label>
-                  <Select value={profile} onValueChange={setProfile}>
-                    <SelectTrigger id="bfd-peer-profile">
-                      <SelectValue placeholder="Select profile (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      {profiles.map((p) => (
-                        <SelectItem key={p} value={p}>
-                          {p}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Apply a BFD profile to this peer.
-                  </p>
-                </div>
+            <Fieldset label="Advanced">
+              <FormField
+                label="Profile"
+                htmlFor="bfd-peer-profile"
+                description="Apply a BFD profile to this peer."
+              >
+                <Select value={profile} onValueChange={setProfile}>
+                  <SelectTrigger id="bfd-peer-profile">
+                    <SelectValue placeholder="Select profile (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {profiles.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-                {/* Source Address */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-source-address">
-                    Source Address
-                  </Label>
+              <FormField
+                label="Source Address"
+                htmlFor="bfd-peer-source-address"
+                description="Source IP address for BFD packets."
+              >
+                <Input
+                  id="bfd-peer-source-address"
+                  value={sourceAddress}
+                  onChange={(e) => setSourceAddress(e.target.value)}
+                  placeholder="e.g. 192.0.2.10"
+                />
+              </FormField>
+
+              <FormField
+                label="Source Interface"
+                htmlFor="bfd-peer-source-interface"
+                description="Source interface for BFD packets."
+              >
+                <Input
+                  id="bfd-peer-source-interface"
+                  value={sourceInterface}
+                  onChange={(e) => setSourceInterface(e.target.value)}
+                  placeholder="e.g. eth0"
+                />
+              </FormField>
+
+              {multihop && (
+                <FormField
+                  label="Minimum TTL"
+                  htmlFor="bfd-peer-minimum-ttl"
+                  description="Minimum TTL for incoming BFD multihop packets (1-254)."
+                >
                   <Input
-                    id="bfd-peer-source-address"
-                    value={sourceAddress}
-                    onChange={(e) => setSourceAddress(e.target.value)}
-                    placeholder="e.g. 192.0.2.10"
+                    id="bfd-peer-minimum-ttl"
+                    type="number"
+                    value={minimumTtl}
+                    onChange={(e) => setMinimumTtl(e.target.value)}
+                    placeholder="1-254"
+                    min={1}
+                    max={254}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Source IP address for BFD packets.
-                  </p>
-                </div>
+                </FormField>
+              )}
 
-                {/* Source Interface */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-source-interface">
-                    Source Interface
-                  </Label>
-                  <Input
-                    id="bfd-peer-source-interface"
-                    value={sourceInterface}
-                    onChange={(e) => setSourceInterface(e.target.value)}
-                    placeholder="e.g. eth0"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Source interface for BFD packets.
-                  </p>
-                </div>
-
-                {/* Minimum TTL - only relevant when multihop is enabled */}
-                {multihop && (
-                  <div className="space-y-2">
-                    <Label htmlFor="bfd-peer-minimum-ttl">
-                      Minimum TTL
-                    </Label>
-                    <Input
-                      id="bfd-peer-minimum-ttl"
-                      type="number"
-                      value={minimumTtl}
-                      onChange={(e) => setMinimumTtl(e.target.value)}
-                      placeholder="1-254"
-                      min={1}
-                      max={254}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Minimum TTL for incoming BFD multihop packets (1-254).
-                    </p>
-                  </div>
-                )}
-
-                {/* VRF */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-peer-vrf">VRF</Label>
-                  <Input
-                    id="bfd-peer-vrf"
-                    value={vrf}
-                    onChange={(e) => setVrf(e.target.value)}
-                    placeholder="e.g. my-vrf"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    VRF instance for this BFD peer.
-                  </p>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="VRF"
+                htmlFor="bfd-peer-vrf"
+                description="VRF instance for this BFD peer."
+              >
+                <Input
+                  id="bfd-peer-vrf"
+                  value={vrf}
+                  onChange={(e) => setVrf(e.target.value)}
+                  placeholder="e.g. my-vrf"
+                />
+              </FormField>
+            </Fieldset>
           </div>
         </ScrollArea>
 

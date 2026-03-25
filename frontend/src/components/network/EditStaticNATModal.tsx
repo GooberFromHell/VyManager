@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle } from "lucide-react";
@@ -210,74 +210,74 @@ export function EditStaticNATModal({ open, onOpenChange, rule, onSuccess }: Edit
             </div>
           )}
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description for this rule"
-              rows={2}
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Description" htmlFor="description">
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description for this rule"
+                rows={2}
+              />
+            </FormField>
+          </Fieldset>
 
-          {/* Destination Address */}
-          <div className="space-y-2">
-            <Label htmlFor="destination-address">Destination Address (External)</Label>
-            <Input
-              id="destination-address"
-              value={destinationAddress}
-              onChange={(e) => setDestinationAddress(e.target.value)}
-              placeholder="e.g., 203.0.113.10"
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              The external/public IP address
-            </p>
-          </div>
+          <FieldsetDivider />
 
-          {/* Inbound Interface */}
-          <div className="space-y-2">
-            <Label htmlFor="inbound-interface">Inbound Interface (Optional)</Label>
-            <Select value={inboundInterfaceName || undefined} onValueChange={setInboundInterfaceName}>
-              <SelectTrigger id="inbound-interface">
-                <SelectValue placeholder="Select interface (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {interfaces.map((iface) => (
-                  <SelectItem key={iface.name} value={iface.name}>
-                    {iface.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {inboundInterfaceName && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setInboundInterfaceName("")}
-                className="h-6 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Clear selection
-              </Button>
-            )}
-          </div>
+          <Fieldset label="Address Mapping">
+            <FormField
+              label="Destination Address (External)"
+              htmlFor="destination-address"
+              description="The external/public IP address"
+            >
+              <Input
+                id="destination-address"
+                value={destinationAddress}
+                onChange={(e) => setDestinationAddress(e.target.value)}
+                placeholder="e.g., 203.0.113.10"
+                className="font-mono"
+              />
+            </FormField>
 
-          {/* Translation Address */}
-          <div className="space-y-2">
-            <Label htmlFor="translation-address">Translation Address (Internal)</Label>
-            <Input
-              id="translation-address"
-              value={translationAddress}
-              onChange={(e) => setTranslationAddress(e.target.value)}
-              placeholder="e.g., 192.168.1.10"
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              The internal/private IP address to translate to
-            </p>
-          </div>
+            <FormField label="Inbound Interface" htmlFor="inbound-interface">
+              <Select value={inboundInterfaceName || undefined} onValueChange={setInboundInterfaceName}>
+                <SelectTrigger id="inbound-interface">
+                  <SelectValue placeholder="Select interface (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {interfaces.map((iface) => (
+                    <SelectItem key={iface.name} value={iface.name}>
+                      {iface.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {inboundInterfaceName && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setInboundInterfaceName("")}
+                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Clear selection
+                </Button>
+              )}
+            </FormField>
+
+            <FormField
+              label="Translation Address (Internal)"
+              htmlFor="translation-address"
+              description="The internal/private IP address to translate to"
+            >
+              <Input
+                id="translation-address"
+                value={translationAddress}
+                onChange={(e) => setTranslationAddress(e.target.value)}
+                placeholder="e.g., 192.168.1.10"
+                className="font-mono"
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -120,32 +120,38 @@ export function CreateCustomChainModal({
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="chainName">Chain Name *</Label>
+        <Fieldset>
+          <FormField
+            label="Chain Name"
+            htmlFor="chainName"
+            description="Must start with a letter and contain only letters, numbers, hyphens, and underscores"
+            required
+          >
             <Input
               id="chainName"
               value={chainName}
               onChange={(e) => setChainName(e.target.value)}
               placeholder="my-custom-chain"
             />
-            <p className="text-xs text-muted-foreground">
-              Must start with a letter and contain only letters, numbers, hyphens, and underscores
-            </p>
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <FormField
+            label="Description"
+            htmlFor="description"
+          >
             <Input
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of this chain"
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="defaultAction">Default Action</Label>
+          <FormField
+            label="Default Action"
+            htmlFor="defaultAction"
+            description="Action to take if no rules match in this chain"
+          >
             <Select value={defaultAction} onValueChange={setDefaultAction}>
               <SelectTrigger id="defaultAction">
                 <SelectValue />
@@ -157,11 +163,8 @@ export function CreateCustomChainModal({
                 <SelectItem value="return">Return</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Action to take if no rules match in this chain
-            </p>
-          </div>
-        </div>
+          </FormField>
+        </Fieldset>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>

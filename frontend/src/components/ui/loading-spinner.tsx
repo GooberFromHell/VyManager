@@ -19,7 +19,7 @@ export function LoadingSpinner({
   };
 
   return (
-    <div className={cn("flex items-center justify-center h-full", className)}>
+    <div className={cn("flex items-center justify-center h-full animate-fade-in", className)}>
       <div className="flex flex-col items-center gap-4">
         <Loader2 className={cn(sizeClasses[size], "animate-spin text-muted-foreground")} />
         <p className="text-sm text-muted-foreground">{message}</p>

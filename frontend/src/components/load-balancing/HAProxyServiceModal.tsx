@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -189,49 +189,47 @@ export function HAProxyServiceModal({ open, onOpenChange, service, backends, cap
 
         <div className="space-y-5 py-2">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Name <span className="text-destructive">*</span></Label>
+            <FormField label="Name" htmlFor="svc-name" required>
               <Input
+                id="svc-name"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
                 placeholder="https-frontend"
                 disabled={isEdit}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Description</Label>
+            </FormField>
+            <FormField label="Description" htmlFor="svc-desc">
               <Input
+                id="svc-desc"
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
                 placeholder="Optional description"
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Mode</Label>
+            <FormField label="Mode" htmlFor="svc-mode">
               <Select value={form.mode} onValueChange={(v) => set("mode", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="svc-mode"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="http">HTTP</SelectItem>
                   <SelectItem value="tcp">TCP</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Port <span className="text-destructive">*</span></Label>
+            </FormField>
+            <FormField label="Port" htmlFor="svc-port" required>
               <Input
+                id="svc-port"
                 value={form.port}
                 onChange={(e) => set("port", e.target.value)}
                 placeholder="443"
                 type="number"
               />
-            </div>
+            </FormField>
           </div>
 
-          <div className="space-y-2">
-            <Label>Listen Addresses</Label>
+          <FormField label="Listen Addresses">
             <div className="flex gap-2">
               <Input
                 value={form.new_address}
@@ -255,10 +253,9 @@ export function HAProxyServiceModal({ open, onOpenChange, service, backends, cap
                 ))}
               </div>
             )}
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label>Backends</Label>
+          <FormField label="Backends">
             {backends.length === 0 ? (
               <p className="text-sm text-muted-foreground">No backends configured yet.</p>
             ) : (
@@ -275,7 +272,7 @@ export function HAProxyServiceModal({ open, onOpenChange, service, backends, cap
                 ))}
               </div>
             )}
-          </div>
+          </FormField>
 
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <Checkbox
@@ -329,13 +326,12 @@ export function HAProxyServiceModal({ open, onOpenChange, service, backends, cap
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-3 pt-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Algorithm</Label>
+                <FormField label="Algorithm" htmlFor="comp-algo">
                   <Select
                     value={form.http_compression_algorithm || "_none"}
                     onValueChange={(v) => set("http_compression_algorithm", v === "_none" ? "" : v)}
                   >
-                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectTrigger id="comp-algo"><SelectValue placeholder="None" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="_none">None</SelectItem>
                       <SelectItem value="gzip">gzip</SelectItem>
@@ -344,9 +340,8 @@ export function HAProxyServiceModal({ open, onOpenChange, service, backends, cap
                       <SelectItem value="identity">identity</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">MIME Types</Label>
+                </FormField>
+                <FormField label="MIME Types">
                   <div className="flex gap-2">
                     <Input
                       value={form.new_mime}
@@ -370,7 +365,7 @@ export function HAProxyServiceModal({ open, onOpenChange, service, backends, cap
                       ))}
                     </div>
                   )}
-                </div>
+                </FormField>
               </CollapsibleContent>
             </Collapsible>
           )}

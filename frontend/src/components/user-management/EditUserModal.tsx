@@ -11,8 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Loader2, AlertCircle } from "lucide-react";
 import { userManagementService, UserListItem, SiteRole } from "@/lib/api/user-management";
 import { ApiError } from "@/lib/types/api";
@@ -113,90 +113,81 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
             </div>
           )}
 
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Name <span className="text-muted-foreground text-xs">(Optional)</span>
-            </Label>
-            <Input
-              id="name"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {/* Site Role */}
-          <div className="space-y-2">
-            <Label htmlFor="siteRole">Site Role</Label>
-            <Select
-              value={siteRole}
-              onValueChange={(value) => setSiteRole(value as SiteRole)}
-              disabled={loading}
-            >
-              <SelectTrigger id="siteRole">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={SiteRole.ADMIN}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">Admin</span>
-                    <span className="text-xs text-muted-foreground">Can manage sites, instances, and users</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value={SiteRole.VIEWER}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">Viewer</span>
-                    <span className="text-xs text-muted-foreground">Read-only access to assigned sites and instances</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Password (optional for update) */}
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              New Password <span className="text-muted-foreground text-xs">(Leave empty to keep current)</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Minimum 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {/* Confirm Password */}
-          {password && (
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+          <Fieldset>
+            <FormField label="Name (Optional)" htmlFor="name">
               <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Re-enter new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                id="name"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 disabled={loading}
               />
-            </div>
-          )}
+            </FormField>
+
+            <FormField label="Email" htmlFor="email">
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+
+            <FormField label="Site Role" htmlFor="siteRole">
+              <Select
+                value={siteRole}
+                onValueChange={(value) => setSiteRole(value as SiteRole)}
+                disabled={loading}
+              >
+                <SelectTrigger id="siteRole">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SiteRole.ADMIN}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Admin</span>
+                      <span className="text-xs text-muted-foreground">Can manage sites, instances, and users</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={SiteRole.VIEWER}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Viewer</span>
+                      <span className="text-xs text-muted-foreground">Read-only access to assigned sites and instances</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            <FormField
+              label="New Password (leave empty to keep current)"
+              htmlFor="password"
+            >
+              <Input
+                id="password"
+                type="password"
+                placeholder="Minimum 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+
+            {password && (
+              <FormField label="Confirm New Password" htmlFor="confirmPassword">
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Re-enter new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                />
+              </FormField>
+            )}
+          </Fieldset>
 
           <DialogFooter>
             <Button

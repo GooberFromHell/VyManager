@@ -1,0 +1,104 @@
+id: "task-009"
+title: "Wire status polling and tools section into sites page"
+archetype: frontend-service
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-006", "task-003"]
+blocks: ["task-010"]
+parallel_with: []
+files:
+  create: []
+  modify:
+    - frontend/src/app/(default)/sites/page.tsx
+context_files:
+  - frontend/src/app/(default)/sites/page.tsx
+  - frontend/src/lib/api/session.ts
+  - frontend/src/components/sites/SiteToolsSection.tsx
+  - frontend/src/components/sites/InstanceCard.tsx
+instructions: |
+  1. Read `frontend/src/app/(default)/sites/page.tsx` fully
+  2. Read `frontend/src/components/sites/SiteToolsSection.tsx` for the component export name
+  3. Understand how instances are loaded and passed to InstanceCard/InstanceTableView
+
+  **Add status polling:**
+
+  a) Add state:
+  ```typescript
+  const [instanceStatuses, setInstanceStatuses] = useState<Record<string, InstanceStatus>>({});
+  const [statusLoading, setStatusLoading] = useState(false);
+  ```
+
+  b) Import `InstanceStatus` from session.ts
+
+  c) Create a `checkStatuses` function:
+  ```typescript
+  const checkStatuses = useCallback(async (siteId: string) => {
+    setStatusLoading(true);
+    // Set all current instances to "checking" state
+    setInstanceStatuses(prev => {
+      const checking: Record<string, InstanceStatus> = {};
+      instances.forEach(inst => {
+        checking[inst.id] = { instance_id: inst.id, status: "checking" as any };
+      });
+      return checking;
+    });
+
+    try {
+      const statuses = await sessionService.checkSiteStatus(siteId);
+      const statusMap: Record<string, InstanceStatus> = {};
+      statuses.forEach(s => { statusMap[s.instance_id] = s; });
+      setInstanceStatuses(statusMap);
+    } catch (err) {
+      console.error("Failed to check statuses:", err);
+    } finally {
+      setStatusLoading(false);
+    }
+  }, [instances]);
+  ```
+
+  d) After instances load for a selected site, trigger status check:
+  ```typescript
+  // In the effect or callback that loads instances for a site:
+  // After setInstances(data), call:
+  checkStatuses(siteId);
+  ```
+
+  e) Pass status data to InstanceCard:
+  ```typescript
+  <InstanceCard
+    // ...existing props
+    reachabilityStatus={instanceStatuses[instance.id]?.status}
+    latencyMs={instanceStatuses[instance.id]?.latency_ms}
+  />
+  ```
+
+  f) If InstanceTableView exists, pass `statusMap={instanceStatuses}` to it
+
+  g) Add a "Refresh Status" button near the instance view mode toggle:
+  ```typescript
+  <Button variant="ghost" size="icon" onClick={() => selectedSite && checkStatuses(selectedSite.id)} disabled={statusLoading}>
+    <RefreshCw className={cn("h-4 w-4", statusLoading && "animate-spin")} />
+  </Button>
+  ```
+
+  **Add SiteToolsSection:**
+
+  h) Import `SiteToolsSection` from the component
+  i) Render it below the instances grid, inside the scrollable content area
+  j) Only show when a site is selected
+  k) Add a visual separator (Separator component or margin/padding) between instances and tools
+acceptance_criteria:
+  - "Grep match: 'instanceStatuses' in frontend/src/app/(default)/sites/page.tsx"
+  - "Grep match: 'checkSiteStatus' in frontend/src/app/(default)/sites/page.tsx"
+  - "Grep match: 'SiteToolsSection' in frontend/src/app/(default)/sites/page.tsx"
+  - "Grep match: 'reachabilityStatus' in frontend/src/app/(default)/sites/page.tsx"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

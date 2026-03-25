@@ -219,7 +219,7 @@ export default function LocalRoutePage() {
                 <Route className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Local Route</h1>
+                <h1 className="text-3xl font-bold text-foreground">Local Route</h1>
                 <p className="text-sm text-muted-foreground">
                   Policy-based routing for IPv4 and IPv6 traffic
                 </p>

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { AlertCircle, Loader2, Plus, X } from "lucide-react";
 import { showService, InterfaceName } from "@/lib/api/show";
 import type {
@@ -464,7 +463,7 @@ export function FailoverRouteModal({
       </h5>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-xs" htmlFor={`${prefix}-check-type`}>Type</Label>
+          <label className="text-xs font-medium" htmlFor={`${prefix}-check-type`}>Type</label>
           <Select
             value={entry.checkType || "__none__"}
             onValueChange={(v) => onUpdate({ checkType: v === "__none__" ? "" : v } as Partial<NextHopFormEntry>)}
@@ -482,7 +481,7 @@ export function FailoverRouteModal({
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-xs" htmlFor={`${prefix}-check-policy`}>Policy</Label>
+          <label className="text-xs font-medium" htmlFor={`${prefix}-check-policy`}>Policy</label>
           <Select
             value={entry.checkPolicy || "__none__"}
             onValueChange={(v) => onUpdate({ checkPolicy: v === "__none__" ? "" : v } as Partial<NextHopFormEntry>)}
@@ -501,7 +500,7 @@ export function FailoverRouteModal({
       <div className="grid grid-cols-2 gap-3">
         {entry.checkType === "tcp" && (
           <div className="space-y-1">
-            <Label className="text-xs" htmlFor={`${prefix}-check-port`}>Port</Label>
+            <label className="text-xs font-medium" htmlFor={`${prefix}-check-port`}>Port</label>
             <Input
               id={`${prefix}-check-port`}
               type="number"
@@ -515,7 +514,7 @@ export function FailoverRouteModal({
           </div>
         )}
         <div className="space-y-1">
-          <Label className="text-xs" htmlFor={`${prefix}-check-timeout`}>Timeout</Label>
+          <label className="text-xs font-medium" htmlFor={`${prefix}-check-timeout`}>Timeout</label>
           <Input
             id={`${prefix}-check-timeout`}
             type="number"
@@ -531,7 +530,7 @@ export function FailoverRouteModal({
       {/* Check Targets */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs">Check Targets</Label>
+          <span className="text-xs font-medium">Check Targets</span>
           <Button
             type="button"
             variant="ghost"
@@ -603,29 +602,30 @@ export function FailoverRouteModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
+          <div className="space-y-4 pb-2">
             {/* Destination */}
-            <div className="space-y-2">
-              <Label htmlFor="failover-destination">Destination</Label>
-              <Input
-                id="failover-destination"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="e.g. 10.0.0.0/24"
-                disabled={isEditMode}
-                className={isEditMode ? "bg-muted" : ""}
-              />
-              <p className="text-xs text-muted-foreground">
-                Network destination in CIDR notation.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Destination"
+                htmlFor="failover-destination"
+                description="Network destination in CIDR notation."
+              >
+                <Input
+                  id="failover-destination"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder="e.g. 10.0.0.0/24"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                />
+              </FormField>
+            </Fieldset>
 
-            <Separator />
+            <FieldsetDivider />
 
             {/* Next-Hops Section */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">Next-Hops</h4>
+            <Fieldset label="Next-Hops">
+              <div className="flex justify-end mb-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -659,7 +659,7 @@ export function FailoverRouteModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs" htmlFor={`nh-${nhIndex}-addr`}>Address *</Label>
+                      <label className="text-xs font-medium" htmlFor={`nh-${nhIndex}-addr`}>Address *</label>
                       <Input
                         id={`nh-${nhIndex}-addr`}
                         className="h-8 text-xs"
@@ -669,7 +669,7 @@ export function FailoverRouteModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs" htmlFor={`nh-${nhIndex}-metric`}>Metric</Label>
+                      <label className="text-xs font-medium" htmlFor={`nh-${nhIndex}-metric`}>Metric</label>
                       <Input
                         id={`nh-${nhIndex}-metric`}
                         type="number"
@@ -684,7 +684,7 @@ export function FailoverRouteModal({
 
                   <div className="grid grid-cols-2 gap-3 items-end">
                     <div className="space-y-1">
-                      <Label className="text-xs" htmlFor={`nh-${nhIndex}-iface`}>Interface</Label>
+                      <label className="text-xs font-medium" htmlFor={`nh-${nhIndex}-iface`}>Interface</label>
                       <InterfaceSelect
                         id={`nh-${nhIndex}-iface`}
                         value={nh.interface}
@@ -700,9 +700,9 @@ export function FailoverRouteModal({
                           updateNextHop(nhIndex, { onlink: checked === true })
                         }
                       />
-                      <Label htmlFor={`nh-${nhIndex}-onlink`} className="text-xs cursor-pointer">
+                      <label htmlFor={`nh-${nhIndex}-onlink`} className="text-xs cursor-pointer">
                         Onlink
-                      </Label>
+                      </label>
                     </div>
                   </div>
 
@@ -716,15 +716,14 @@ export function FailoverRouteModal({
                   )}
                 </div>
               ))}
-            </div>
+            </Fieldset>
 
             {/* DHCP Interfaces Section (1.5 only) */}
             {showDhcp && (
               <>
-                <Separator />
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">DHCP Interfaces</h4>
+                <FieldsetDivider />
+                <Fieldset label="DHCP Interfaces">
+                  <div className="flex justify-end mb-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -762,7 +761,7 @@ export function FailoverRouteModal({
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs" htmlFor={`dhcp-${dIndex}-name`}>Name *</Label>
+                          <label className="text-xs font-medium" htmlFor={`dhcp-${dIndex}-name`}>Name *</label>
                           <InterfaceSelect
                             id={`dhcp-${dIndex}-name`}
                             value={d.name}
@@ -772,7 +771,7 @@ export function FailoverRouteModal({
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs" htmlFor={`dhcp-${dIndex}-metric`}>Metric</Label>
+                          <label className="text-xs font-medium" htmlFor={`dhcp-${dIndex}-metric`}>Metric</label>
                           <Input
                             id={`dhcp-${dIndex}-metric`}
                             type="number"
@@ -787,7 +786,7 @@ export function FailoverRouteModal({
 
                       <div className="grid grid-cols-2 gap-3 items-end">
                         <div className="space-y-1">
-                          <Label className="text-xs" htmlFor={`dhcp-${dIndex}-iface`}>Interface</Label>
+                          <label className="text-xs font-medium" htmlFor={`dhcp-${dIndex}-iface`}>Interface</label>
                           <InterfaceSelect
                             id={`dhcp-${dIndex}-iface`}
                             value={d.interface}
@@ -803,9 +802,9 @@ export function FailoverRouteModal({
                               updateDhcpInterface(dIndex, { onlink: checked === true })
                             }
                           />
-                          <Label htmlFor={`dhcp-${dIndex}-onlink`} className="text-xs cursor-pointer">
+                          <label htmlFor={`dhcp-${dIndex}-onlink`} className="text-xs cursor-pointer">
                             Onlink
-                          </Label>
+                          </label>
                         </div>
                       </div>
 
@@ -819,7 +818,7 @@ export function FailoverRouteModal({
                       )}
                     </div>
                   ))}
-                </div>
+                </Fieldset>
               </>
             )}
           </div>

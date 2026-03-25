@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -211,106 +211,82 @@ export function BfdProfileModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
+          <div className="space-y-4 pb-2">
             {/* Profile Name */}
-            <div className="space-y-2">
-              <Label htmlFor="bfd-profile-name">Profile Name</Label>
-              <Input
-                id="bfd-profile-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="my-profile"
-                disabled={isEditMode}
-                className={isEditMode ? "bg-muted" : ""}
-                maxLength={32}
-              />
-              <p className="text-xs text-muted-foreground">
-                Alphanumeric and hyphens only, 1-32 characters.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Profile Name"
+                htmlFor="bfd-profile-name"
+                description="Alphanumeric and hyphens only, 1-32 characters."
+              >
+                <Input
+                  id="bfd-profile-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="my-profile"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                  maxLength={32}
+                />
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Status & Mode Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Status &amp; Mode</h4>
-              <div className="rounded-lg border p-3 space-y-4">
-                {/* Shutdown */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-profile-shutdown"
-                    checked={shutdown}
-                    onCheckedChange={(checked) =>
-                      setShutdown(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-profile-shutdown"
-                      className="cursor-pointer"
-                    >
-                      Shutdown
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Administratively disable this profile. Peers using it
-                      will not establish BFD sessions.
-                    </p>
-                  </div>
-                </div>
+            <Fieldset label="Status & Mode">
+              <FormField
+                label="Shutdown"
+                htmlFor="bfd-profile-shutdown"
+                description="Administratively disable this profile. Peers using it will not establish BFD sessions."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-profile-shutdown"
+                  checked={shutdown}
+                  onCheckedChange={(checked) =>
+                    setShutdown(checked === true)
+                  }
+                />
+              </FormField>
 
-                {/* Passive */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-profile-passive"
-                    checked={passive}
-                    onCheckedChange={(checked) =>
-                      setPassive(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-profile-passive"
-                      className="cursor-pointer"
-                    >
-                      Passive Mode
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Wait for the remote peer to initiate the BFD session.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Passive Mode"
+                htmlFor="bfd-profile-passive"
+                description="Wait for the remote peer to initiate the BFD session."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-profile-passive"
+                  checked={passive}
+                  onCheckedChange={(checked) =>
+                    setPassive(checked === true)
+                  }
+                />
+              </FormField>
 
-                {/* Echo Mode */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bfd-profile-echo-mode"
-                    checked={echoMode}
-                    onCheckedChange={(checked) =>
-                      setEchoMode(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bfd-profile-echo-mode"
-                      className="cursor-pointer"
-                    >
-                      Echo Mode
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enable BFD echo mode for faster failure detection.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="Echo Mode"
+                htmlFor="bfd-profile-echo-mode"
+                description="Enable BFD echo mode for faster failure detection."
+                horizontal
+              >
+                <Checkbox
+                  id="bfd-profile-echo-mode"
+                  checked={echoMode}
+                  onCheckedChange={(checked) =>
+                    setEchoMode(checked === true)
+                  }
+                />
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Timer Intervals Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Timer Intervals</h4>
+            <Fieldset label="Timer Intervals">
               <div className="grid grid-cols-2 gap-4">
-                {/* Transmit Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-profile-transmit">
-                    Transmit Interval (ms)
-                  </Label>
+                <FormField label="Transmit Interval (ms)" htmlFor="bfd-profile-transmit">
                   <Input
                     id="bfd-profile-transmit"
                     type="number"
@@ -320,13 +296,9 @@ export function BfdProfileModal({
                     min={10}
                     max={60000}
                   />
-                </div>
+                </FormField>
 
-                {/* Receive Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-profile-receive">
-                    Receive Interval (ms)
-                  </Label>
+                <FormField label="Receive Interval (ms)" htmlFor="bfd-profile-receive">
                   <Input
                     id="bfd-profile-receive"
                     type="number"
@@ -336,13 +308,9 @@ export function BfdProfileModal({
                     min={10}
                     max={60000}
                   />
-                </div>
+                </FormField>
 
-                {/* Echo Interval */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-profile-echo-interval">
-                    Echo Interval (ms)
-                  </Label>
+                <FormField label="Echo Interval (ms)" htmlFor="bfd-profile-echo-interval">
                   <Input
                     id="bfd-profile-echo-interval"
                     type="number"
@@ -352,11 +320,9 @@ export function BfdProfileModal({
                     min={10}
                     max={60000}
                   />
-                </div>
+                </FormField>
 
-                {/* Multiplier */}
-                <div className="space-y-2">
-                  <Label htmlFor="bfd-profile-multiplier">Multiplier</Label>
+                <FormField label="Multiplier" htmlFor="bfd-profile-multiplier">
                   <Input
                     id="bfd-profile-multiplier"
                     type="number"
@@ -366,15 +332,19 @@ export function BfdProfileModal({
                     min={2}
                     max={255}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Advanced Section */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Advanced</h4>
-              <div className="space-y-2">
-                <Label htmlFor="bfd-profile-min-ttl">Minimum TTL</Label>
+            <Fieldset label="Advanced">
+              <FormField
+                label="Minimum TTL"
+                htmlFor="bfd-profile-min-ttl"
+                description="Minimum Time To Live (1-254). Used to restrict BFD packets to a certain number of hops."
+              >
                 <Input
                   id="bfd-profile-min-ttl"
                   type="number"
@@ -384,12 +354,8 @@ export function BfdProfileModal({
                   min={1}
                   max={254}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Minimum Time To Live (1-254). Used to restrict BFD packets
-                  to a certain number of hops.
-                </p>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
           </div>
         </ScrollArea>
 

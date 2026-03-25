@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { sshService } from "@/lib/api/ssh";
 import type { SSHConfig, SSHCapabilities, SSHBatchOperation } from "@/lib/api/types/ssh";
 import { Loader2, X, Plus } from "lucide-react";
@@ -397,37 +397,38 @@ export function EditSSHSettingsModal({
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     placeholder: string
   ) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
+    <FormField label={label}>
       {values.length === 0 && (
-        <p className="text-sm text-zinc-500">None configured.</p>
+        <p className="text-sm text-muted-foreground">None configured.</p>
       )}
-      {values.map((value, index) => (
-        <div key={index} className="flex gap-2">
-          <Input
-            value={value}
-            onChange={(e) => updateInList(setter, index, e.target.value)}
-            placeholder={placeholder}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => removeFromList(setter, index)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => addToList(setter)}
-      >
-        <Plus className="h-4 w-4 mr-1" /> Add
-      </Button>
-    </div>
+      <div className="space-y-2">
+        {values.map((value, index) => (
+          <div key={index} className="flex gap-2">
+            <Input
+              value={value}
+              onChange={(e) => updateInList(setter, index, e.target.value)}
+              placeholder={placeholder}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => removeFromList(setter, index)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addToList(setter)}
+        >
+          <Plus className="h-4 w-4 mr-1" /> Add
+        </Button>
+      </div>
+    </FormField>
   );
 
   return (
@@ -456,81 +457,99 @@ export function EditSSHSettingsModal({
             </TabsList>
 
             {/* General Tab */}
-            <TabsContent value="general" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ssh-port">Port</Label>
-                  <Input
-                    id="ssh-port"
-                    type="number"
-                    min={1}
-                    max={65535}
-                    placeholder="22"
-                    value={port}
-                    onChange={(e) => setPort(e.target.value)}
-                  />
-                  <p className="text-xs text-zinc-500">Default: 22</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ssh-loglevel">Log Level</Label>
-                  <Select
-                    value={loglevel || "placeholder"}
-                    onValueChange={(v) => setLoglevel(v === "placeholder" ? "" : v)}
+            <TabsContent value="general" className="space-y-5 pt-2">
+              <Fieldset label="Connection">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    label="Port"
+                    htmlFor="ssh-port"
+                    description="Default: 22"
                   >
-                    <SelectTrigger id="ssh-loglevel">
-                      <SelectValue placeholder="Select log level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled>
-                        Select log level
-                      </SelectItem>
-                      {LOG_LEVELS.map((level) => (
-                        <SelectItem key={level} value={level}>
-                          {level}
+                    <Input
+                      id="ssh-port"
+                      type="number"
+                      min={1}
+                      max={65535}
+                      placeholder="22"
+                      value={port}
+                      onChange={(e) => setPort(e.target.value)}
+                    />
+                  </FormField>
+
+                  <FormField
+                    label="Log Level"
+                    htmlFor="ssh-loglevel"
+                  >
+                    <Select
+                      value={loglevel || "placeholder"}
+                      onValueChange={(v) => setLoglevel(v === "placeholder" ? "" : v)}
+                    >
+                      <SelectTrigger id="ssh-loglevel">
+                        <SelectValue placeholder="Select log level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="placeholder" disabled>
+                          Select log level
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ssh-keepalive">Client Keepalive Interval (seconds)</Label>
-                  <Input
-                    id="ssh-keepalive"
-                    type="number"
-                    min={0}
-                    placeholder="e.g. 60"
-                    value={keepaliveInterval}
-                    onChange={(e) => setKeepaliveInterval(e.target.value)}
-                  />
+                        {LOG_LEVELS.map((level) => (
+                          <SelectItem key={level} value={level}>
+                            {level}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="ssh-vrf">VRF</Label>
-                  <Input
-                    id="ssh-vrf"
-                    placeholder="e.g. MGMT"
-                    value={vrf}
-                    onChange={(e) => setVrf(e.target.value)}
-                  />
-                </div>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    label="Client Keepalive Interval (seconds)"
+                    htmlFor="ssh-keepalive"
+                  >
+                    <Input
+                      id="ssh-keepalive"
+                      type="number"
+                      min={0}
+                      placeholder="e.g. 60"
+                      value={keepaliveInterval}
+                      onChange={(e) => setKeepaliveInterval(e.target.value)}
+                    />
+                  </FormField>
 
-              {renderMultiValueField(
-                "Listen Addresses",
-                listenAddresses,
-                setListenAddresses,
-                "e.g. 0.0.0.0 or 2001:db8::1"
-              )}
+                  <FormField
+                    label="VRF"
+                    htmlFor="ssh-vrf"
+                  >
+                    <Input
+                      id="ssh-vrf"
+                      placeholder="e.g. MGMT"
+                      value={vrf}
+                      onChange={(e) => setVrf(e.target.value)}
+                    />
+                  </FormField>
+                </div>
+              </Fieldset>
+
+              <FieldsetDivider />
+
+              <Fieldset label="Listen Addresses">
+                {renderMultiValueField(
+                  "Addresses",
+                  listenAddresses,
+                  setListenAddresses,
+                  "e.g. 0.0.0.0 or 2001:db8::1"
+                )}
+              </Fieldset>
             </TabsContent>
 
             {/* Authentication Tab */}
-            <TabsContent value="auth" className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
+            <TabsContent value="auth" className="space-y-5 pt-2">
+              <Fieldset label="Security Options">
+                <FormField
+                  label="Disable password authentication (require key-based auth)"
+                  htmlFor="ssh-disable-password"
+                  horizontal
+                >
                   <Checkbox
                     id="ssh-disable-password"
                     checked={disablePasswordAuth}
@@ -538,12 +557,13 @@ export function EditSSHSettingsModal({
                       setDisablePasswordAuth(checked as boolean)
                     }
                   />
-                  <Label htmlFor="ssh-disable-password" className="cursor-pointer">
-                    Disable password authentication (require key-based auth)
-                  </Label>
-                </div>
+                </FormField>
 
-                <div className="flex items-center space-x-2">
+                <FormField
+                  label="Disable host validation"
+                  htmlFor="ssh-disable-host-validation"
+                  horizontal
+                >
                   <Checkbox
                     id="ssh-disable-host-validation"
                     checked={disableHostValidation}
@@ -551,15 +571,12 @@ export function EditSSHSettingsModal({
                       setDisableHostValidation(checked as boolean)
                     }
                   />
-                  <Label htmlFor="ssh-disable-host-validation" className="cursor-pointer">
-                    Disable host validation
-                  </Label>
-                </div>
-              </div>
+                </FormField>
+              </Fieldset>
 
-              <div className="border-t pt-4 space-y-4">
-                <h3 className="text-sm font-semibold">Access Control</h3>
+              <FieldsetDivider />
 
+              <Fieldset label="Access Control">
                 {renderMultiValueField(
                   "Allowed Users",
                   allowUsers,
@@ -587,103 +604,122 @@ export function EditSSHSettingsModal({
                   setDenyGroups,
                   "e.g. nogroup"
                 )}
-              </div>
+              </Fieldset>
             </TabsContent>
 
             {/* Cryptography Tab */}
-            <TabsContent value="crypto" className="space-y-4">
-              {renderMultiValueField(
-                "Ciphers",
-                ciphers,
-                setCiphers,
-                "e.g. aes256-gcm@openssh.com"
-              )}
+            <TabsContent value="crypto" className="space-y-5 pt-2">
+              <Fieldset label="Algorithms">
+                {renderMultiValueField(
+                  "Ciphers",
+                  ciphers,
+                  setCiphers,
+                  "e.g. aes256-gcm@openssh.com"
+                )}
 
-              {renderMultiValueField(
-                "Key Exchange Algorithms",
-                keyExchange,
-                setKeyExchange,
-                "e.g. curve25519-sha256"
-              )}
+                {renderMultiValueField(
+                  "Key Exchange Algorithms",
+                  keyExchange,
+                  setKeyExchange,
+                  "e.g. curve25519-sha256"
+                )}
 
-              {renderMultiValueField(
-                "MAC Algorithms",
-                macs,
-                setMacs,
-                "e.g. hmac-sha2-256-etm@openssh.com"
-              )}
+                {renderMultiValueField(
+                  "MAC Algorithms",
+                  macs,
+                  setMacs,
+                  "e.g. hmac-sha2-256-etm@openssh.com"
+                )}
+              </Fieldset>
             </TabsContent>
 
             {/* Dynamic Protection Tab */}
-            <TabsContent value="protection" className="space-y-4">
-              {capabilities?.fields.dynamic_protection.supported && (
+            <TabsContent value="protection" className="space-y-5 pt-2">
+              {capabilities?.fields?.dynamic_protection?.supported && (
                 <>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="ssh-dynamic-protection"
-                      checked={dynamicProtectionEnabled}
-                      onCheckedChange={(checked) =>
-                        setDynamicProtectionEnabled(checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="ssh-dynamic-protection" className="cursor-pointer">
-                      Enable dynamic protection (brute-force defense)
-                    </Label>
-                  </div>
+                  <Fieldset label="Dynamic Protection">
+                    <FormField
+                      label="Enable dynamic protection (brute-force defense)"
+                      htmlFor="ssh-dynamic-protection"
+                      horizontal
+                    >
+                      <Checkbox
+                        id="ssh-dynamic-protection"
+                        checked={dynamicProtectionEnabled}
+                        onCheckedChange={(checked) =>
+                          setDynamicProtectionEnabled(checked as boolean)
+                        }
+                      />
+                    </FormField>
+                  </Fieldset>
 
                   {dynamicProtectionEnabled && (
-                    <div className="space-y-4 pl-6 border-l-2 border-zinc-700">
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="dp-block-time">Block Time (seconds)</Label>
-                          <Input
-                            id="dp-block-time"
-                            type="number"
-                            min={0}
-                            placeholder="e.g. 120"
-                            value={dpBlockTime}
-                            onChange={(e) => setDpBlockTime(e.target.value)}
-                          />
-                        </div>
+                    <>
+                      <FieldsetDivider />
 
-                        <div className="space-y-2">
-                          <Label htmlFor="dp-detect-time">Detect Time (seconds)</Label>
-                          <Input
-                            id="dp-detect-time"
-                            type="number"
-                            min={0}
-                            placeholder="e.g. 1800"
-                            value={dpDetectTime}
-                            onChange={(e) => setDpDetectTime(e.target.value)}
-                          />
-                        </div>
+                      <Fieldset label="Timing">
+                        <div className="grid grid-cols-3 gap-4">
+                          <FormField
+                            label="Block Time (seconds)"
+                            htmlFor="dp-block-time"
+                          >
+                            <Input
+                              id="dp-block-time"
+                              type="number"
+                              min={0}
+                              placeholder="e.g. 120"
+                              value={dpBlockTime}
+                              onChange={(e) => setDpBlockTime(e.target.value)}
+                            />
+                          </FormField>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="dp-threshold">Threshold</Label>
-                          <Input
-                            id="dp-threshold"
-                            type="number"
-                            min={0}
-                            placeholder="e.g. 30"
-                            value={dpThreshold}
-                            onChange={(e) => setDpThreshold(e.target.value)}
-                          />
-                        </div>
-                      </div>
+                          <FormField
+                            label="Detect Time (seconds)"
+                            htmlFor="dp-detect-time"
+                          >
+                            <Input
+                              id="dp-detect-time"
+                              type="number"
+                              min={0}
+                              placeholder="e.g. 1800"
+                              value={dpDetectTime}
+                              onChange={(e) => setDpDetectTime(e.target.value)}
+                            />
+                          </FormField>
 
-                      {renderMultiValueField(
-                        "Allow From (bypass addresses)",
-                        dpAllowFrom,
-                        setDpAllowFrom,
-                        "e.g. 10.0.0.0/8"
-                      )}
-                    </div>
+                          <FormField
+                            label="Threshold"
+                            htmlFor="dp-threshold"
+                          >
+                            <Input
+                              id="dp-threshold"
+                              type="number"
+                              min={0}
+                              placeholder="e.g. 30"
+                              value={dpThreshold}
+                              onChange={(e) => setDpThreshold(e.target.value)}
+                            />
+                          </FormField>
+                        </div>
+                      </Fieldset>
+
+                      <FieldsetDivider />
+
+                      <Fieldset label="Allow From">
+                        {renderMultiValueField(
+                          "Bypass Addresses",
+                          dpAllowFrom,
+                          setDpAllowFrom,
+                          "e.g. 10.0.0.0/8"
+                        )}
+                      </Fieldset>
+                    </>
                   )}
                 </>
               )}
 
-              {!capabilities?.fields.dynamic_protection.supported && (
-                <p className="text-sm text-zinc-500">
+              {!capabilities?.fields?.dynamic_protection?.supported && (
+                <p className="text-sm text-muted-foreground">
                   Dynamic protection is not supported on this VyOS version.
                 </p>
               )}

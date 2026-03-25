@@ -1,0 +1,43 @@
+goal: "Add a web-based SSH terminal to VyManager so administrators can open an interactive shell to their VyOS router instances directly from the browser — for manual configuration, troubleshooting, and inspecting settings."
+
+scope:
+  include:
+    - "backend/routers/**"
+    - "backend/middleware/**"
+    - "backend/pyvyos/**"
+    - "frontend/src/app/**"
+    - "frontend/src/components/**"
+    - "frontend/src/lib/api/**"
+    - "frontend/src/hooks/**"
+    - "frontend/package.json"
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must use the SSH credentials already stored for the active VyOS instance (host, port, API key / SSH key)"
+  - "Must respect RBAC — only users with appropriate permissions can open a terminal"
+  - "WebSocket-based connection from browser → backend → SSH to VyOS device"
+  - "Use xterm.js (or similar mature terminal emulator) on the frontend"
+  - "Must support window resize (SIGWINCH / PTY resize)"
+  - "Must clean up SSH sessions on disconnect / tab close"
+  - "Follow existing UI patterns (dark mode, shadcn/ui)"
+  - "No new backend dependencies without user approval"
+
+acceptance_criteria:
+  - "WebSocket endpoint exists at backend that proxies SSH"
+  - "Frontend terminal component renders an interactive shell"
+  - "Terminal is accessible from the UI with RBAC gating"
+  - "SSH session cleans up on browser disconnect"
+  - "TypeScript compiles with zero errors"
+  - "Linting passes"
+
+human_checkpoints:
+  - after: evaluate
+  - after: resolve
+
+max_iterations: 3
+
+context: "VyManager already stores SSH connection details (host, port, API key) per VyOS instance in the ActiveSession system. The backend pyvyos SDK uses these to execute commands. The monitoring feature already uses WebSocket (hooks/useMonitoringWebSocket.ts). The middleware chain handles auth and session resolution."

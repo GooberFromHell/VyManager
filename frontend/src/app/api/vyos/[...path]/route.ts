@@ -82,14 +82,22 @@ async function proxyRequest(
 
     // Handle request body
     let body: BodyInit | undefined;
+    const incomingContentType = request.headers.get("content-type") || "";
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
-      headers["Content-Type"] = "application/json";
-      try {
-        const json = await request.json();
-        body = JSON.stringify(json);
-      } catch {
-        // No body or invalid JSON
+      if (incomingContentType.includes("multipart/form-data")) {
+        // Pass multipart form data through as-is (for file uploads)
+        body = await request.arrayBuffer();
+        headers["Content-Type"] = incomingContentType;
+      } else {
+        // Default: JSON body
+        headers["Content-Type"] = "application/json";
+        try {
+          const json = await request.json();
+          body = JSON.stringify(json);
+        } catch {
+          // No body or invalid JSON
+        }
       }
     }
 
@@ -111,6 +119,34 @@ async function proxyRequest(
           "X-Accel-Buffering": "no",
           "Connection": "keep-alive",
         },
+      });
+    }
+
+    // Stream binary responses directly (for file downloads)
+    if (
+      contentType.includes("application/octet-stream") ||
+      contentType.includes("application/zip") ||
+      contentType.includes("application/gzip")
+    ) {
+      const responseHeaders: Record<string, string> = {
+        "Content-Type": contentType,
+      };
+
+      // Pass through Content-Disposition for downloads
+      const contentDisposition = response.headers.get("Content-Disposition");
+      if (contentDisposition) {
+        responseHeaders["Content-Disposition"] = contentDisposition;
+      }
+
+      // Pass through Content-Length if available
+      const contentLength = response.headers.get("Content-Length");
+      if (contentLength) {
+        responseHeaders["Content-Length"] = contentLength;
+      }
+
+      return new Response(response.body, {
+        status: response.status,
+        headers: responseHeaders,
       });
     }
 

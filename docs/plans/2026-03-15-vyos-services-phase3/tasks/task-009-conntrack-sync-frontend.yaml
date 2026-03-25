@@ -1,0 +1,147 @@
+id: "task-009"
+title: "Conntrack Sync — Frontend types, service, modals, page"
+phase: produce
+agent: react-specialist
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-006", "task-007", "task-008"]
+
+files:
+  create:
+    - "frontend/src/lib/api/types/conntrack-sync.ts"
+    - "frontend/src/lib/api/conntrack-sync.ts"
+    - "frontend/src/components/services/conntrack-sync/EditConntrackSyncModal.tsx"
+    - "frontend/src/components/services/conntrack-sync/AddConntrackSyncInterfaceModal.tsx"
+    - "frontend/src/components/services/conntrack-sync/DeleteConntrackSyncInterfaceModal.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/conntrack-sync/page.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/types/ssh.ts"
+  - "frontend/src/lib/api/ssh.ts"
+  - "frontend/src/components/services/ssh/EditSSHSettingsModal.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/ssh/page.tsx"
+  - "frontend/src/components/services/ntp/CreateNTPServerModal.tsx"
+  - "frontend/src/components/services/ntp/DeleteNTPServerModal.tsx"
+  - "frontend/src/lib/api/client.ts"
+
+instructions: |
+  Create Conntrack Sync frontend. Multi-section config similar to SSH.
+  Use SSH as reference for the multi-section edit modal, NTP for add/delete interface modals.
+
+  ## Step 1: Types (frontend/src/lib/api/types/conntrack-sync.ts)
+
+  ```typescript
+  export interface ConntrackSyncInterface {
+    name: string;
+    port: string | null;
+  }
+
+  export interface ConntrackSyncFailoverMechanism {
+    type: "vrrp" | "cluster";
+    sync_group: string | null;
+    cluster_group: string | null;
+  }
+
+  export interface ConntrackSyncConfig {
+    accept_protocols: string[];
+    disable_external_cache: boolean;
+    expect_sync: string[];
+    failover_mechanism: ConntrackSyncFailoverMechanism | null;
+    interfaces: ConntrackSyncInterface[];
+    listen_addresses: string[];
+    mcast_group: string | null;
+    event_listen_queue_size: string | null;
+    sync_queue_size: string | null;
+    startup_resync: boolean | null;
+  }
+
+  export interface ConntrackSyncCapabilities {
+    version: string;
+    instance_name: string;
+    instance_id: string;
+    has_cluster: boolean;
+    has_listen_address: boolean;
+    has_event_listen_queue_size: boolean;
+    has_sync_queue_size: boolean;
+    has_startup_resync: boolean;
+    fields: Record<string, { supported: boolean; description: string }>;
+  }
+
+  export interface ConntrackSyncBatchOperation {
+    op: string;
+    value?: string;
+  }
+
+  export interface ConntrackSyncBatchRequest {
+    item_name?: string;
+    operations: ConntrackSyncBatchOperation[];
+  }
+  ```
+
+  ## Step 2: API Service (frontend/src/lib/api/conntrack-sync.ts)
+
+  Standard class:
+  - getCapabilities(), getConfig(), batchConfigure(), refreshConfig()
+  - updateSettings(operations[]) — update global settings
+  - addInterface(iface, operations[]) — add sync interface
+  - deleteInterface(iface) — remove interface
+
+  ## Step 3: Edit Modal (EditConntrackSyncModal.tsx)
+
+  Follow EditSSHSettingsModal pattern with sections/tabs:
+  - Props: open, onOpenChange, onSuccess, config, capabilities
+  - Large modal (2xl-4xl width, 85-90vh)
+  - Sections (use Tabs or sections with Separator):
+    - General: accept-protocol (multi-value), mcast-group, disable-external-cache (checkbox)
+    - Failover: Type select (vrrp/cluster based on capabilities), sync-group/cluster-group input
+    - Expect Sync: multi-value list of modules (ftp, h323, nfs, sip, sqlnet checkboxes)
+    - Interfaces: Table of configured interfaces with port (managed via add/delete modals)
+    - Advanced (v1.5): event-listen-queue-size, sync-queue-size, listen-addresses (multi-value),
+      startup-resync (checkbox). Only show if capabilities support them.
+  - Delta computation + operation building
+  - Capability-aware rendering
+
+  ## Step 4: Add Interface Modal (AddConntrackSyncInterfaceModal.tsx)
+
+  Simple modal:
+  - Interface name (input)
+  - Port (input, number 1-65535, optional)
+  - Validation: not duplicate, valid port range
+
+  ## Step 5: Delete Interface Modal (DeleteConntrackSyncInterfaceModal.tsx)
+
+  Standard delete confirmation showing interface name.
+
+  ## Step 6: Page (conntrack-sync/page.tsx)
+
+  Follow SSH page pattern with card-based display:
+  - Cards:
+    - General Settings: accept-protocols (Badges), mcast-group, disable-external-cache status
+    - Failover Mechanism: type + sync-group/cluster-group
+    - Expect Sync: module list (Badges)
+    - Interfaces: Table with Name + Port columns
+    - Advanced (v1.5 only, if configured): queue sizes, listen addresses, startup-resync
+  - Edit button opens main EditConntrackSyncModal
+  - Interface table has Add/Delete buttons
+  - Empty state: "Conntrack Sync is not configured"
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/types/conntrack-sync.ts"
+  - "File exists: frontend/src/lib/api/conntrack-sync.ts"
+  - "File exists: frontend/src/components/services/conntrack-sync/EditConntrackSyncModal.tsx"
+  - "File exists: frontend/src/components/services/conntrack-sync/AddConntrackSyncInterfaceModal.tsx"
+  - "File exists: frontend/src/components/services/conntrack-sync/DeleteConntrackSyncInterfaceModal.tsx"
+  - "File exists: frontend/src/app/(default)/(app)/system/services/conntrack-sync/page.tsx"
+  - "Grep match: 'ConntrackSyncConfig' in frontend/src/lib/api/types/conntrack-sync.ts"
+  - "Grep match: 'getCapabilities' in frontend/src/lib/api/conntrack-sync.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

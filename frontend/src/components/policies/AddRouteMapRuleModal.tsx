@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -623,46 +623,43 @@ export function AddRouteMapRuleModal({
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ruleNumber">Rule Number</Label>
+              <FormField label="Rule Number" htmlFor="ruleNumber">
                 <Input
-                  id="ruleNumber"
-                  type="number"
-                  value={ruleNumber}
-                  disabled
-                  className="bg-muted"
+                id="ruleNumber"
+                type="number"
+                value={ruleNumber}
+                disabled
+                className="bg-muted"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Auto-calculated as next available number
+                Auto-calculated as next available number
                 </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="action">Action *</Label>
+              <FormField label="Action" htmlFor="action" required>
                 <Select value={action} onValueChange={setAction}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="permit">Permit</SelectItem>
-                    <SelectItem value="deny">Deny</SelectItem>
-                  </SelectContent>
+                <SelectTrigger>
+                <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                <SelectItem value="permit">Permit</SelectItem>
+                <SelectItem value="deny">Deny</SelectItem>
+                </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Permit allows matching routes, Deny blocks them
+                Permit allows matching routes, Deny blocks them
                 </p>
-              </div>
+              </FormField>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="ruleDescription">Rule Description</Label>
+            <FormField label="Rule Description" htmlFor="ruleDescription">
               <Input
-                id="ruleDescription"
-                placeholder="Optional description for this rule"
-                value={ruleDescription}
-                onChange={(e) => setRuleDescription(e.target.value)}
+              id="ruleDescription"
+              placeholder="Optional description for this rule"
+              value={ruleDescription}
+              onChange={(e) => setRuleDescription(e.target.value)}
               />
-            </div>
+            </FormField>
           </TabsContent>
 
           {/* Match Conditions Tab */}
@@ -677,137 +674,125 @@ export function AddRouteMapRuleModal({
                 <AccordionTrigger>BGP Attributes</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="matchAsPath">AS Path List</Label>
+                    <FormField label="AS Path List" htmlFor="matchAsPath">
                       <Select value={matchAsPath || "none"} onValueChange={(val) => setMatchAsPath(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select AS path list" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {asPathLists.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))}
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select AS path list" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {asPathLists.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                      </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchOrigin">Origin</Label>
+                    <FormField label="Origin" htmlFor="matchOrigin">
                       <Select value={matchOrigin || "none"} onValueChange={(val) => setMatchOrigin(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select origin" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="egp">EGP</SelectItem>
-                          <SelectItem value="igp">IGP</SelectItem>
-                          <SelectItem value="incomplete">Incomplete</SelectItem>
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select origin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="egp">EGP</SelectItem>
+                      <SelectItem value="igp">IGP</SelectItem>
+                      <SelectItem value="incomplete">Incomplete</SelectItem>
+                      </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchCommunityList">Community List</Label>
+                    <FormField label="Community List" htmlFor="matchCommunityList">
                       <Select value={matchCommunityList || "none"} onValueChange={(val) => setMatchCommunityList(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select community list" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {communityLists.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))}
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select community list" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {communityLists.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                      </SelectContent>
                       </Select>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Checkbox
-                          id="matchCommunityExact"
-                          checked={matchCommunityExact}
-                          onCheckedChange={(checked) => setMatchCommunityExact(checked as boolean)}
-                        />
-                        <Label htmlFor="matchCommunityExact" className="text-sm font-normal">
-                          Exact match
-                        </Label>
-                      </div>
-                    </div>
+                    </FormField>
+                    <FormField label="Exact match" htmlFor="matchCommunityExact" horizontal>
+                      <Checkbox
+                        id="matchCommunityExact"
+                        checked={matchCommunityExact}
+                        onCheckedChange={(checked) => setMatchCommunityExact(checked as boolean)}
+                      />
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchExtcommunity">Extended Community</Label>
+                    <FormField label="Extended Community" htmlFor="matchExtcommunity">
                       <Select value={matchExtcommunity || "none"} onValueChange={(val) => setMatchExtcommunity(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select extended community list" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {extcommunityLists.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))}
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select extended community list" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {extcommunityLists.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                      </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchLargeCommunityList">Large Community List</Label>
+                    <FormField label="Large Community List" htmlFor="matchLargeCommunityList">
                       <Select value={matchLargeCommunityList || "none"} onValueChange={(val) => setMatchLargeCommunityList(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select large community list" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {largeCommunityLists.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))}
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select large community list" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {largeCommunityLists.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                      </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchLocalPref">Local Preference</Label>
+                    <FormField label="Local Preference" htmlFor="matchLocalPref">
                       <Input
-                        id="matchLocalPref"
-                        type="number"
-                        placeholder="0-4294967295"
-                        value={matchLocalPref}
-                        onChange={(e) => setMatchLocalPref(e.target.value)}
+                      id="matchLocalPref"
+                      type="number"
+                      placeholder="0-4294967295"
+                      value={matchLocalPref}
+                      onChange={(e) => setMatchLocalPref(e.target.value)}
                       />
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchMetric">Metric (MED)</Label>
+                    <FormField label="Metric (MED)" htmlFor="matchMetric">
                       <Input
-                        id="matchMetric"
-                        type="number"
-                        placeholder="0-4294967295"
-                        value={matchMetric}
-                        onChange={(e) => setMatchMetric(e.target.value)}
+                      id="matchMetric"
+                      type="number"
+                      placeholder="0-4294967295"
+                      value={matchMetric}
+                      onChange={(e) => setMatchMetric(e.target.value)}
                       />
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchPeer">Peer Address</Label>
+                    <FormField label="Peer Address" htmlFor="matchPeer">
                       <Input
-                        id="matchPeer"
-                        placeholder="e.g., 192.168.1.1"
-                        value={matchPeer}
-                        onChange={(e) => setMatchPeer(e.target.value)}
+                      id="matchPeer"
+                      placeholder="e.g., 192.168.1.1"
+                      value={matchPeer}
+                      onChange={(e) => setMatchPeer(e.target.value)}
                       />
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="matchRpki">RPKI Validation</Label>
+                    <FormField label="RPKI Validation" htmlFor="matchRpki">
                       <Select value={matchRpki || "none"} onValueChange={(val) => setMatchRpki(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select RPKI state" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="valid">Valid</SelectItem>
-                          <SelectItem value="invalid">Invalid</SelectItem>
-                          <SelectItem value="notfound">Not Found</SelectItem>
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select RPKI state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="valid">Valid</SelectItem>
+                      <SelectItem value="invalid">Invalid</SelectItem>
+                      <SelectItem value="notfound">Not Found</SelectItem>
+                      </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -819,66 +804,60 @@ export function AddRouteMapRuleModal({
                   <div className="space-y-4">
                     <h4 className="font-medium text-sm">IPv4 Address</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpAddressAccessList">Access List</Label>
+                      <FormField label="Access List" htmlFor="matchIpAddressAccessList">
                         <Input
-                          id="matchIpAddressAccessList"
-                          placeholder="Access list number/name"
-                          value={matchIpAddressAccessList}
-                          onChange={(e) => setMatchIpAddressAccessList(e.target.value)}
+                        id="matchIpAddressAccessList"
+                        placeholder="Access list number/name"
+                        value={matchIpAddressAccessList}
+                        onChange={(e) => setMatchIpAddressAccessList(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpAddressPrefixList">Prefix List</Label>
+                      </FormField>
+                      <FormField label="Prefix List" htmlFor="matchIpAddressPrefixList">
                         <Input
-                          id="matchIpAddressPrefixList"
-                          placeholder="Prefix list name"
-                          value={matchIpAddressPrefixList}
-                          onChange={(e) => setMatchIpAddressPrefixList(e.target.value)}
+                        id="matchIpAddressPrefixList"
+                        placeholder="Prefix list name"
+                        value={matchIpAddressPrefixList}
+                        onChange={(e) => setMatchIpAddressPrefixList(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpAddressPrefixLen">Prefix Length</Label>
+                      </FormField>
+                      <FormField label="Prefix Length" htmlFor="matchIpAddressPrefixLen">
                         <Input
-                          id="matchIpAddressPrefixLen"
-                          type="number"
-                          placeholder="0-32"
-                          value={matchIpAddressPrefixLen}
-                          onChange={(e) => setMatchIpAddressPrefixLen(e.target.value)}
+                        id="matchIpAddressPrefixLen"
+                        type="number"
+                        placeholder="0-32"
+                        value={matchIpAddressPrefixLen}
+                        onChange={(e) => setMatchIpAddressPrefixLen(e.target.value)}
                         />
-                      </div>
+                      </FormField>
                     </div>
 
                     <h4 className="font-medium text-sm pt-4">IPv6 Address</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6AddressAccessList">Access List</Label>
+                      <FormField label="Access List" htmlFor="matchIpv6AddressAccessList">
                         <Input
-                          id="matchIpv6AddressAccessList"
-                          placeholder="Access list number/name"
-                          value={matchIpv6AddressAccessList}
-                          onChange={(e) => setMatchIpv6AddressAccessList(e.target.value)}
+                        id="matchIpv6AddressAccessList"
+                        placeholder="Access list number/name"
+                        value={matchIpv6AddressAccessList}
+                        onChange={(e) => setMatchIpv6AddressAccessList(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6AddressPrefixList">Prefix List</Label>
+                      </FormField>
+                      <FormField label="Prefix List" htmlFor="matchIpv6AddressPrefixList">
                         <Input
-                          id="matchIpv6AddressPrefixList"
-                          placeholder="Prefix list name"
-                          value={matchIpv6AddressPrefixList}
-                          onChange={(e) => setMatchIpv6AddressPrefixList(e.target.value)}
+                        id="matchIpv6AddressPrefixList"
+                        placeholder="Prefix list name"
+                        value={matchIpv6AddressPrefixList}
+                        onChange={(e) => setMatchIpv6AddressPrefixList(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6AddressPrefixLen">Prefix Length</Label>
+                      </FormField>
+                      <FormField label="Prefix Length" htmlFor="matchIpv6AddressPrefixLen">
                         <Input
-                          id="matchIpv6AddressPrefixLen"
-                          type="number"
-                          placeholder="0-128"
-                          value={matchIpv6AddressPrefixLen}
-                          onChange={(e) => setMatchIpv6AddressPrefixLen(e.target.value)}
+                        id="matchIpv6AddressPrefixLen"
+                        type="number"
+                        placeholder="0-128"
+                        value={matchIpv6AddressPrefixLen}
+                        onChange={(e) => setMatchIpv6AddressPrefixLen(e.target.value)}
                         />
-                      </div>
+                      </FormField>
                     </div>
                   </div>
                 </AccordionContent>
@@ -891,128 +870,110 @@ export function AddRouteMapRuleModal({
                   <div className="space-y-4">
                     <h4 className="font-medium text-sm">IPv4 Next-Hop</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpNexthopAccessList">Access List</Label>
+                      <FormField label="Access List" htmlFor="matchIpNexthopAccessList">
                         <Select value={matchIpNexthopAccessList || "none"} onValueChange={(val) => setMatchIpNexthopAccessList(val === "none" ? "" : val)}>
-                          <SelectTrigger id="matchIpNexthopAccessList">
-                            <SelectValue placeholder="Select access list" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {ipv4AccessLists.map((number) => (
-                              <SelectItem key={number} value={number}>{number}</SelectItem>
-                            ))}
-                          </SelectContent>
+                        <SelectTrigger id="matchIpNexthopAccessList">
+                        <SelectValue placeholder="Select access list" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {ipv4AccessLists.map((number) => (
+                        <SelectItem key={number} value={number}>{number}</SelectItem>
+                        ))}
+                        </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpNexthopAddress">Address</Label>
+                      </FormField>
+                      <FormField label="Address" htmlFor="matchIpNexthopAddress">
                         <Input
-                          id="matchIpNexthopAddress"
-                          placeholder="e.g., 192.168.1.1"
-                          value={matchIpNexthopAddress}
-                          onChange={(e) => setMatchIpNexthopAddress(e.target.value)}
+                        id="matchIpNexthopAddress"
+                        placeholder="e.g., 192.168.1.1"
+                        value={matchIpNexthopAddress}
+                        onChange={(e) => setMatchIpNexthopAddress(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpNexthopPrefixList">Prefix List</Label>
+                      </FormField>
+                      <FormField label="Prefix List" htmlFor="matchIpNexthopPrefixList">
                         <Select value={matchIpNexthopPrefixList || "none"} onValueChange={(val) => setMatchIpNexthopPrefixList(val === "none" ? "" : val)}>
-                          <SelectTrigger id="matchIpNexthopPrefixList">
-                            <SelectValue placeholder="Select prefix list" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {ipv4PrefixLists.map((name) => (
-                              <SelectItem key={name} value={name}>{name}</SelectItem>
-                            ))}
-                          </SelectContent>
+                        <SelectTrigger id="matchIpNexthopPrefixList">
+                        <SelectValue placeholder="Select prefix list" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {ipv4PrefixLists.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                        ))}
+                        </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpNexthopPrefixLen">Prefix Length</Label>
+                      </FormField>
+                      <FormField label="Prefix Length" htmlFor="matchIpNexthopPrefixLen">
                         <Input
-                          id="matchIpNexthopPrefixLen"
-                          type="number"
-                          placeholder="0-32"
-                          value={matchIpNexthopPrefixLen}
-                          onChange={(e) => setMatchIpNexthopPrefixLen(e.target.value)}
+                        id="matchIpNexthopPrefixLen"
+                        type="number"
+                        placeholder="0-32"
+                        value={matchIpNexthopPrefixLen}
+                        onChange={(e) => setMatchIpNexthopPrefixLen(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2 pt-7">
-                          <Checkbox
-                            id="matchIpNexthopType"
-                            checked={matchIpNexthopType}
-                            onCheckedChange={(checked) => setMatchIpNexthopType(checked as boolean)}
-                          />
-                          <Label htmlFor="matchIpNexthopType" className="cursor-pointer">
-                            Blackhole Type
-                          </Label>
-                        </div>
-                      </div>
+                      </FormField>
+                      <FormField label="Blackhole Type" htmlFor="matchIpNexthopType" horizontal>
+                        <Checkbox
+                          id="matchIpNexthopType"
+                          checked={matchIpNexthopType}
+                          onCheckedChange={(checked) => setMatchIpNexthopType(checked as boolean)}
+                        />
+                      </FormField>
                     </div>
 
                     <h4 className="font-medium text-sm pt-4">IPv6 Next-Hop</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6NexthopAccessList">Access List</Label>
+                      <FormField label="Access List" htmlFor="matchIpv6NexthopAccessList">
                         <Select value={matchIpv6NexthopAccessList || "none"} onValueChange={(val) => setMatchIpv6NexthopAccessList(val === "none" ? "" : val)}>
-                          <SelectTrigger id="matchIpv6NexthopAccessList">
-                            <SelectValue placeholder="Select access list" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {ipv6AccessLists.map((number) => (
-                              <SelectItem key={number} value={number}>{number}</SelectItem>
-                            ))}
-                          </SelectContent>
+                        <SelectTrigger id="matchIpv6NexthopAccessList">
+                        <SelectValue placeholder="Select access list" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {ipv6AccessLists.map((number) => (
+                        <SelectItem key={number} value={number}>{number}</SelectItem>
+                        ))}
+                        </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6NexthopAddress">Address</Label>
+                      </FormField>
+                      <FormField label="Address" htmlFor="matchIpv6NexthopAddress">
                         <Input
-                          id="matchIpv6NexthopAddress"
-                          placeholder="e.g., 2001:db8::1"
-                          value={matchIpv6NexthopAddress}
-                          onChange={(e) => setMatchIpv6NexthopAddress(e.target.value)}
+                        id="matchIpv6NexthopAddress"
+                        placeholder="e.g., 2001:db8::1"
+                        value={matchIpv6NexthopAddress}
+                        onChange={(e) => setMatchIpv6NexthopAddress(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6NexthopPrefixList">Prefix List</Label>
+                      </FormField>
+                      <FormField label="Prefix List" htmlFor="matchIpv6NexthopPrefixList">
                         <Select value={matchIpv6NexthopPrefixList || "none"} onValueChange={(val) => setMatchIpv6NexthopPrefixList(val === "none" ? "" : val)}>
-                          <SelectTrigger id="matchIpv6NexthopPrefixList">
-                            <SelectValue placeholder="Select prefix list" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {ipv6PrefixLists.map((name) => (
-                              <SelectItem key={name} value={name}>{name}</SelectItem>
-                            ))}
-                          </SelectContent>
+                        <SelectTrigger id="matchIpv6NexthopPrefixList">
+                        <SelectValue placeholder="Select prefix list" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {ipv6PrefixLists.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                        ))}
+                        </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="matchIpv6NexthopPrefixLen">Prefix Length</Label>
+                      </FormField>
+                      <FormField label="Prefix Length" htmlFor="matchIpv6NexthopPrefixLen">
                         <Input
-                          id="matchIpv6NexthopPrefixLen"
-                          type="number"
-                          placeholder="0-128"
-                          value={matchIpv6NexthopPrefixLen}
-                          onChange={(e) => setMatchIpv6NexthopPrefixLen(e.target.value)}
+                        id="matchIpv6NexthopPrefixLen"
+                        type="number"
+                        placeholder="0-128"
+                        value={matchIpv6NexthopPrefixLen}
+                        onChange={(e) => setMatchIpv6NexthopPrefixLen(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2 pt-7">
-                          <Checkbox
-                            id="matchIpv6NexthopType"
-                            checked={matchIpv6NexthopType}
-                            onCheckedChange={(checked) => setMatchIpv6NexthopType(checked as boolean)}
-                          />
-                          <Label htmlFor="matchIpv6NexthopType" className="cursor-pointer">
-                            Blackhole Type
-                          </Label>
-                        </div>
-                      </div>
+                      </FormField>
+                      <FormField label="Blackhole Type" htmlFor="matchIpv6NexthopType" horizontal>
+                        <Checkbox
+                          id="matchIpv6NexthopType"
+                          checked={matchIpv6NexthopType}
+                          onCheckedChange={(checked) => setMatchIpv6NexthopType(checked as boolean)}
+                        />
+                      </FormField>
                     </div>
                   </div>
                 </AccordionContent>
@@ -1023,75 +984,69 @@ export function AddRouteMapRuleModal({
                 <AccordionTrigger>Other Conditions</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="matchIpRouteSourceAccessList">Route Source Access List</Label>
+                    <FormField label="Route Source Access List" htmlFor="matchIpRouteSourceAccessList">
                       <Input
-                        id="matchIpRouteSourceAccessList"
-                        placeholder="Access list number/name"
-                        value={matchIpRouteSourceAccessList}
-                        onChange={(e) => setMatchIpRouteSourceAccessList(e.target.value)}
+                      id="matchIpRouteSourceAccessList"
+                      placeholder="Access list number/name"
+                      value={matchIpRouteSourceAccessList}
+                      onChange={(e) => setMatchIpRouteSourceAccessList(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="matchIpRouteSourcePrefixList">Route Source Prefix List</Label>
+                    </FormField>
+                    <FormField label="Route Source Prefix List" htmlFor="matchIpRouteSourcePrefixList">
                       <Input
-                        id="matchIpRouteSourcePrefixList"
-                        placeholder="Prefix list name"
-                        value={matchIpRouteSourcePrefixList}
-                        onChange={(e) => setMatchIpRouteSourcePrefixList(e.target.value)}
+                      id="matchIpRouteSourcePrefixList"
+                      placeholder="Prefix list name"
+                      value={matchIpRouteSourcePrefixList}
+                      onChange={(e) => setMatchIpRouteSourcePrefixList(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="matchInterface">Interface</Label>
+                    </FormField>
+                    <FormField label="Interface" htmlFor="matchInterface">
                       <Input
-                        id="matchInterface"
-                        placeholder="e.g., eth0"
-                        value={matchInterface}
-                        onChange={(e) => setMatchInterface(e.target.value)}
+                      id="matchInterface"
+                      placeholder="e.g., eth0"
+                      value={matchInterface}
+                      onChange={(e) => setMatchInterface(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="matchProtocol">Protocol</Label>
+                    </FormField>
+                    <FormField label="Protocol" htmlFor="matchProtocol">
                       <Select value={matchProtocol || "none"} onValueChange={(val) => setMatchProtocol(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select protocol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="babel">Babel</SelectItem>
-                          <SelectItem value="bgp">BGP</SelectItem>
-                          <SelectItem value="connected">Connected</SelectItem>
-                          <SelectItem value="isis">IS-IS</SelectItem>
-                          <SelectItem value="kernel">Kernel</SelectItem>
-                          <SelectItem value="ospf">OSPF</SelectItem>
-                          <SelectItem value="ospfv3">OSPFv3</SelectItem>
-                          <SelectItem value="rip">RIP</SelectItem>
-                          <SelectItem value="ripng">RIPng</SelectItem>
-                          <SelectItem value="static">Static</SelectItem>
-                          <SelectItem value="table">Table</SelectItem>
-                          <SelectItem value="vnc">VNC</SelectItem>
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select protocol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="babel">Babel</SelectItem>
+                      <SelectItem value="bgp">BGP</SelectItem>
+                      <SelectItem value="connected">Connected</SelectItem>
+                      <SelectItem value="isis">IS-IS</SelectItem>
+                      <SelectItem value="kernel">Kernel</SelectItem>
+                      <SelectItem value="ospf">OSPF</SelectItem>
+                      <SelectItem value="ospfv3">OSPFv3</SelectItem>
+                      <SelectItem value="rip">RIP</SelectItem>
+                      <SelectItem value="ripng">RIPng</SelectItem>
+                      <SelectItem value="static">Static</SelectItem>
+                      <SelectItem value="table">Table</SelectItem>
+                      <SelectItem value="vnc">VNC</SelectItem>
+                      </SelectContent>
                       </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="matchSourceVrf">Source VRF</Label>
+                    </FormField>
+                    <FormField label="Source VRF" htmlFor="matchSourceVrf">
                       <Input
-                        id="matchSourceVrf"
-                        placeholder="VRF name"
-                        value={matchSourceVrf}
-                        onChange={(e) => setMatchSourceVrf(e.target.value)}
+                      id="matchSourceVrf"
+                      placeholder="VRF name"
+                      value={matchSourceVrf}
+                      onChange={(e) => setMatchSourceVrf(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="matchTag">Tag</Label>
+                    </FormField>
+                    <FormField label="Tag" htmlFor="matchTag">
                       <Input
-                        id="matchTag"
-                        type="number"
-                        placeholder="1-4294967295"
-                        value={matchTag}
-                        onChange={(e) => setMatchTag(e.target.value)}
+                      id="matchTag"
+                      type="number"
+                      placeholder="1-4294967295"
+                      value={matchTag}
+                      onChange={(e) => setMatchTag(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1110,34 +1065,31 @@ export function AddRouteMapRuleModal({
                 <AccordionTrigger>BGP AS Path</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="setAsPathExclude">Exclude AS</Label>
+                    <FormField label="Exclude AS" htmlFor="setAsPathExclude">
                       <Input
-                        id="setAsPathExclude"
-                        placeholder="AS numbers to exclude"
-                        value={setAsPathExclude}
-                        onChange={(e) => setSetAsPathExclude(e.target.value)}
+                      id="setAsPathExclude"
+                      placeholder="AS numbers to exclude"
+                      value={setAsPathExclude}
+                      onChange={(e) => setSetAsPathExclude(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setAsPathPrepend">Prepend AS</Label>
+                    </FormField>
+                    <FormField label="Prepend AS" htmlFor="setAsPathPrepend">
                       <Input
-                        id="setAsPathPrepend"
-                        placeholder="AS numbers to prepend"
-                        value={setAsPathPrepend}
-                        onChange={(e) => setSetAsPathPrepend(e.target.value)}
+                      id="setAsPathPrepend"
+                      placeholder="AS numbers to prepend"
+                      value={setAsPathPrepend}
+                      onChange={(e) => setSetAsPathPrepend(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setAsPathPrependLastAs">Prepend Last AS (count)</Label>
+                    </FormField>
+                    <FormField label="Prepend Last AS (count)" htmlFor="setAsPathPrependLastAs">
                       <Input
-                        id="setAsPathPrependLastAs"
-                        type="number"
-                        placeholder="Number of times"
-                        value={setAsPathPrependLastAs}
-                        onChange={(e) => setSetAsPathPrependLastAs(e.target.value)}
+                      id="setAsPathPrependLastAs"
+                      type="number"
+                      placeholder="Number of times"
+                      value={setAsPathPrependLastAs}
+                      onChange={(e) => setSetAsPathPrependLastAs(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1151,17 +1103,14 @@ export function AddRouteMapRuleModal({
                     <div className="space-y-4 border border-border rounded-lg p-4">
                       {/* Add Communities */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <FormField label="Add Communities" htmlFor="communityAdd" horizontal>
                           <Checkbox
                             id="communityAdd"
                             checked={communityAddEnabled}
                             onCheckedChange={() => handleCommunityActionToggle('add')}
                             disabled={loading || communityReplaceEnabled || communityRemoveAll}
                           />
-                          <Label htmlFor="communityAdd" className="font-medium cursor-pointer">
-                            Add Communities
-                          </Label>
-                        </div>
+                        </FormField>
                         {communityAddEnabled && (
                           <div className="ml-6 space-y-2">
                             {communityAddValues.map((community, index) => (
@@ -1190,17 +1139,14 @@ export function AddRouteMapRuleModal({
 
                       {/* Delete Communities */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <FormField label="Delete Communities" htmlFor="communityDelete" horizontal>
                           <Checkbox
                             id="communityDelete"
                             checked={communityDeleteEnabled}
                             onCheckedChange={() => handleCommunityActionToggle('delete')}
                             disabled={loading || communityReplaceEnabled || communityRemoveAll}
                           />
-                          <Label htmlFor="communityDelete" className="font-medium cursor-pointer">
-                            Delete Communities
-                          </Label>
-                        </div>
+                        </FormField>
                         {communityDeleteEnabled && (
                           <div className="ml-6 space-y-2">
                             {communityDeleteValues.map((community, index) => (
@@ -1242,17 +1188,14 @@ export function AddRouteMapRuleModal({
 
                       {/* Replace All With */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <FormField label="Replace All With" htmlFor="communityReplace" horizontal>
                           <Checkbox
                             id="communityReplace"
                             checked={communityReplaceEnabled}
                             onCheckedChange={() => handleCommunityActionToggle('replace')}
                             disabled={loading || communityAddEnabled || communityDeleteEnabled || communityRemoveAll}
                           />
-                          <Label htmlFor="communityReplace" className="font-medium cursor-pointer">
-                            Replace All With
-                          </Label>
-                        </div>
+                        </FormField>
                         {communityReplaceEnabled && (
                           <div className="ml-6 space-y-2">
                             {communityReplaceValues.map((community, index) => (
@@ -1280,34 +1223,28 @@ export function AddRouteMapRuleModal({
                       </div>
 
                       {/* Remove All */}
-                      <div className="flex items-center gap-2">
+                      <FormField label="Remove All Communities" htmlFor="communityRemoveAll" horizontal>
                         <Checkbox
                           id="communityRemoveAll"
                           checked={communityRemoveAll}
                           onCheckedChange={() => handleCommunityActionToggle('removeAll')}
                           disabled={loading || communityAddEnabled || communityDeleteEnabled || communityReplaceEnabled}
                         />
-                        <Label htmlFor="communityRemoveAll" className="font-medium cursor-pointer">
-                          Remove All Communities
-                        </Label>
-                      </div>
+                      </FormField>
                     </div>
 
                     <h4 className="font-medium text-sm pt-4">Large Community</h4>
                     <div className="space-y-4 border border-border rounded-lg p-4">
                       {/* Add Large Communities */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <FormField label="Add Large Communities" htmlFor="largeCommunityAdd" horizontal>
                           <Checkbox
                             id="largeCommunityAdd"
                             checked={largeCommunityAddEnabled}
                             onCheckedChange={() => handleLargeCommunityActionToggle('add')}
                             disabled={loading || largeCommunityReplaceEnabled || largeCommunityRemoveAll}
                           />
-                          <Label htmlFor="largeCommunityAdd" className="font-medium cursor-pointer">
-                            Add Large Communities
-                          </Label>
-                        </div>
+                        </FormField>
                         {largeCommunityAddEnabled && (
                           <div className="ml-6 space-y-2">
                             {largeCommunityAddValues.map((community, index) => (
@@ -1336,17 +1273,14 @@ export function AddRouteMapRuleModal({
 
                       {/* Delete Large Communities */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <FormField label="Delete Large Communities" htmlFor="largeCommunityDelete" horizontal>
                           <Checkbox
                             id="largeCommunityDelete"
                             checked={largeCommunityDeleteEnabled}
                             onCheckedChange={() => handleLargeCommunityActionToggle('delete')}
                             disabled={loading || largeCommunityReplaceEnabled || largeCommunityRemoveAll}
                           />
-                          <Label htmlFor="largeCommunityDelete" className="font-medium cursor-pointer">
-                            Delete Large Communities
-                          </Label>
-                        </div>
+                        </FormField>
                         {largeCommunityDeleteEnabled && (
                           <div className="ml-6 space-y-2">
                             {largeCommunityDeleteValues.map((community, index) => (
@@ -1388,17 +1322,14 @@ export function AddRouteMapRuleModal({
 
                       {/* Replace All Large Communities With */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <FormField label="Replace All With" htmlFor="largeCommunityReplace" horizontal>
                           <Checkbox
                             id="largeCommunityReplace"
                             checked={largeCommunityReplaceEnabled}
                             onCheckedChange={() => handleLargeCommunityActionToggle('replace')}
                             disabled={loading || largeCommunityAddEnabled || largeCommunityDeleteEnabled || largeCommunityRemoveAll}
                           />
-                          <Label htmlFor="largeCommunityReplace" className="font-medium cursor-pointer">
-                            Replace All With
-                          </Label>
-                        </div>
+                        </FormField>
                         {largeCommunityReplaceEnabled && (
                           <div className="ml-6 space-y-2">
                             {largeCommunityReplaceValues.map((community, index) => (
@@ -1426,58 +1357,49 @@ export function AddRouteMapRuleModal({
                       </div>
 
                       {/* Remove All Large Communities */}
-                      <div className="flex items-center gap-2">
+                      <FormField label="Remove All Large Communities" htmlFor="largeCommunityRemoveAll" horizontal>
                         <Checkbox
                           id="largeCommunityRemoveAll"
                           checked={largeCommunityRemoveAll}
                           onCheckedChange={() => handleLargeCommunityActionToggle('removeAll')}
                           disabled={loading || largeCommunityAddEnabled || largeCommunityDeleteEnabled || largeCommunityReplaceEnabled}
                         />
-                        <Label htmlFor="largeCommunityRemoveAll" className="font-medium cursor-pointer">
-                          Remove All Large Communities
-                        </Label>
-                      </div>
+                      </FormField>
                     </div>
 
                     <h4 className="font-medium text-sm pt-4">Extended Community</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="setExtcommunityBandwidth">Bandwidth</Label>
+                      <FormField label="Bandwidth" htmlFor="setExtcommunityBandwidth">
                         <Input
-                          id="setExtcommunityBandwidth"
-                          placeholder="Bandwidth value"
-                          value={setExtcommunityBandwidth}
-                          onChange={(e) => setSetExtcommunityBandwidth(e.target.value)}
+                        id="setExtcommunityBandwidth"
+                        placeholder="Bandwidth value"
+                        value={setExtcommunityBandwidth}
+                        onChange={(e) => setSetExtcommunityBandwidth(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="setExtcommunityRt">Route Target (RT)</Label>
+                      </FormField>
+                      <FormField label="Route Target (RT)" htmlFor="setExtcommunityRt">
                         <Input
-                          id="setExtcommunityRt"
-                          placeholder="e.g., 65000:100"
-                          value={setExtcommunityRt}
-                          onChange={(e) => setSetExtcommunityRt(e.target.value)}
+                        id="setExtcommunityRt"
+                        placeholder="e.g., 65000:100"
+                        value={setExtcommunityRt}
+                        onChange={(e) => setSetExtcommunityRt(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="setExtcommunitySoo">Site of Origin (SOO)</Label>
+                      </FormField>
+                      <FormField label="Site of Origin (SOO)" htmlFor="setExtcommunitySoo">
                         <Input
-                          id="setExtcommunitySoo"
-                          placeholder="e.g., 65000:1"
-                          value={setExtcommunitySoo}
-                          onChange={(e) => setSetExtcommunitySoo(e.target.value)}
+                        id="setExtcommunitySoo"
+                        placeholder="e.g., 65000:1"
+                        value={setExtcommunitySoo}
+                        onChange={(e) => setSetExtcommunitySoo(e.target.value)}
                         />
-                      </div>
-                      <div className="flex items-center space-x-2">
+                      </FormField>
+                      <FormField label="Remove all extcommunities" htmlFor="setExtcommunityNone" horizontal>
                         <Checkbox
-                          id="setExtcommunityNone"
-                          checked={setExtcommunityNone}
-                          onCheckedChange={(checked) => setSetExtcommunityNone(checked as boolean)}
+                        id="setExtcommunityNone"
+                        checked={setExtcommunityNone}
+                        onCheckedChange={(checked) => setSetExtcommunityNone(checked as boolean)}
                         />
-                        <Label htmlFor="setExtcommunityNone" className="text-sm font-normal">
-                          Remove all extcommunities
-                        </Label>
-                      </div>
+                      </FormField>
                     </div>
                   </div>
                 </AccordionContent>
@@ -1488,77 +1410,68 @@ export function AddRouteMapRuleModal({
                 <AccordionTrigger>BGP Attributes</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-2">
+                    <FormField label="Atomic Aggregate" htmlFor="setAtomicAggregate" horizontal>
                       <Checkbox
-                        id="setAtomicAggregate"
-                        checked={setAtomicAggregate}
-                        onCheckedChange={(checked) => setSetAtomicAggregate(checked as boolean)}
+                      id="setAtomicAggregate"
+                      checked={setAtomicAggregate}
+                      onCheckedChange={(checked) => setSetAtomicAggregate(checked as boolean)}
                       />
-                      <Label htmlFor="setAtomicAggregate" className="text-sm font-normal">
-                        Atomic Aggregate
-                      </Label>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setLocalPref">Local Preference</Label>
+                    </FormField>
+                    <FormField label="Local Preference" htmlFor="setLocalPref">
                       <Input
-                        id="setLocalPref"
-                        type="number"
-                        placeholder="0-4294967295"
-                        value={setLocalPref}
-                        onChange={(e) => setSetLocalPref(e.target.value)}
+                      id="setLocalPref"
+                      type="number"
+                      placeholder="0-4294967295"
+                      value={setLocalPref}
+                      onChange={(e) => setSetLocalPref(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setAggregatorAs">Aggregator AS</Label>
+                    </FormField>
+                    <FormField label="Aggregator AS" htmlFor="setAggregatorAs">
                       <Input
-                        id="setAggregatorAs"
-                        placeholder="AS number"
-                        value={setAggregatorAs}
-                        onChange={(e) => setSetAggregatorAs(e.target.value)}
+                      id="setAggregatorAs"
+                      placeholder="AS number"
+                      value={setAggregatorAs}
+                      onChange={(e) => setSetAggregatorAs(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setAggregatorIp">Aggregator IP</Label>
+                    </FormField>
+                    <FormField label="Aggregator IP" htmlFor="setAggregatorIp">
                       <Input
-                        id="setAggregatorIp"
-                        placeholder="e.g., 192.168.1.1"
-                        value={setAggregatorIp}
-                        onChange={(e) => setSetAggregatorIp(e.target.value)}
+                      id="setAggregatorIp"
+                      placeholder="e.g., 192.168.1.1"
+                      value={setAggregatorIp}
+                      onChange={(e) => setSetAggregatorIp(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setOrigin">Origin</Label>
+                    </FormField>
+                    <FormField label="Origin" htmlFor="setOrigin">
                       <Select value={setOrigin || "none"} onValueChange={(val) => setSetOrigin(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select origin" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="egp">EGP</SelectItem>
-                          <SelectItem value="igp">IGP</SelectItem>
-                          <SelectItem value="incomplete">Incomplete</SelectItem>
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select origin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="egp">EGP</SelectItem>
+                      <SelectItem value="igp">IGP</SelectItem>
+                      <SelectItem value="incomplete">Incomplete</SelectItem>
+                      </SelectContent>
                       </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setOriginatorId">Originator ID</Label>
+                    </FormField>
+                    <FormField label="Originator ID" htmlFor="setOriginatorId">
                       <Input
-                        id="setOriginatorId"
-                        placeholder="e.g., 192.168.1.1"
-                        value={setOriginatorId}
-                        onChange={(e) => setSetOriginatorId(e.target.value)}
+                      id="setOriginatorId"
+                      placeholder="e.g., 192.168.1.1"
+                      value={setOriginatorId}
+                      onChange={(e) => setSetOriginatorId(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setWeight">Weight</Label>
+                    </FormField>
+                    <FormField label="Weight" htmlFor="setWeight">
                       <Input
-                        id="setWeight"
-                        type="number"
-                        placeholder="0-65535"
-                        value={setWeight}
-                        onChange={(e) => setSetWeight(e.target.value)}
+                      id="setWeight"
+                      type="number"
+                      placeholder="0-65535"
+                      value={setWeight}
+                      onChange={(e) => setSetWeight(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1570,96 +1483,81 @@ export function AddRouteMapRuleModal({
                   <div className="space-y-4">
                     <h4 className="font-medium text-sm">IPv4 Next-Hop</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="setIpNexthop">Address</Label>
+                      <FormField label="Address" htmlFor="setIpNexthop">
                         <Input
-                          id="setIpNexthop"
-                          placeholder="e.g., 192.168.1.1"
-                          value={setIpNexthop}
-                          onChange={(e) => setSetIpNexthop(e.target.value)}
-                          disabled={setIpNexthopPeerAddress || setIpNexthopUnchanged}
-                          className={setIpNexthopPeerAddress || setIpNexthopUnchanged ? "bg-muted" : ""}
+                        id="setIpNexthop"
+                        placeholder="e.g., 192.168.1.1"
+                        value={setIpNexthop}
+                        onChange={(e) => setSetIpNexthop(e.target.value)}
+                        disabled={setIpNexthopPeerAddress || setIpNexthopUnchanged}
+                        className={setIpNexthopPeerAddress || setIpNexthopUnchanged ? "bg-muted" : ""}
                         />
                         <p className="text-xs text-muted-foreground">
-                          Only one option can be selected at a time
+                        Only one option can be selected at a time
                         </p>
-                      </div>
+                      </FormField>
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center space-x-2">
+                        <FormField label="Use peer address" htmlFor="setIpNexthopPeerAddress" horizontal>
                           <Checkbox
-                            id="setIpNexthopPeerAddress"
-                            checked={setIpNexthopPeerAddress}
-                            onCheckedChange={(checked) => {
-                              setSetIpNexthopPeerAddress(checked as boolean);
-                              if (checked) {
-                                setSetIpNexthopUnchanged(false);
-                                setSetIpNexthop("");
-                              }
-                            }}
+                          id="setIpNexthopPeerAddress"
+                          checked={setIpNexthopPeerAddress}
+                          onCheckedChange={(checked) => {
+                          setSetIpNexthopPeerAddress(checked as boolean);
+                          if (checked) {
+                          setSetIpNexthopUnchanged(false);
+                          setSetIpNexthop("");
+                          }
+                          }}
                           />
-                          <Label htmlFor="setIpNexthopPeerAddress" className="text-sm font-normal">
-                            Use peer address
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
+                        </FormField>
+                        <FormField label="Keep unchanged" htmlFor="setIpNexthopUnchanged" horizontal>
                           <Checkbox
-                            id="setIpNexthopUnchanged"
-                            checked={setIpNexthopUnchanged}
-                            onCheckedChange={(checked) => {
-                              setSetIpNexthopUnchanged(checked as boolean);
-                              if (checked) {
-                                setSetIpNexthopPeerAddress(false);
-                                setSetIpNexthop("");
-                              }
-                            }}
+                          id="setIpNexthopUnchanged"
+                          checked={setIpNexthopUnchanged}
+                          onCheckedChange={(checked) => {
+                          setSetIpNexthopUnchanged(checked as boolean);
+                          if (checked) {
+                          setSetIpNexthopPeerAddress(false);
+                          setSetIpNexthop("");
+                          }
+                          }}
                           />
-                          <Label htmlFor="setIpNexthopUnchanged" className="text-sm font-normal">
-                            Keep unchanged
-                          </Label>
-                        </div>
+                        </FormField>
                       </div>
                     </div>
 
                     <h4 className="font-medium text-sm pt-4">IPv6 Next-Hop</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="setIpv6NexthopGlobal">Global Address</Label>
+                      <FormField label="Global Address" htmlFor="setIpv6NexthopGlobal">
                         <Input
-                          id="setIpv6NexthopGlobal"
-                          placeholder="e.g., 2001:db8::1"
-                          value={setIpv6NexthopGlobal}
-                          onChange={(e) => setSetIpv6NexthopGlobal(e.target.value)}
+                        id="setIpv6NexthopGlobal"
+                        placeholder="e.g., 2001:db8::1"
+                        value={setIpv6NexthopGlobal}
+                        onChange={(e) => setSetIpv6NexthopGlobal(e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="setIpv6NexthopLocal">Link-Local Address</Label>
+                      </FormField>
+                      <FormField label="Link-Local Address" htmlFor="setIpv6NexthopLocal">
                         <Input
-                          id="setIpv6NexthopLocal"
-                          placeholder="e.g., fe80::1"
-                          value={setIpv6NexthopLocal}
-                          onChange={(e) => setSetIpv6NexthopLocal(e.target.value)}
+                        id="setIpv6NexthopLocal"
+                        placeholder="e.g., fe80::1"
+                        value={setIpv6NexthopLocal}
+                        onChange={(e) => setSetIpv6NexthopLocal(e.target.value)}
                         />
-                      </div>
-                      <div className="flex items-center space-x-2">
+                      </FormField>
+                      <FormField label="Use peer address" htmlFor="setIpv6NexthopPeerAddress" horizontal>
                         <Checkbox
-                          id="setIpv6NexthopPeerAddress"
-                          checked={setIpv6NexthopPeerAddress}
-                          onCheckedChange={(checked) => setSetIpv6NexthopPeerAddress(checked as boolean)}
+                        id="setIpv6NexthopPeerAddress"
+                        checked={setIpv6NexthopPeerAddress}
+                        onCheckedChange={(checked) => setSetIpv6NexthopPeerAddress(checked as boolean)}
                         />
-                        <Label htmlFor="setIpv6NexthopPeerAddress" className="text-sm font-normal">
-                          Use peer address
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
+                      </FormField>
+                      <FormField label="Prefer global" htmlFor="setIpv6NexthopPreferGlobal" horizontal>
                         <Checkbox
-                          id="setIpv6NexthopPreferGlobal"
-                          checked={setIpv6NexthopPreferGlobal}
-                          onCheckedChange={(checked) => setSetIpv6NexthopPreferGlobal(checked as boolean)}
+                        id="setIpv6NexthopPreferGlobal"
+                        checked={setIpv6NexthopPreferGlobal}
+                        onCheckedChange={(checked) => setSetIpv6NexthopPreferGlobal(checked as boolean)}
                         />
-                        <Label htmlFor="setIpv6NexthopPreferGlobal" className="text-sm font-normal">
-                          Prefer global
-                        </Label>
-                      </div>
+                      </FormField>
                     </div>
                   </div>
                 </AccordionContent>
@@ -1670,70 +1568,64 @@ export function AddRouteMapRuleModal({
                 <AccordionTrigger>Route Properties</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="setDistance">Administrative Distance</Label>
+                    <FormField label="Administrative Distance" htmlFor="setDistance">
                       <Input
-                        id="setDistance"
-                        type="number"
-                        placeholder="1-255"
-                        value={setDistance}
-                        onChange={(e) => setSetDistance(e.target.value)}
+                      id="setDistance"
+                      type="number"
+                      placeholder="1-255"
+                      value={setDistance}
+                      onChange={(e) => setSetDistance(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setMetric">Metric</Label>
+                    </FormField>
+                    <FormField label="Metric" htmlFor="setMetric">
                       <Input
-                        id="setMetric"
-                        placeholder="Value or +/-N"
-                        value={setMetric}
-                        onChange={(e) => setSetMetric(e.target.value)}
+                      id="setMetric"
+                      placeholder="Value or +/-N"
+                      value={setMetric}
+                      onChange={(e) => setSetMetric(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
-                        Use +N or -N for relative changes
+                      Use +N or -N for relative changes
                       </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setMetricType">Metric Type (OSPF)</Label>
+                    </FormField>
+                    <FormField label="Metric Type (OSPF)" htmlFor="setMetricType">
                       <Select value={setMetricType || "none"} onValueChange={(val) => setSetMetricType(val === "none" ? "" : val)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="type-1">Type 1</SelectItem>
-                          <SelectItem value="type-2">Type 2</SelectItem>
-                        </SelectContent>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="type-1">Type 1</SelectItem>
+                      <SelectItem value="type-2">Type 2</SelectItem>
+                      </SelectContent>
                       </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setSrc">Source Address</Label>
+                    </FormField>
+                    <FormField label="Source Address" htmlFor="setSrc">
                       <Input
-                        id="setSrc"
-                        placeholder="e.g., 192.168.1.1"
-                        value={setSrc}
-                        onChange={(e) => setSetSrc(e.target.value)}
+                      id="setSrc"
+                      placeholder="e.g., 192.168.1.1"
+                      value={setSrc}
+                      onChange={(e) => setSetSrc(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setTable">Routing Table</Label>
+                    </FormField>
+                    <FormField label="Routing Table" htmlFor="setTable">
                       <Input
-                        id="setTable"
-                        type="number"
-                        placeholder="Table number"
-                        value={setTable}
-                        onChange={(e) => setSetTable(e.target.value)}
+                      id="setTable"
+                      type="number"
+                      placeholder="Table number"
+                      value={setTable}
+                      onChange={(e) => setSetTable(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="setTag">Tag</Label>
+                    </FormField>
+                    <FormField label="Tag" htmlFor="setTag">
                       <Input
-                        id="setTag"
-                        type="number"
-                        placeholder="1-4294967295"
-                        value={setTag}
-                        onChange={(e) => setSetTag(e.target.value)}
+                      id="setTag"
+                      type="number"
+                      placeholder="1-4294967295"
+                      value={setTag}
+                      onChange={(e) => setSetTag(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1747,57 +1639,51 @@ export function AddRouteMapRuleModal({
             </p>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="call">Call Route-Map</Label>
+              <FormField label="Call Route-Map" htmlFor="call">
                 <Input
-                  id="call"
-                  placeholder="Route-map name to call"
-                  value={call}
-                  onChange={(e) => setCall(e.target.value)}
+                id="call"
+                placeholder="Route-map name to call"
+                value={call}
+                onChange={(e) => setCall(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Jump to another route-map on match
+                Jump to another route-map on match
                 </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="continueRule">Continue to Rule</Label>
+              <FormField label="Continue to Rule" htmlFor="continueRule">
                 <Input
-                  id="continueRule"
-                  type="number"
-                  placeholder="Rule number"
-                  value={continueRule}
-                  onChange={(e) => setContinueRule(e.target.value)}
+                id="continueRule"
+                type="number"
+                placeholder="Rule number"
+                value={continueRule}
+                onChange={(e) => setContinueRule(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Continue processing at specified rule
+                Continue processing at specified rule
                 </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="onMatchGoto">On-Match Goto</Label>
+              <FormField label="On-Match Goto" htmlFor="onMatchGoto">
                 <Input
-                  id="onMatchGoto"
-                  type="number"
-                  placeholder="Rule number"
-                  value={onMatchGoto}
-                  onChange={(e) => setOnMatchGoto(e.target.value)}
+                id="onMatchGoto"
+                type="number"
+                placeholder="Rule number"
+                value={onMatchGoto}
+                onChange={(e) => setOnMatchGoto(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Jump to rule number on match
+                Jump to rule number on match
                 </p>
-              </div>
+              </FormField>
 
-              <div className="flex items-center space-x-2">
+              <FormField label="On-Match Next (go to next sequence number)" htmlFor="onMatchNext" horizontal>
                 <Checkbox
-                  id="onMatchNext"
-                  checked={onMatchNext}
-                  onCheckedChange={(checked) => setOnMatchNext(checked as boolean)}
+                id="onMatchNext"
+                checked={onMatchNext}
+                onCheckedChange={(checked) => setOnMatchNext(checked as boolean)}
                 />
-                <Label htmlFor="onMatchNext" className="text-sm font-normal">
-                  On-Match Next (go to next sequence number)
-                </Label>
-              </div>
+              </FormField>
             </div>
           </TabsContent>
         </Tabs>

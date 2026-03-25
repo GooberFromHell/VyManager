@@ -1,0 +1,204 @@
+id: "task-004"
+title: "Create frontend TypeScript types and API service for file browser"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-005"]
+parallel_with: ["task-002", "task-003"]
+
+files:
+  create:
+    - "frontend/src/lib/api/types/file-browser.ts"
+    - "frontend/src/lib/api/file-browser.ts"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/types/ntp.ts"
+  - "frontend/src/lib/api/ntp.ts"
+  - "frontend/src/lib/api/client.ts"
+  - "frontend/src/lib/types/api.ts"
+
+instructions: |
+  Create TypeScript types and API service module for the file browser feature.
+
+  ## 1. Create frontend/src/lib/api/types/file-browser.ts
+
+  ```typescript
+  export interface FileEntry {
+    name: string;
+    type: "file" | "directory" | "symlink" | "other";
+    size: number;
+    permissions: string;  // e.g. "rwxr-xr-x"
+    modified: string;     // ISO datetime
+    owner: string;
+    group: string;
+  }
+
+  export interface DirectoryListResponse {
+    path: string;
+    entries: FileEntry[];
+  }
+
+  export interface FileReadResponse {
+    path: string;
+    content: string | null;
+    size: number;
+    truncated?: boolean;
+    binary?: boolean;
+    message?: string;
+  }
+
+  export interface FileOperationResponse {
+    success: boolean;
+    path: string;
+    size?: number;
+    old_path?: string;
+    new_path?: string;
+  }
+  ```
+
+  ## 2. Create frontend/src/lib/api/file-browser.ts
+
+  Follow the pattern from ntp.ts — class with methods + singleton export.
+
+  ```typescript
+  import { apiClient } from "./client";
+  import type {
+    DirectoryListResponse,
+    FileReadResponse,
+    FileOperationResponse,
+  } from "./types/file-browser";
+
+  class FileBrowserService {
+    /**
+     * List contents of a directory
+     */
+    async listDirectory(path: string = "/"): Promise<DirectoryListResponse> {
+      return apiClient.get<DirectoryListResponse>("/vyos/file-browser/list", {
+        path,
+      });
+    }
+
+    /**
+     * Read a text file for preview
+     */
+    async readFile(
+      path: string,
+      maxSize: number = 1048576
+    ): Promise<FileReadResponse> {
+      return apiClient.get<FileReadResponse>("/vyos/file-browser/read", {
+        path,
+        max_size: String(maxSize),
+      });
+    }
+
+    /**
+     * Download a file (returns a Blob)
+     */
+    async downloadFile(path: string): Promise<{ blob: Blob; filename: string }> {
+      const params = new URLSearchParams({ path });
+      const response = await fetch(`/api/vyos/file-browser/download?${params}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Download failed" }));
+        throw new Error(error.error || error.detail || "Download failed");
+      }
+
+      const disposition = response.headers.get("Content-Disposition");
+      let filename = path.split("/").pop() || "download";
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";\n]+)"?/);
+        if (match) filename = match[1];
+      }
+
+      const blob = await response.blob();
+      return { blob, filename };
+    }
+
+    /**
+     * Upload a file to a directory
+     */
+    async uploadFile(
+      directoryPath: string,
+      file: File
+    ): Promise<FileOperationResponse> {
+      const formData = new FormData();
+      formData.append("path", directoryPath);
+      formData.append("file", file);
+
+      const response = await fetch("/api/vyos/file-browser/upload", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(error.error || error.detail || "Upload failed");
+      }
+
+      return response.json();
+    }
+
+    /**
+     * Create a new directory
+     */
+    async createDirectory(path: string): Promise<FileOperationResponse> {
+      return apiClient.post<FileOperationResponse>("/vyos/file-browser/mkdir", {
+        path,
+      });
+    }
+
+    /**
+     * Rename or move a file/directory
+     */
+    async rename(
+      oldPath: string,
+      newPath: string
+    ): Promise<FileOperationResponse> {
+      return apiClient.post<FileOperationResponse>("/vyos/file-browser/rename", {
+        old_path: oldPath,
+        new_path: newPath,
+      });
+    }
+
+    /**
+     * Delete a file or empty directory
+     */
+    async deleteItem(path: string): Promise<FileOperationResponse> {
+      return apiClient.delete<FileOperationResponse>(
+        `/vyos/file-browser/delete?path=${encodeURIComponent(path)}`
+      );
+    }
+  }
+
+  export const fileBrowserService = new FileBrowserService();
+  ```
+
+  Note: `downloadFile` and `uploadFile` use raw `fetch` instead of `apiClient` because they
+  need to handle binary blobs and multipart form data respectively, which the JSON-oriented
+  apiClient doesn't support.
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/types/file-browser.ts"
+  - "File exists: frontend/src/lib/api/file-browser.ts"
+  - "Grep match: 'FileEntry' in frontend/src/lib/api/types/file-browser.ts"
+  - "Grep match: 'DirectoryListResponse' in frontend/src/lib/api/types/file-browser.ts"
+  - "Grep match: 'FileBrowserService' in frontend/src/lib/api/file-browser.ts"
+  - "Grep match: 'fileBrowserService' in frontend/src/lib/api/file-browser.ts"
+  - "Grep match: 'listDirectory' in frontend/src/lib/api/file-browser.ts"
+  - "Grep match: 'downloadFile' in frontend/src/lib/api/file-browser.ts"
+  - "Grep match: 'uploadFile' in frontend/src/lib/api/file-browser.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

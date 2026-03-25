@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Table,
   TableBody,
@@ -154,45 +154,47 @@ export function VrfSettingsTab({
         </CardHeader>
         <CardContent>
           {editing ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Input
-                  placeholder="Optional description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
+            <Fieldset>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Description">
+                  <Input
+                    placeholder="Optional description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </FormField>
+                <FormField label="Table ID">
+                  <Input
+                    type="number"
+                    min={1}
+                    value={table}
+                    onChange={(e) => setTable(e.target.value)}
+                  />
+                </FormField>
+                <FormField label="VNI">
+                  <Input
+                    placeholder="VXLAN Network Identifier"
+                    type="number"
+                    min={0}
+                    value={vni}
+                    onChange={(e) => setVni(e.target.value)}
+                  />
+                </FormField>
+                <div className="flex items-end pb-1">
+                  <FormField
+                    label="Disable VRF"
+                    htmlFor="settings-disabled"
+                    horizontal
+                  >
+                    <Checkbox
+                      id="settings-disabled"
+                      checked={disabled}
+                      onCheckedChange={(checked) => setDisabled(checked === true)}
+                    />
+                  </FormField>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Table ID</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={table}
-                  onChange={(e) => setTable(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>VNI</Label>
-                <Input
-                  placeholder="VXLAN Network Identifier"
-                  type="number"
-                  min={0}
-                  value={vni}
-                  onChange={(e) => setVni(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center gap-2 pt-6">
-                <Checkbox
-                  id="settings-disabled"
-                  checked={disabled}
-                  onCheckedChange={(checked) => setDisabled(checked === true)}
-                />
-                <Label htmlFor="settings-disabled" className="text-sm font-normal">
-                  Disable VRF
-                </Label>
-              </div>
-            </div>
+            </Fieldset>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -225,28 +227,30 @@ export function VrfSettingsTab({
         </CardHeader>
         <CardContent>
           {editing ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
+            <Fieldset>
+              <FormField
+                label="Disable IPv4 forwarding"
+                htmlFor="ip-disable-fwd"
+                horizontal
+              >
                 <Checkbox
                   id="ip-disable-fwd"
                   checked={ipDisableForwarding}
                   onCheckedChange={(checked) => setIpDisableForwarding(checked === true)}
                 />
-                <Label htmlFor="ip-disable-fwd" className="text-sm font-normal">
-                  Disable IPv4 forwarding
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
+              </FormField>
+              <FormField
+                label="NHT: No resolve via default route"
+                htmlFor="ip-nht"
+                horizontal
+              >
                 <Checkbox
                   id="ip-nht"
                   checked={ipNhtNoResolve}
                   onCheckedChange={(checked) => setIpNhtNoResolve(checked === true)}
                 />
-                <Label htmlFor="ip-nht" className="text-sm font-normal">
-                  NHT: No resolve via default route
-                </Label>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -273,28 +277,30 @@ export function VrfSettingsTab({
         </CardHeader>
         <CardContent>
           {editing ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
+            <Fieldset>
+              <FormField
+                label="Disable IPv6 forwarding"
+                htmlFor="ipv6-disable-fwd"
+                horizontal
+              >
                 <Checkbox
                   id="ipv6-disable-fwd"
                   checked={ipv6DisableForwarding}
                   onCheckedChange={(checked) => setIpv6DisableForwarding(checked === true)}
                 />
-                <Label htmlFor="ipv6-disable-fwd" className="text-sm font-normal">
-                  Disable IPv6 forwarding
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
+              </FormField>
+              <FormField
+                label="NHT: No resolve via default route"
+                htmlFor="ipv6-nht"
+                horizontal
+              >
                 <Checkbox
                   id="ipv6-nht"
                   checked={ipv6NhtNoResolve}
                   onCheckedChange={(checked) => setIpv6NhtNoResolve(checked === true)}
                 />
-                <Label htmlFor="ipv6-nht" className="text-sm font-normal">
-                  NHT: No resolve via default route
-                </Label>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div>

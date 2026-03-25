@@ -1,0 +1,84 @@
+id: task-014-middleware-updates
+title: "Add /session/jobs to POLLING_ENDPOINTS in auth middleware"
+archetype: custom
+phase: 4
+depends_on: [task-004]
+parallel_with: [task-013]
+agent: general-purpose
+status: not_started
+
+files:
+  create: []
+  modify:
+    - "backend/middleware/auth.py"
+
+context_files:
+  - ".derpo/architecture.md"
+  - "backend/middleware/auth.py"
+  - "backend/routers/site_tools/jobs.py"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+
+instructions: |
+  Add the background jobs polling endpoint to the POLLING_ENDPOINTS set in the authentication
+  middleware. This prevents job status polling from resetting the user's inactivity timer.
+
+  ## Step 1: Read the middleware
+  Read `backend/middleware/auth.py` to understand the POLLING_ENDPOINTS mechanism.
+
+  The `POLLING_ENDPOINTS` set contains paths that should NOT update the `lastActivityAt`
+  timestamp in the sessions table. These are background polling endpoints — automatic
+  requests that don't represent real user activity. Without this, the job polling (every 2.5s)
+  would keep the user's session artificially alive forever.
+
+  Currently, POLLING_ENDPOINTS contains:
+  ```python
+  POLLING_ENDPOINTS = {
+      "/vyos/config/diff",
+      "/vyos/config/snapshots",
+      "/session/current",
+      "/vyos/power/status",
+  }
+  ```
+
+  ## Step 2: Add the jobs endpoint
+  Add `/session/jobs` to the POLLING_ENDPOINTS set:
+
+  ```python
+  POLLING_ENDPOINTS = {
+      "/vyos/config/diff",
+      "/vyos/config/snapshots",
+      "/session/current",
+      "/vyos/power/status",
+      "/session/jobs",  # Background job polling
+  }
+  ```
+
+  ## Step 3: Verify the matching logic
+  The middleware checks `request.url.path in self.POLLING_ENDPOINTS`. The jobs list endpoint
+  is at exactly `/session/jobs` (GET with optional query params), so an exact match works.
+
+  However, note that the individual job endpoint is `/session/jobs/{job_id}` — this will NOT
+  match the set entry. This is intentional: viewing a specific job IS a user action (they
+  clicked something), while the list polling is automatic. If the frontend polls individual
+  jobs, we'd need prefix matching instead. For now, only the list endpoint is polled.
+
+  ## Important notes
+  - This is a one-line change but has important implications for session timeout behavior.
+  - Without this change, a user with the Management tab open would never be logged out
+    due to inactivity because the 2.5s polling would constantly reset their activity timer.
+  - The comment `# Background job polling` explains why this endpoint is in the set.
+
+acceptance_criteria:
+  - "/session/jobs is added to the POLLING_ENDPOINTS set in AuthenticationMiddleware"
+  - "A comment explains why the endpoint is in POLLING_ENDPOINTS"
+  - "No other changes are made to the middleware"
+  - "The existing POLLING_ENDPOINTS entries are unchanged"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

@@ -11,8 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Loader2, AlertCircle } from "lucide-react";
 import { userManagementService, SiteRole } from "@/lib/api/user-management";
 import { ApiError } from "@/lib/types/api";
@@ -106,104 +106,90 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserMod
             </div>
           )}
 
-          {/* Name (optional) */}
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Name <span className="text-muted-foreground text-xs">(Optional)</span>
-            </Label>
-            <Input
-              id="name"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Name (Optional)" htmlFor="name">
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
 
-          {/* Email (required) */}
-          <div className="space-y-2">
-            <Label htmlFor="email">
-              Email <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
+            <FormField label="Email" htmlFor="email" required>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </FormField>
+
+            <FormField
+              label="Site Role"
+              htmlFor="siteRole"
               required
-            />
-          </div>
-
-          {/* Site Role (required) */}
-          <div className="space-y-2">
-            <Label htmlFor="siteRole">
-              Site Role <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={siteRole}
-              onValueChange={(value) => setSiteRole(value as SiteRole)}
-              disabled={loading}
+              description="Site role determines platform-wide permissions"
             >
-              <SelectTrigger id="siteRole">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={SiteRole.ADMIN}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">Admin</span>
-                    <span className="text-xs text-muted-foreground">Can manage sites, instances, and users</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value={SiteRole.VIEWER}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">Viewer</span>
-                    <span className="text-xs text-muted-foreground">Read-only access to assigned sites and instances</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Site role determines platform-wide permissions
-            </p>
-          </div>
+              <Select
+                value={siteRole}
+                onValueChange={(value) => setSiteRole(value as SiteRole)}
+                disabled={loading}
+              >
+                <SelectTrigger id="siteRole">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SiteRole.ADMIN}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Admin</span>
+                      <span className="text-xs text-muted-foreground">Can manage sites, instances, and users</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={SiteRole.VIEWER}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Viewer</span>
+                      <span className="text-xs text-muted-foreground">Read-only access to assigned sites and instances</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
 
-          {/* Password (required) */}
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              Password <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Minimum 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
+            <FormField
+              label="Password"
+              htmlFor="password"
               required
-              minLength={8}
-            />
-            <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters
-            </p>
-          </div>
+              description="Must be at least 8 characters"
+            >
+              <Input
+                id="password"
+                type="password"
+                placeholder="Minimum 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
+                minLength={8}
+              />
+            </FormField>
 
-          {/* Confirm Password */}
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">
-              Confirm Password <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Re-enter password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
+            <FormField label="Confirm Password" htmlFor="confirmPassword" required>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </FormField>
+          </Fieldset>
 
           <DialogFooter>
             <Button

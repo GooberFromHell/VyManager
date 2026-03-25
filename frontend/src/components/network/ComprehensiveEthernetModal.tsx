@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -560,182 +560,183 @@ export function ComprehensiveEthernetModal({
 
             {/* Basic Tab */}
             <TabsContent value="basic" className="space-y-4">
-              {mode === "create" && (
-                <div className="space-y-2">
-                  <Label htmlFor="interface-name">
-                    Interface Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="interface-name"
-                    placeholder="eth2"
-                    value={interfaceName}
-                    onChange={(e) => setInterfaceName(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
+              <Fieldset label="Identity">
+                {mode === "create" && (
+                  <FormField label="Interface Name" htmlFor="interface-name" required>
+                    <Input
+                      id="interface-name"
+                      placeholder="eth2"
+                      value={interfaceName}
+                      onChange={(e) => setInterfaceName(e.target.value)}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              {capabilities?.features.basic.description && (
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    placeholder="WAN Interface"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-              )}
+                {capabilities?.features.basic.description && (
+                  <FormField label="Description" htmlFor="description">
+                    <Input
+                      id="description"
+                      placeholder="e.g., WAN, LAN, DMZ"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </FormField>
+                )}
+              </Fieldset>
 
               {capabilities?.features.basic.address && (
-                <div className="space-y-2">
-                  <Label>IP Addresses</Label>
-                  {addresses.map((address, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        placeholder="10.0.0.1/24 or 2001:db8::1/64"
-                        value={address}
-                        onChange={(e) => handleAddressChange(index, e.target.value)}
-                      />
-                      {addresses.length > 0 && (
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="IP Addresses">
+                    <FormField label="Addresses">
+                      <div className="space-y-2">
+                        {addresses.map((address, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              placeholder="10.0.0.1/24 or 2001:db8::1/64"
+                              value={address}
+                              onChange={(e) => handleAddressChange(index, e.target.value)}
+                            />
+                            {addresses.length > 0 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveAddress(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleRemoveAddress(index)}
+                          onClick={handleAddAddress}
                         >
-                          <X className="h-4 w-4" />
+                          Add Address
                         </Button>
-                      )}
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddAddress}
-                  >
-                    Add Address
-                  </Button>
-                </div>
+                      </div>
+                    </FormField>
+                  </Fieldset>
+                </>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                {capabilities?.features.ethernet.speed && (
-                  <div className="space-y-2">
-                    <Label htmlFor="speed">Speed</Label>
-                    <Select value={speed || "auto"} onValueChange={(v) => setSpeed(v === "auto" ? "" : v)}>
-                      <SelectTrigger id="speed">
-                        <SelectValue placeholder="Auto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="auto">Auto</SelectItem>
-                        <SelectItem value="10">10 Mbps</SelectItem>
-                        <SelectItem value="100">100 Mbps</SelectItem>
-                        <SelectItem value="1000">1 Gbps</SelectItem>
-                        <SelectItem value="2500">2.5 Gbps</SelectItem>
-                        <SelectItem value="5000">5 Gbps</SelectItem>
-                        <SelectItem value="10000">10 Gbps</SelectItem>
-                        <SelectItem value="25000">25 Gbps</SelectItem>
-                        <SelectItem value="40000">40 Gbps</SelectItem>
-                        <SelectItem value="50000">50 Gbps</SelectItem>
-                        <SelectItem value="100000">100 Gbps</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+              {(capabilities?.features.ethernet.speed || capabilities?.features.ethernet.duplex || capabilities?.features.basic.mtu || capabilities?.features.basic.vrf || (iface?.hw_id && mode === "edit") || (capabilities?.features.ethernet.mac && mode === "create")) && (
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="Interface Settings">
+                    <div className="grid grid-cols-2 gap-4">
+                      {capabilities?.features.ethernet.speed && (
+                        <FormField label="Speed" htmlFor="speed">
+                          <Select value={speed || "auto"} onValueChange={(v) => setSpeed(v === "auto" ? "" : v)}>
+                            <SelectTrigger id="speed">
+                              <SelectValue placeholder="Auto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto">Auto</SelectItem>
+                              <SelectItem value="10">10 Mbps</SelectItem>
+                              <SelectItem value="100">100 Mbps</SelectItem>
+                              <SelectItem value="1000">1 Gbps</SelectItem>
+                              <SelectItem value="2500">2.5 Gbps</SelectItem>
+                              <SelectItem value="5000">5 Gbps</SelectItem>
+                              <SelectItem value="10000">10 Gbps</SelectItem>
+                              <SelectItem value="25000">25 Gbps</SelectItem>
+                              <SelectItem value="40000">40 Gbps</SelectItem>
+                              <SelectItem value="50000">50 Gbps</SelectItem>
+                              <SelectItem value="100000">100 Gbps</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormField>
+                      )}
 
-                {capabilities?.features.ethernet.duplex && (
-                  <div className="space-y-2">
-                    <Label htmlFor="duplex">Duplex</Label>
-                    <Select value={duplex || "auto"} onValueChange={(v) => setDuplex(v === "auto" ? "" : v)}>
-                      <SelectTrigger id="duplex">
-                        <SelectValue placeholder="Auto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="auto">Auto</SelectItem>
-                        <SelectItem value="half">Half</SelectItem>
-                        <SelectItem value="full">Full</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                      {capabilities?.features.ethernet.duplex && (
+                        <FormField label="Duplex" htmlFor="duplex">
+                          <Select value={duplex || "auto"} onValueChange={(v) => setDuplex(v === "auto" ? "" : v)}>
+                            <SelectTrigger id="duplex">
+                              <SelectValue placeholder="Auto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto">Auto</SelectItem>
+                              <SelectItem value="half">Half</SelectItem>
+                              <SelectItem value="full">Full</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormField>
+                      )}
 
-                {capabilities?.features.basic.mtu && (
-                  <div className="space-y-2">
-                    <Label htmlFor="mtu">MTU</Label>
-                    <Input
-                      id="mtu"
-                      type="number"
-                      placeholder="1500"
-                      value={mtu}
-                      onChange={(e) => setMtu(e.target.value)}
-                    />
-                  </div>
-                )}
+                      {capabilities?.features.basic.mtu && (
+                        <FormField label="MTU" htmlFor="mtu">
+                          <Input
+                            id="mtu"
+                            type="number"
+                            placeholder="1500"
+                            value={mtu}
+                            onChange={(e) => setMtu(e.target.value)}
+                          />
+                        </FormField>
+                      )}
 
-                {capabilities?.features.basic.vrf && (
-                  <div className="space-y-2">
-                    <Label htmlFor="vrf">VRF</Label>
-                    <Input
-                      id="vrf"
-                      placeholder="MGMT"
-                      value={vrf}
-                      onChange={(e) => setVrf(e.target.value)}
-                    />
-                  </div>
-                )}
+                      {capabilities?.features.basic.vrf && (
+                        <FormField label="VRF" htmlFor="vrf">
+                          <Input
+                            id="vrf"
+                            placeholder="MGMT"
+                            value={vrf}
+                            onChange={(e) => setVrf(e.target.value)}
+                          />
+                        </FormField>
+                      )}
 
-                {iface?.hw_id && mode === "edit" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="hw-id">Hardware MAC Address</Label>
-                    <Input
-                      id="hw-id"
-                      value={iface.hw_id}
-                      disabled
-                      className="font-mono"
-                    />
-                  </div>
-                )}
+                      {iface?.hw_id && mode === "edit" && (
+                        <FormField label="Hardware MAC Address">
+                          <Input
+                            value={iface.hw_id}
+                            disabled
+                            className="font-mono bg-muted/50"
+                          />
+                        </FormField>
+                      )}
 
-                {capabilities?.features.ethernet.mac && mode === "create" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="mac">MAC Address</Label>
-                    <Input
-                      id="mac"
-                      placeholder="00:11:22:33:44:55"
-                      value={mac}
-                      onChange={(e) => setMac(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
+                      {capabilities?.features.ethernet.mac && mode === "create" && (
+                        <FormField label="MAC Address" htmlFor="mac">
+                          <Input
+                            id="mac"
+                            placeholder="00:11:22:33:44:55"
+                            value={mac}
+                            onChange={(e) => setMac(e.target.value)}
+                          />
+                        </FormField>
+                      )}
+                    </div>
+                  </Fieldset>
+                </>
+              )}
 
               {capabilities?.features.basic.disable && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="disable"
-                    checked={disabled}
-                    onCheckedChange={(checked) => setDisabled(checked as boolean)}
-                  />
-                  <Label htmlFor="disable" className="cursor-pointer">
-                    Administratively disable interface
-                  </Label>
-                </div>
+                <>
+                  <FieldsetDivider />
+                  <Fieldset>
+                    <FormField label="Administratively Disable Interface" htmlFor="disable" horizontal>
+                      <Checkbox
+                        id="disable"
+                        checked={disabled}
+                        onCheckedChange={(checked) => setDisabled(checked as boolean)}
+                      />
+                    </FormField>
+                  </Fieldset>
+                </>
               )}
             </TabsContent>
 
             {/* Advanced Tab */}
             <TabsContent value="advanced" className="space-y-4">
               {capabilities?.features.offload && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">Offload Settings</h3>
-
+                <Fieldset label="Offload Settings">
                   <div className="grid grid-cols-3 gap-4">
-
-                    {/* GRO */}
-                    <div className="space-y-2">
-                      <Label htmlFor="offload-gro">GRO</Label>
+                    <FormField label="GRO" htmlFor="offload-gro">
                       <Select value={offloadGro} onValueChange={setOffloadGro}>
                         <SelectTrigger id="offload-gro">
                           <SelectValue placeholder="Select..." />
@@ -745,11 +746,9 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="off">Off</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    {/* GSO */}
-                    <div className="space-y-2">
-                      <Label htmlFor="offload-gso">GSO</Label>
+                    <FormField label="GSO" htmlFor="offload-gso">
                       <Select value={offloadGso} onValueChange={setOffloadGso}>
                         <SelectTrigger id="offload-gso">
                           <SelectValue placeholder="Select..." />
@@ -759,11 +758,9 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="off">Off</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    {/* LRO */}
-                    <div className="space-y-2">
-                      <Label htmlFor="offload-lro">LRO</Label>
+                    <FormField label="LRO" htmlFor="offload-lro">
                       <Select value={offloadLro} onValueChange={setOffloadLro}>
                         <SelectTrigger id="offload-lro">
                           <SelectValue placeholder="Select..." />
@@ -773,11 +770,9 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="off">Off</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    {/* RPS */}
-                    <div className="space-y-2">
-                      <Label htmlFor="offload-rps">RPS</Label>
+                    <FormField label="RPS" htmlFor="offload-rps">
                       <Select value={offloadRps} onValueChange={setOffloadRps}>
                         <SelectTrigger id="offload-rps">
                           <SelectValue placeholder="Select..." />
@@ -787,11 +782,9 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="off">Off</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    {/* SG */}
-                    <div className="space-y-2">
-                      <Label htmlFor="offload-sg">SG</Label>
+                    <FormField label="SG" htmlFor="offload-sg">
                       <Select value={offloadSg} onValueChange={setOffloadSg}>
                         <SelectTrigger id="offload-sg">
                           <SelectValue placeholder="Select..." />
@@ -801,11 +794,9 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="off">Off</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    {/* TSO */}
-                    <div className="space-y-2">
-                      <Label htmlFor="offload-tso">TSO</Label>
+                    <FormField label="TSO" htmlFor="offload-tso">
                       <Select value={offloadTso} onValueChange={setOffloadTso}>
                         <SelectTrigger id="offload-tso">
                           <SelectValue placeholder="Select..." />
@@ -815,18 +806,17 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="off">Off</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
               )}
 
+              {capabilities?.features.offload && capabilities?.features.ring_buffer && <FieldsetDivider />}
+
               {capabilities?.features.ring_buffer && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">Ring Buffer</h3>
+                <Fieldset label="Ring Buffer">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ring-rx">RX Buffer</Label>
+                    <FormField label="RX Buffer" htmlFor="ring-rx">
                       <Input
                         id="ring-rx"
                         type="number"
@@ -834,9 +824,8 @@ export function ComprehensiveEthernetModal({
                         value={ringBufferRx}
                         onChange={(e) => setRingBufferRx(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="ring-tx">TX Buffer</Label>
+                    </FormField>
+                    <FormField label="TX Buffer" htmlFor="ring-tx">
                       <Input
                         id="ring-tx"
                         type="number"
@@ -844,182 +833,150 @@ export function ComprehensiveEthernetModal({
                         value={ringBufferTx}
                         onChange={(e) => setRingBufferTx(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
               )}
 
+              {capabilities?.features.tcp_mss && (capabilities?.features.offload || capabilities?.features.ring_buffer) && <FieldsetDivider />}
+
               {capabilities?.features.tcp_mss && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">TCP MSS</h3>
+                <Fieldset label="TCP MSS">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ip-mss">IPv4 Adjust MSS</Label>
-                      <Input
-                        id="ip-mss"
-                        type="number"
-                        placeholder="1460"
-                        value={ipAdjustMss}
-                        onChange={(e) => setIpAdjustMss(e.target.value)}
-                        disabled={ipClampMssToPmtu}
-                      />
-                      <div className="flex items-center space-x-2">
+                    <div className="space-y-3">
+                      <FormField label="IPv4 Adjust MSS" htmlFor="ip-mss">
+                        <Input
+                          id="ip-mss"
+                          type="number"
+                          placeholder="1460"
+                          value={ipAdjustMss}
+                          onChange={(e) => setIpAdjustMss(e.target.value)}
+                          disabled={ipClampMssToPmtu}
+                        />
+                      </FormField>
+                      <FormField label="Clamp to PMTU" htmlFor="ip-clamp-pmtu" horizontal>
                         <Checkbox
                           id="ip-clamp-pmtu"
                           checked={ipClampMssToPmtu}
                           onCheckedChange={(checked) => setIpClampMssToPmtu(checked as boolean)}
                         />
-                        <Label htmlFor="ip-clamp-pmtu" className="cursor-pointer text-xs">
-                          Clamp to PMTU
-                        </Label>
-                      </div>
+                      </FormField>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="ipv6-mss">IPv6 Adjust MSS</Label>
-                      <Input
-                        id="ipv6-mss"
-                        type="number"
-                        placeholder="1440"
-                        value={ipv6AdjustMss}
-                        onChange={(e) => setIpv6AdjustMss(e.target.value)}
-                        disabled={ipv6ClampMssToPmtu}
-                      />
-                      <div className="flex items-center space-x-2">
+                    <div className="space-y-3">
+                      <FormField label="IPv6 Adjust MSS" htmlFor="ipv6-mss">
+                        <Input
+                          id="ipv6-mss"
+                          type="number"
+                          placeholder="1440"
+                          value={ipv6AdjustMss}
+                          onChange={(e) => setIpv6AdjustMss(e.target.value)}
+                          disabled={ipv6ClampMssToPmtu}
+                        />
+                      </FormField>
+                      <FormField label="Clamp to PMTU" htmlFor="ipv6-clamp-pmtu" horizontal>
                         <Checkbox
                           id="ipv6-clamp-pmtu"
                           checked={ipv6ClampMssToPmtu}
                           onCheckedChange={(checked) => setIpv6ClampMssToPmtu(checked as boolean)}
                         />
-                        <Label htmlFor="ipv6-clamp-pmtu" className="cursor-pointer text-xs">
-                          Clamp to PMTU
-                        </Label>
-                      </div>
+                      </FormField>
                     </div>
                   </div>
-                </div>
+                </Fieldset>
               )}
 
+              {(capabilities?.features.flow_control || capabilities?.features.link_detect) && (capabilities?.features.offload || capabilities?.features.ring_buffer || capabilities?.features.tcp_mss) && <FieldsetDivider />}
+
               {(capabilities?.features.flow_control || capabilities?.features.link_detect) && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">Flow Control & Link Detection</h3>
-                  <div className="space-y-2">
-                    {capabilities?.features.flow_control && (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="disable-flow-control"
-                          checked={disableFlowControl}
-                          onCheckedChange={(checked) => setDisableFlowControl(checked as boolean)}
-                        />
-                        <Label htmlFor="disable-flow-control" className="cursor-pointer">
-                          Disable Flow Control
-                        </Label>
-                      </div>
-                    )}
-                    {capabilities?.features.link_detect && (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="disable-link-detect"
-                          checked={disableLinkDetect}
-                          onCheckedChange={(checked) => setDisableLinkDetect(checked as boolean)}
-                        />
-                        <Label htmlFor="disable-link-detect" className="cursor-pointer">
-                          Disable Link Detection
-                        </Label>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <Fieldset label="Flow Control & Link Detection">
+                  {capabilities?.features.flow_control && (
+                    <FormField label="Disable Flow Control" htmlFor="disable-flow-control" horizontal>
+                      <Checkbox
+                        id="disable-flow-control"
+                        checked={disableFlowControl}
+                        onCheckedChange={(checked) => setDisableFlowControl(checked as boolean)}
+                      />
+                    </FormField>
+                  )}
+                  {capabilities?.features.link_detect && (
+                    <FormField label="Disable Link Detection" htmlFor="disable-link-detect" horizontal>
+                      <Checkbox
+                        id="disable-link-detect"
+                        checked={disableLinkDetect}
+                        onCheckedChange={(checked) => setDisableLinkDetect(checked as boolean)}
+                      />
+                    </FormField>
+                  )}
+                </Fieldset>
               )}
             </TabsContent>
 
             {/* IP/IPv6 Tab */}
             <TabsContent value="ip" className="space-y-4">
               {capabilities?.features.arp && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">ARP Settings</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="arp-cache-timeout">Cache Timeout (seconds)</Label>
-                      <Input
-                        id="arp-cache-timeout"
-                        type="number"
-                        placeholder="30"
-                        value={arpCacheTimeout}
-                        onChange={(e) => setArpCacheTimeout(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                <Fieldset label="ARP Settings">
+                  <FormField label="Cache Timeout (seconds)" htmlFor="arp-cache-timeout">
+                    <Input
+                      id="arp-cache-timeout"
+                      type="number"
+                      placeholder="30"
+                      value={arpCacheTimeout}
+                      onChange={(e) => setArpCacheTimeout(e.target.value)}
+                    />
+                  </FormField>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center space-x-2">
+                    <FormField label="Disable ARP Filter" htmlFor="arp-disable-filter" horizontal>
                       <Checkbox
                         id="arp-disable-filter"
                         checked={arpDisableFilter}
                         onCheckedChange={(checked) => setArpDisableFilter(checked as boolean)}
                       />
-                      <Label htmlFor="arp-disable-filter" className="cursor-pointer text-sm">
-                        Disable ARP Filter
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Enable ARP Accept" htmlFor="arp-enable-accept" horizontal>
                       <Checkbox
                         id="arp-enable-accept"
                         checked={arpEnableAccept}
                         onCheckedChange={(checked) => setArpEnableAccept(checked as boolean)}
                       />
-                      <Label htmlFor="arp-enable-accept" className="cursor-pointer text-sm">
-                        Enable ARP Accept
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Enable ARP Announce" htmlFor="arp-enable-announce" horizontal>
                       <Checkbox
                         id="arp-enable-announce"
                         checked={arpEnableAnnounce}
                         onCheckedChange={(checked) => setArpEnableAnnounce(checked as boolean)}
                       />
-                      <Label htmlFor="arp-enable-announce" className="cursor-pointer text-sm">
-                        Enable ARP Announce
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Enable ARP Ignore" htmlFor="arp-enable-ignore" horizontal>
                       <Checkbox
                         id="arp-enable-ignore"
                         checked={arpEnableIgnore}
                         onCheckedChange={(checked) => setArpEnableIgnore(checked as boolean)}
                       />
-                      <Label htmlFor="arp-enable-ignore" className="cursor-pointer text-sm">
-                        Enable ARP Ignore
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Enable Proxy ARP" htmlFor="arp-enable-proxy" horizontal>
                       <Checkbox
                         id="arp-enable-proxy"
                         checked={arpEnableProxyArp}
                         onCheckedChange={(checked) => setArpEnableProxyArp(checked as boolean)}
                       />
-                      <Label htmlFor="arp-enable-proxy" className="cursor-pointer text-sm">
-                        Enable Proxy ARP
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Proxy ARP PVLAN" htmlFor="arp-proxy-pvlan" horizontal>
                       <Checkbox
                         id="arp-proxy-pvlan"
                         checked={arpProxyArpPvlan}
                         onCheckedChange={(checked) => setArpProxyArpPvlan(checked as boolean)}
                       />
-                      <Label htmlFor="arp-proxy-pvlan" className="cursor-pointer text-sm">
-                        Proxy ARP PVLAN
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
               )}
 
+              {capabilities?.features.arp && capabilities?.features.ip && <FieldsetDivider />}
+
               {capabilities?.features.ip && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">IP Settings</h3>
+                <Fieldset label="IP Settings">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ip-source-validation">Source Validation</Label>
+                    <FormField label="Source Validation" htmlFor="ip-source-validation">
                       <Select value={ipSourceValidation || "none"} onValueChange={(v) => setIpSourceValidation(v === "none" ? "" : v)}>
                         <SelectTrigger id="ip-source-validation">
                           <SelectValue placeholder="None" />
@@ -1030,36 +987,32 @@ export function ComprehensiveEthernetModal({
                           <SelectItem value="loose">Loose</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div className="flex items-center space-x-2 pt-8">
-                      <Checkbox
-                        id="ip-directed-broadcast"
-                        checked={ipEnableDirectedBroadcast}
-                        onCheckedChange={(checked) => setIpEnableDirectedBroadcast(checked as boolean)}
-                      />
-                      <Label htmlFor="ip-directed-broadcast" className="cursor-pointer text-sm">
-                        Enable Directed Broadcast
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                  <FormField label="Enable Directed Broadcast" htmlFor="ip-directed-broadcast" horizontal>
+                    <Checkbox
+                      id="ip-directed-broadcast"
+                      checked={ipEnableDirectedBroadcast}
+                      onCheckedChange={(checked) => setIpEnableDirectedBroadcast(checked as boolean)}
+                    />
+                  </FormField>
+                </Fieldset>
               )}
 
+              {(capabilities?.features.arp || capabilities?.features.ip) && capabilities?.features.ipv6 && <FieldsetDivider />}
+
               {capabilities?.features.ipv6 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">IPv6 Settings</h3>
+                <Fieldset label="IPv6 Settings">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ipv6-eui64">EUI-64 Prefix</Label>
+                    <FormField label="EUI-64 Prefix" htmlFor="ipv6-eui64">
                       <Input
                         id="ipv6-eui64"
                         placeholder="2001:db8::/64"
                         value={ipv6Eui64}
                         onChange={(e) => setIpv6Eui64(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="ipv6-dad">Duplicate Address Detection</Label>
+                    </FormField>
+                    <FormField label="Duplicate Address Detection" htmlFor="ipv6-dad">
                       <Input
                         id="ipv6-dad"
                         type="number"
@@ -1067,69 +1020,58 @@ export function ComprehensiveEthernetModal({
                         value={ipv6DupAddrDetectTransmits}
                         onChange={(e) => setIpv6DupAddrDetectTransmits(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center space-x-2">
+                    <FormField label="Enable Autoconfig" htmlFor="ipv6-autoconf" horizontal>
                       <Checkbox
                         id="ipv6-autoconf"
                         checked={ipv6Autoconf}
                         onCheckedChange={(checked) => setIpv6Autoconf(checked as boolean)}
                       />
-                      <Label htmlFor="ipv6-autoconf" className="cursor-pointer text-sm">
-                        Enable Autoconfig
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Disable Forwarding" htmlFor="ipv6-disable-forwarding" horizontal>
                       <Checkbox
                         id="ipv6-disable-forwarding"
                         checked={ipv6DisableForwarding}
                         onCheckedChange={(checked) => setIpv6DisableForwarding(checked as boolean)}
                       />
-                      <Label htmlFor="ipv6-disable-forwarding" className="cursor-pointer text-sm">
-                        Disable Forwarding
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
               )}
             </TabsContent>
 
             {/* DHCP Tab */}
             <TabsContent value="dhcp" className="space-y-4">
               {capabilities?.features.dhcp && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">DHCP Options</h3>
+                <Fieldset label="DHCP Options">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcp-client-id">Client ID</Label>
+                    <FormField label="Client ID" htmlFor="dhcp-client-id">
                       <Input
                         id="dhcp-client-id"
                         placeholder="client-identifier"
                         value={dhcpClientId}
                         onChange={(e) => setDhcpClientId(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcp-hostname">Host Name</Label>
+                    </FormField>
+                    <FormField label="Host Name" htmlFor="dhcp-hostname">
                       <Input
                         id="dhcp-hostname"
                         placeholder="my-host"
                         value={dhcpHostName}
                         onChange={(e) => setDhcpHostName(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcp-vendor-class">Vendor Class ID</Label>
+                    </FormField>
+                    <FormField label="Vendor Class ID" htmlFor="dhcp-vendor-class">
                       <Input
                         id="dhcp-vendor-class"
                         placeholder="vendor-class"
                         value={dhcpVendorClassId}
                         onChange={(e) => setDhcpVendorClassId(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcp-route-distance">Default Route Distance</Label>
+                    </FormField>
+                    <FormField label="Default Route Distance" htmlFor="dhcp-route-distance">
                       <Input
                         id="dhcp-route-distance"
                         type="number"
@@ -1137,126 +1079,109 @@ export function ComprehensiveEthernetModal({
                         value={dhcpDefaultRouteDistance}
                         onChange={(e) => setDhcpDefaultRouteDistance(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <FormField label="No Default Route" htmlFor="dhcp-no-default-route" horizontal>
                     <Checkbox
                       id="dhcp-no-default-route"
                       checked={dhcpNoDefaultRoute}
                       onCheckedChange={(checked) => setDhcpNoDefaultRoute(checked as boolean)}
                     />
-                    <Label htmlFor="dhcp-no-default-route" className="cursor-pointer text-sm">
-                      No Default Route
-                    </Label>
-                  </div>
-                </div>
+                  </FormField>
+                </Fieldset>
               )}
 
+              {capabilities?.features.dhcp && capabilities?.features.dhcpv6 && <FieldsetDivider />}
+
               {capabilities?.features.dhcpv6 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">DHCPv6 Options</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcpv6-duid">DUID</Label>
-                      <Input
-                        id="dhcpv6-duid"
-                        placeholder="00:01:00:01:12:34:56:78:9a:bc:de:f0"
-                        value={dhcpv6Duid}
-                        onChange={(e) => setDhcpv6Duid(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                <Fieldset label="DHCPv6 Options">
+                  <FormField label="DUID" htmlFor="dhcpv6-duid">
+                    <Input
+                      id="dhcpv6-duid"
+                      placeholder="00:01:00:01:12:34:56:78:9a:bc:de:f0"
+                      value={dhcpv6Duid}
+                      onChange={(e) => setDhcpv6Duid(e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="Rapid Commit" htmlFor="dhcpv6-rapid-commit" horizontal>
                     <Checkbox
                       id="dhcpv6-rapid-commit"
                       checked={dhcpv6RapidCommit}
                       onCheckedChange={(checked) => setDhcpv6RapidCommit(checked as boolean)}
                     />
-                    <Label htmlFor="dhcpv6-rapid-commit" className="cursor-pointer text-sm">
-                      Rapid Commit
-                    </Label>
-                  </div>
-                </div>
+                  </FormField>
+                </Fieldset>
               )}
             </TabsContent>
 
             {/* Special Features Tab */}
             <TabsContent value="special" className="space-y-4">
               {capabilities?.features.port_mirror && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">Port Mirroring</h3>
+                <Fieldset label="Port Mirroring">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="mirror-ingress">Ingress Interface</Label>
+                    <FormField label="Ingress Interface" htmlFor="mirror-ingress">
                       <Input
                         id="mirror-ingress"
                         placeholder="eth0"
                         value={mirrorIngress}
                         onChange={(e) => setMirrorIngress(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="mirror-egress">Egress Interface</Label>
+                    </FormField>
+                    <FormField label="Egress Interface" htmlFor="mirror-egress">
                       <Input
                         id="mirror-egress"
                         placeholder="eth1"
                         value={mirrorEgress}
                         onChange={(e) => setMirrorEgress(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
               )}
+
+              {capabilities?.features.port_mirror && capabilities?.features.eapol && <FieldsetDivider />}
 
               {capabilities?.features.eapol && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">EAPoL (802.1X)</h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="eapol-ca-cert">CA Certificate File</Label>
-                      <Input
-                        id="eapol-ca-cert"
-                        placeholder="/config/auth/ca.pem"
-                        value={eapolCaCertFile}
-                        onChange={(e) => setEapolCaCertFile(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="eapol-cert">Certificate File</Label>
-                      <Input
-                        id="eapol-cert"
-                        placeholder="/config/auth/cert.pem"
-                        value={eapolCertFile}
-                        onChange={(e) => setEapolCertFile(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="eapol-key">Key File</Label>
-                      <Input
-                        id="eapol-key"
-                        placeholder="/config/auth/key.pem"
-                        value={eapolKeyFile}
-                        onChange={(e) => setEapolKeyFile(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <Fieldset label="EAPoL (802.1X)">
+                  <FormField label="CA Certificate File" htmlFor="eapol-ca-cert">
+                    <Input
+                      id="eapol-ca-cert"
+                      placeholder="/config/auth/ca.pem"
+                      value={eapolCaCertFile}
+                      onChange={(e) => setEapolCaCertFile(e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="Certificate File" htmlFor="eapol-cert">
+                    <Input
+                      id="eapol-cert"
+                      placeholder="/config/auth/cert.pem"
+                      value={eapolCertFile}
+                      onChange={(e) => setEapolCertFile(e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="Key File" htmlFor="eapol-key">
+                    <Input
+                      id="eapol-key"
+                      placeholder="/config/auth/key.pem"
+                      value={eapolKeyFile}
+                      onChange={(e) => setEapolKeyFile(e.target.value)}
+                    />
+                  </FormField>
+                </Fieldset>
               )}
 
+              {(capabilities?.features.port_mirror || capabilities?.features.eapol) && capabilities?.features.evpn?.uplink_tracking && <FieldsetDivider />}
+
               {capabilities?.features.evpn?.uplink_tracking && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">EVPN</h3>
-                  <div className="flex items-center space-x-2">
+                <Fieldset label="EVPN">
+                  <FormField label="Enable EVPN Uplink Tracking" htmlFor="evpn-uplink" horizontal>
                     <Checkbox
                       id="evpn-uplink"
                       checked={evpnUplink}
                       onCheckedChange={(checked) => setEvpnUplink(checked as boolean)}
                     />
-                    <Label htmlFor="evpn-uplink" className="cursor-pointer text-sm">
-                      Enable EVPN Uplink Tracking
-                    </Label>
-                  </div>
-                </div>
+                  </FormField>
+                </Fieldset>
               )}
             </TabsContent>
           </Tabs>

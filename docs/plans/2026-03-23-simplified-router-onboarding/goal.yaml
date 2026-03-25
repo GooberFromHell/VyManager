@@ -1,0 +1,33 @@
+title: "Simplified Router Onboarding"
+slug: simplified-router-onboarding
+date: "2026-03-23"
+status: in_progress
+
+description: |
+  Simplify the VyOS instance onboarding so the user only enters: instance name,
+  description, host, SSH username, and SSH password. The backend then automatically
+  provisions the router via SSH (paramiko) with:
+    1. HTTPS API listening on 0.0.0.0 with a randomly generated API key (name: 'vymanager')
+    2. HTTPS REST API enabled
+    3. HTTPS GraphQL enabled
+    4. SSH key generated and SSH key auth configured for the provided user
+
+  The onboarding process must show real-time step-by-step status messages so the
+  user knows exactly what's happening at each stage.
+
+scope:
+  - backend/provisioning.py (rewrite with paramiko + step-by-step progress)
+  - backend/routers/session/session.py (SSE provisioning endpoint)
+  - frontend/src/components/sites/CreateInstanceModal.tsx (simplified form + progress UI)
+  - frontend/src/lib/api/session.ts (SSE provisioning client)
+
+out_of_scope:
+  - Onboarding page changes (separate from instance creation)
+  - RBAC changes
+  - Version-specific mapper/builder/router patterns
+
+constraints:
+  - Use paramiko for SSH (user requirement)
+  - Do not over-complicate the solution
+  - Keep SSH credentials ephemeral (never stored)
+  - Must work with VyOS 1.4 and 1.5

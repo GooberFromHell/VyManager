@@ -127,7 +127,7 @@ export function UnsavedChangesBanner() {
       <>
       <div
         className={cn(
-          "fixed top-0 left-64 right-0 z-50",
+          "fixed top-0 left-64 right-0 z-50 animate-slide-down",
           "shadow-lg border-b",
           isUrgent
             ? "bg-gradient-to-r from-red-600 to-orange-500 border-red-700/20"
@@ -191,7 +191,7 @@ export function UnsavedChangesBanner() {
     <>
       <div
         className={cn(
-          "fixed top-0 left-64 right-0 z-50 bg-gradient-to-r from-blue-600 to-cyan-500",
+          "fixed top-0 left-64 right-0 z-50 bg-gradient-to-r from-blue-600 to-cyan-500 animate-slide-down",
           "shadow-lg border-b border-blue-700/20"
         )}
       >

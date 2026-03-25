@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { asPathListService } from "@/lib/api/as-path-list";
 
 interface CreateAsPathListModalProps {
@@ -100,89 +100,83 @@ export function CreateAsPathListModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* AS Path List Fields */}
-          <div className="space-y-2">
-            <Label htmlFor="name">AS Path List Name *</Label>
-            <Input
-              id="name"
-              placeholder="e.g., ALLOW_AS65000"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+        <div className="space-y-5 py-4">
+          <Fieldset label="AS Path List">
+            <FormField label="AS Path List Name" htmlFor="name" required>
+              <Input
+                id="name"
+                placeholder="e.g., ALLOW_AS65000"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Optional description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={loading}
-              rows={2}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Textarea
+                id="description"
+                placeholder="Optional description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+                rows={2}
+              />
+            </FormField>
+          </Fieldset>
 
-          {/* Initial Rule */}
-          <div className="pt-4 border-t">
-            <h3 className="font-semibold text-sm mb-4">Initial Rule</h3>
+          <FieldsetDivider />
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ruleNumber">Rule Number *</Label>
-                  <Input
-                    id="ruleNumber"
-                    type="number"
-                    placeholder="100"
-                    value={ruleNumber}
-                    onChange={(e) => setRuleNumber(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="action">Action *</Label>
-                  <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
-                    <SelectTrigger id="action">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="permit">Permit</SelectItem>
-                      <SelectItem value="deny">Deny</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="regex">Regex Pattern *</Label>
+          <Fieldset label="Initial Rule">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Rule Number" htmlFor="ruleNumber" required>
                 <Input
-                  id="regex"
-                  placeholder="e.g., ^65000_"
-                  value={regex}
-                  onChange={(e) => setRegex(e.target.value)}
+                  id="ruleNumber"
+                  type="number"
+                  placeholder="100"
+                  value={ruleNumber}
+                  onChange={(e) => setRuleNumber(e.target.value)}
                   disabled={loading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Regular expression to match AS paths (e.g., "64501 64502")
-                </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="ruleDescription">Rule Description</Label>
-                <Input
-                  id="ruleDescription"
-                  placeholder="Optional rule description"
-                  value={ruleDescription}
-                  onChange={(e) => setRuleDescription(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
+              <FormField label="Action" htmlFor="action" required>
+                <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
+                  <SelectTrigger id="action">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="permit">Permit</SelectItem>
+                    <SelectItem value="deny">Deny</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
             </div>
-          </div>
+
+            <FormField
+              label="Regex Pattern"
+              htmlFor="regex"
+              description='Regular expression to match AS paths (e.g., "64501 64502")'
+              required
+            >
+              <Input
+                id="regex"
+                placeholder="e.g., ^65000_"
+                value={regex}
+                onChange={(e) => setRegex(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+
+            <FormField label="Rule Description" htmlFor="ruleDescription">
+              <Input
+                id="ruleDescription"
+                placeholder="Optional rule description"
+                value={ruleDescription}
+                onChange={(e) => setRuleDescription(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+          </Fieldset>
 
           {error && (
             <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">

@@ -1,0 +1,156 @@
+id: "task-007"
+title: "Router Advert — Frontend types, service, modals, page"
+phase: produce
+agent: react-specialist
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-006", "task-008", "task-009"]
+
+files:
+  create:
+    - "frontend/src/lib/api/types/router-advert.ts"
+    - "frontend/src/lib/api/router-advert.ts"
+    - "frontend/src/components/services/router-advert/AddRouterAdvertInterfaceModal.tsx"
+    - "frontend/src/components/services/router-advert/EditRouterAdvertInterfaceModal.tsx"
+    - "frontend/src/components/services/router-advert/DeleteRouterAdvertInterfaceModal.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/router-advert/page.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/types/dns-forwarding.ts"
+  - "frontend/src/lib/api/dns-forwarding.ts"
+  - "frontend/src/components/services/dns-forwarding/CreateDNSForwardingDomainModal.tsx"
+  - "frontend/src/components/services/dns-forwarding/EditDNSForwardingModal.tsx"
+  - "frontend/src/components/services/dns-forwarding/DeleteDNSForwardingDomainModal.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/dns-forwarding/page.tsx"
+  - "frontend/src/lib/api/client.ts"
+
+instructions: |
+  Create Router Advert frontend. This has nested structure (interfaces → prefixes).
+  Use DNS Forwarding as primary reference for collection-based UI with nested data.
+
+  ## Step 1: Types (frontend/src/lib/api/types/router-advert.ts)
+
+  ```typescript
+  export interface RouterAdvertPrefix {
+    prefix: string;
+    autonomous_flag: boolean | null;
+    on_link_flag: boolean | null;
+    preferred_lifetime: string | null;
+    valid_lifetime: string | null;
+  }
+
+  export interface RouterAdvertRoute {
+    prefix: string;
+    lifetime: string | null;
+    preference: string | null;
+  }
+
+  export interface RouterAdvertInterface {
+    name: string;
+    prefixes: RouterAdvertPrefix[];
+    name_servers: string[];
+    cur_hop_limit: string | null;
+    default_lifetime: string | null;
+    default_preference: string | null;
+    link_mtu: string | null;
+    managed_flag: boolean;
+    other_config_flag: boolean;
+    send_advert: boolean | null;
+    interval_max: string | null;
+    interval_min: string | null;
+    reachable_time: string | null;
+    retrans_timer: string | null;
+    dnssl: string[];
+    routes: RouterAdvertRoute[];
+  }
+
+  export interface RouterAdvertConfig {
+    interfaces: RouterAdvertInterface[];
+  }
+
+  export interface RouterAdvertCapabilities {
+    version: string;
+    instance_name: string;
+    instance_id: string;
+    has_dnssl: boolean;
+    has_route: boolean;
+    has_send_advert_bool: boolean;
+    fields: Record<string, { supported: boolean; description: string }>;
+  }
+
+  export interface RouterAdvertBatchOperation {
+    op: string;
+    value?: string;
+  }
+
+  export interface RouterAdvertBatchRequest {
+    item_name?: string;
+    operations: RouterAdvertBatchOperation[];
+  }
+  ```
+
+  ## Step 2: API Service (frontend/src/lib/api/router-advert.ts)
+
+  Standard service class:
+  - getCapabilities(), getConfig(), batchConfigure(), refreshConfig()
+  - addInterface(iface, operations[]) — configure RA on an interface
+  - updateInterface(iface, operations[]) — update interface RA settings
+  - deleteInterface(iface) — remove RA from interface
+
+  ## Step 3: Add Interface Modal (AddRouterAdvertInterfaceModal.tsx)
+
+  Follow CreateDNSForwardingDomainModal pattern:
+  - Form: Interface name (input), initial prefix (input, IPv6 CIDR),
+    prefix flags (autonomous, on-link checkboxes), lifetimes
+  - Basic fields: default-preference (Select: high/medium/low), managed-flag, other-config-flag
+  - Submit: build operations for set_interface, set_prefix, set_managed_flag, etc.
+
+  ## Step 4: Edit Interface Modal (EditRouterAdvertInterfaceModal.tsx)
+
+  More complex — follow EditDNSForwardingModal pattern:
+  - Props: open, onOpenChange, onSuccess, interface (RouterAdvertInterface | null), capabilities
+  - Sections (use ScrollArea for overflow):
+    - General: cur-hop-limit, default-lifetime, default-preference, link-mtu
+    - Flags: managed-flag, other-config-flag, send-advert
+    - Interval: max, min
+    - Timing: reachable-time, retrans-timer
+    - Prefixes: List of prefix entries (each with flags + lifetimes). Add/remove prefix buttons.
+    - Name Servers: Multi-value list (add/remove IPv6 addresses)
+    - DNSSL: Multi-value list (if capabilities.has_dnssl)
+    - Routes: List (if capabilities.has_route, each with prefix, lifetime, preference)
+  - Delta computation for all fields, build operations list
+  - Large modal (2xl width, 85vh height)
+
+  ## Step 5: Delete Interface Modal (DeleteRouterAdvertInterfaceModal.tsx)
+
+  Standard delete confirmation showing interface name.
+
+  ## Step 6: Page (router-advert/page.tsx)
+
+  - Table of configured interfaces
+  - Columns: Interface, Prefixes (count Badge), Name Servers (count), Flags (Badges), Actions
+  - Expandable rows or detail view for prefix/name-server details
+  - Header: title + Add Interface button + Refresh button
+  - Empty state: "Router Advertisement is not configured on any interface"
+  - Modal coordination: addOpen, editOpen, deleteOpen, selectedInterface
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/types/router-advert.ts"
+  - "File exists: frontend/src/lib/api/router-advert.ts"
+  - "File exists: frontend/src/components/services/router-advert/AddRouterAdvertInterfaceModal.tsx"
+  - "File exists: frontend/src/components/services/router-advert/EditRouterAdvertInterfaceModal.tsx"
+  - "File exists: frontend/src/components/services/router-advert/DeleteRouterAdvertInterfaceModal.tsx"
+  - "File exists: frontend/src/app/(default)/(app)/system/services/router-advert/page.tsx"
+  - "Grep match: 'RouterAdvertConfig' in frontend/src/lib/api/types/router-advert.ts"
+  - "Grep match: 'getCapabilities' in frontend/src/lib/api/router-advert.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

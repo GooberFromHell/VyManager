@@ -1,0 +1,158 @@
+id: "task-006"
+title: "Router Advert — Backend mapper, builder, router"
+phase: produce
+agent: python-pro
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-007", "task-008", "task-009"]
+
+files:
+  create:
+    - "backend/vyos_mappers/router_advert/__init__.py"
+    - "backend/vyos_mappers/router_advert/router_advert.py"
+    - "backend/vyos_mappers/router_advert/router_advert_versions/__init__.py"
+    - "backend/vyos_mappers/router_advert/router_advert_versions/v1_4.py"
+    - "backend/vyos_mappers/router_advert/router_advert_versions/v1_5.py"
+    - "backend/vyos_builders/router_advert/__init__.py"
+    - "backend/vyos_builders/router_advert/router_advert.py"
+    - "backend/routers/router_advert/__init__.py"
+    - "backend/routers/router_advert/router_advert.py"
+  modify: []
+
+context_files:
+  - "backend/vyos_mappers/dns_forwarding/dns_forwarding.py"
+  - "backend/vyos_mappers/dns_forwarding/dns_forwarding_versions/v1_4.py"
+  - "backend/vyos_mappers/dns_forwarding/dns_forwarding_versions/v1_5.py"
+  - "backend/vyos_mappers/dns_forwarding/dns_forwarding_versions/__init__.py"
+  - "backend/vyos_mappers/base.py"
+  - "backend/vyos_builders/dns_forwarding/dns_forwarding.py"
+  - "backend/routers/dns_forwarding/dns_forwarding.py"
+  - "backend/routers/ntp/ntp.py"
+
+instructions: |
+  Create Router Advert backend. This is the most version-sensitive service in Phase 3.
+  Has two-level nesting: interface → prefix. Use DNS Forwarding as reference for nested structures.
+
+  ## VyOS CLI Command Tree
+  ```
+  set service router-advert
+    interface <name>                        # per-interface (collection)
+      prefix <prefix>                       # sub-collection (e.g., 2001:db8::/64)
+        autonomous-flag                     # v1.5 (v1.4: no-autonomous-flag to disable)
+        on-link-flag                        # v1.5 (v1.4: no-on-link-flag to disable)
+        preferred-lifetime <seconds>
+        valid-lifetime <seconds>
+      name-server <ipv6>                    # RDNSS, multi-value
+      cur-hop-limit <0-255>
+      default-lifetime <0-9000>
+      default-preference <high|medium|low>
+      link-mtu <integer>
+      managed-flag                          # M flag
+      other-config-flag                     # O flag
+      send-advert <true|false>              # v1.5
+      no-send-advert                        # v1.4 (flag to disable)
+      interval
+        max <4-1800>
+        min <3-1350>
+      reachable-time <0-3600000>
+      retrans-timer <0-4294967295>
+      dnssl <domain>                        # v1.5 only, multi-value
+      route <prefix>                        # v1.5 only
+        lifetime <seconds>
+        preference <high|medium|low>
+  ```
+
+  Config path: `full_config["service"]["router-advert"]["interface"]` → dict keyed by interface name
+
+  ## Step 1: Mapper (backend/vyos_mappers/router_advert/router_advert.py)
+
+  Create `RouterAdvertMapper(BaseFeatureMapper)`:
+
+  Base methods (work in both versions):
+  - `get_interface(iface)` → `["service", "router-advert", "interface", iface]`
+  - `get_prefix(iface, prefix)` → `["service", "router-advert", "interface", iface, "prefix", prefix]`
+  - `get_prefix_preferred_lifetime(iface, prefix, seconds)` → [..., "prefix", prefix, "preferred-lifetime", seconds]
+  - `get_prefix_valid_lifetime(iface, prefix, seconds)` → [..., "prefix", prefix, "valid-lifetime", seconds]
+  - `get_name_server(iface, addr)` → [..., "name-server", addr]
+  - `get_cur_hop_limit(iface, value)` → [..., "cur-hop-limit", value]
+  - `get_default_lifetime(iface, value)` → [..., "default-lifetime", value]
+  - `get_default_preference(iface, value)` → [..., "default-preference", value]
+  - `get_link_mtu(iface, value)` → [..., "link-mtu", value]
+  - `get_managed_flag(iface)` → [..., "managed-flag"]
+  - `get_other_config_flag(iface)` → [..., "other-config-flag"]
+  - `get_interval_max(iface, value)` → [..., "interval", "max", value]
+  - `get_interval_min(iface, value)` → [..., "interval", "min", value]
+  - `get_reachable_time(iface, value)` → [..., "reachable-time", value]
+  - `get_retrans_timer(iface, value)` → [..., "retrans-timer", value]
+
+  Version-delegated methods:
+  - `has_dnssl()`, `has_route()`, `has_send_advert_bool()` → version_mapper
+  - `get_send_advert(iface, value)` → version-aware (v1.5: "send-advert", v1.4: n/a)
+  - `get_no_send_advert(iface)` → version-aware (v1.4: "no-send-advert", v1.5: n/a)
+  - `get_prefix_autonomous_flag(iface, prefix)` → version-aware
+  - `get_prefix_no_autonomous_flag(iface, prefix)` → version-aware
+  - `get_prefix_on_link_flag(iface, prefix)` → version-aware
+  - `get_prefix_no_on_link_flag(iface, prefix)` → version-aware
+  - `get_dnssl(iface, domain)` → v1.5 only
+  - `get_route(iface, prefix)` → v1.5 only
+  - `get_route_lifetime(iface, prefix, seconds)` → v1.5 only
+  - `get_route_preference(iface, prefix, pref)` → v1.5 only
+
+  Plus corresponding `_path` methods for delete.
+
+  ## Step 2: Version Overrides
+
+  `v1_4.py`: Block v1.5 features
+  - `has_dnssl() → False`, `has_route() → False`, `has_send_advert_bool() → False`
+  - Implement `get_no_send_advert()`, `get_prefix_no_autonomous_flag()`, `get_prefix_no_on_link_flag()`
+
+  `v1_5.py`: Full features
+  - `has_dnssl() → True`, `has_route() → True`, `has_send_advert_bool() → True`
+  - Implement `get_send_advert()`, `get_prefix_autonomous_flag()`, `get_prefix_on_link_flag()`
+  - Implement `get_dnssl()`, `get_route()`, `get_route_lifetime()`, `get_route_preference()`
+
+  ## Step 3: Builder
+
+  `RouterAdvertBatchBuilder` with mapper_key = "router_advert"
+  All feature methods take iface as first param. Prefix methods take iface + prefix.
+  get_capabilities() returns version flags: has_dnssl, has_route, has_send_advert_bool
+
+  ## Step 4: Router
+
+  - `router = APIRouter(prefix="/vyos/router-advert", tags=["router-advert"])`
+  - Nested Pydantic models:
+    - `RouterAdvertPrefix`: prefix (str), autonomous_flag (Optional[bool]), on_link_flag (Optional[bool]),
+      preferred_lifetime (Optional[str]), valid_lifetime (Optional[str])
+    - `RouterAdvertRoute`: prefix (str), lifetime (Optional[str]), preference (Optional[str])
+    - `RouterAdvertInterface`: name (str), prefixes (List[RouterAdvertPrefix]),
+      name_servers (List[str]), cur_hop_limit (Optional[str]), default_lifetime (Optional[str]),
+      default_preference (Optional[str]), link_mtu (Optional[str]), managed_flag (bool),
+      other_config_flag (bool), send_advert (Optional[bool]), interval_max (Optional[str]),
+      interval_min (Optional[str]), reachable_time (Optional[str]), retrans_timer (Optional[str]),
+      dnssl (List[str]), routes (List[RouterAdvertRoute])
+    - `RouterAdvertConfigResponse`: interfaces (List[RouterAdvertInterface])
+  - GET /config: Parse nested structure carefully. Interface values are dicts, prefix values are
+    dicts within interface, handle missing keys. Use DNS Forwarding config parser as reference for
+    nested dict-of-dicts parsing.
+  - Use FeatureGroup.ROUTER_ADVERT for permissions
+  - POST /batch MUST call ensure_snapshot_before_change()
+
+acceptance_criteria:
+  - "File exists: backend/vyos_mappers/router_advert/router_advert.py"
+  - "File exists: backend/vyos_mappers/router_advert/router_advert_versions/v1_4.py"
+  - "File exists: backend/vyos_mappers/router_advert/router_advert_versions/v1_5.py"
+  - "File exists: backend/vyos_builders/router_advert/router_advert.py"
+  - "File exists: backend/routers/router_advert/router_advert.py"
+  - "Grep match: 'RouterAdvertMapper' in backend/vyos_mappers/router_advert/router_advert.py"
+  - "Grep match: 'ensure_snapshot_before_change' in backend/routers/router_advert/router_advert.py"
+  - "Grep match: 'FeatureGroup.ROUTER_ADVERT' in backend/routers/router_advert/router_advert.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

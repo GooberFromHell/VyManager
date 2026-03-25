@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,14 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormField } from "@/components/ui/fieldset";
 import { AlertCircle, MoveRight, Loader2 } from "lucide-react";
-import { sessionService, Site } from "@/lib/api/session";
+import { sessionService, Site, Instance } from "@/lib/api/session";
 
 interface MoveInstanceModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  instance: any | null;
+  instance: Instance | null;
   currentSite: Site | null;
   allSites: Site[];
 }
@@ -42,14 +42,15 @@ export function MoveInstanceModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when modal opens
-  useEffect(() => {
-    if (open) {
+  // Reset form when modal opens/closes
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
       setDestinationSiteId("");
       setError(null);
       setLoading(false);
     }
-  }, [open]);
+    onOpenChange(nextOpen);
+  };
 
   const handleMove = async () => {
     if (!instance || !destinationSiteId) {
@@ -91,20 +92,19 @@ export function MoveInstanceModal({
   if (!instance || !currentSite) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Move Instance to Another Site</DialogTitle>
           <DialogDescription>
-            Move "{instance.name}" to a different site. You can only move instances
+            Move &ldquo;{instance.name}&rdquo; to a different site. You can only move instances
             to sites where you have Owner or Admin permissions.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Current Site */}
-          <div className="space-y-2">
-            <Label>Current Site</Label>
+          <FormField label="Current Site">
             <div className="rounded-lg border border-border bg-muted/50 p-3">
               <p className="font-medium text-sm">{currentSite.name}</p>
               {currentSite.description && (
@@ -113,11 +113,10 @@ export function MoveInstanceModal({
                 </p>
               )}
             </div>
-          </div>
+          </FormField>
 
           {/* Destination Site */}
-          <div className="space-y-2">
-            <Label htmlFor="destination-site">Destination Site *</Label>
+          <FormField label="Destination Site" htmlFor="destination-site" required>
             {availableSites.length === 0 ? (
               <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
                 <p className="text-sm text-muted-foreground">
@@ -150,7 +149,7 @@ export function MoveInstanceModal({
                 </SelectContent>
               </Select>
             )}
-          </div>
+          </FormField>
 
           {/* Warning */}
           <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3">
@@ -162,7 +161,7 @@ export function MoveInstanceModal({
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Moving this instance will immediately change its site association.
-                  If you're currently connected to this instance, you'll be
+                  If you&apos;re currently connected to this instance, you&apos;ll be
                   disconnected.
                 </p>
               </div>

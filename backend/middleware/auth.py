@@ -38,6 +38,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         "/api/auth/session",
         "/session/onboarding-status",  # Must be public to check if first-time setup is needed
         "/vyos/monitoring/ws/monitor",  # WebSocket auth handled inside handler
+        "/vyos/terminal/ws/shell",  # WebSocket auth handled inside handler
     }
 
     # Endpoints that should NOT update activity timestamp
@@ -46,6 +47,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         "/vyos/config/diff",
         "/vyos/config/snapshots",
         "/session/current",
+        "/session/jobs",  # Polls for background job status
         "/vyos/power/status",  # Polls for scheduled reboot/poweroff status
     }
 

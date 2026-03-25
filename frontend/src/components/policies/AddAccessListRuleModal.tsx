@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { accessListService, type AccessList } from "@/lib/api/access-list";
 
 interface AddAccessListRuleModalProps {
@@ -239,47 +239,51 @@ export function AddAccessListRuleModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="rule-number">Rule Number</Label>
+          <Fieldset label="Rule Info">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Rule Number"
+                htmlFor="rule-number"
+                description="Auto-calculated based on existing rules"
+              >
+                <Input
+                  id="rule-number"
+                  type="number"
+                  value={ruleNumber}
+                  disabled
+                  className="bg-muted"
+                />
+              </FormField>
+
+              <FormField label="Action" htmlFor="action" required>
+                <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
+                  <SelectTrigger id="action">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="permit">Permit</SelectItem>
+                    <SelectItem value="deny">Deny</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </div>
+
+            <FormField label="Rule Description" htmlFor="rule-description">
               <Input
-                id="rule-number"
-                type="number"
-                value={ruleNumber}
-                disabled
-                className="bg-muted"
+                id="rule-description"
+                value={ruleDescription}
+                onChange={(e) => setRuleDescription(e.target.value)}
+                placeholder="Enter rule description (optional)"
+                disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">Auto-calculated based on existing rules</p>
-            </div>
+            </FormField>
+          </Fieldset>
 
-            <div className="space-y-2">
-              <Label htmlFor="action">Action *</Label>
-              <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
-                <SelectTrigger id="action">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="permit">Permit</SelectItem>
-                  <SelectItem value="deny">Deny</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="rule-description">Rule Description</Label>
-            <Input
-              id="rule-description"
-              value={ruleDescription}
-              onChange={(e) => setRuleDescription(e.target.value)}
-              placeholder="Enter rule description (optional)"
-              disabled={loading}
-            />
-          </div>
+          <FieldsetDivider />
 
           {/* Source Configuration */}
           <div className="space-y-3 border rounded-lg p-4">
-            <Label>Source</Label>
+            <p className="text-sm font-semibold text-foreground">Source</p>
 
             {listType === "ipv4" ? (
               /* IPv4 Source - Radio Buttons */
@@ -287,35 +291,35 @@ export function AddAccessListRuleModal({
                 <RadioGroup value={sourceType} onValueChange={(v: any) => setSourceType(v)} disabled={loading}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="any" id="source-any" />
-                    <Label htmlFor="source-any" className="font-normal cursor-pointer">Any</Label>
+                    <label htmlFor="source-any" className="font-normal cursor-pointer">Any</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="host" id="source-host" />
-                    <Label htmlFor="source-host" className="font-normal cursor-pointer">Host</Label>
+                    <label htmlFor="source-host" className="font-normal cursor-pointer">Host</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="network" id="source-network" />
-                    <Label htmlFor="source-network" className="font-normal cursor-pointer">Network</Label>
+                    <label htmlFor="source-network" className="font-normal cursor-pointer">Network</label>
                   </div>
                 </RadioGroup>
 
                 {sourceType === "host" && (
-                  <div className="space-y-2 mt-3">
-                    <Label htmlFor="source-address">Host Address *</Label>
-                    <Input
-                      id="source-address"
-                      value={sourceAddress}
-                      onChange={(e) => setSourceAddress(e.target.value)}
-                      placeholder="e.g., 192.168.1.1"
-                      disabled={loading}
-                    />
+                  <div className="mt-3">
+                    <FormField label="Host Address" htmlFor="source-address" required>
+                      <Input
+                        id="source-address"
+                        value={sourceAddress}
+                        onChange={(e) => setSourceAddress(e.target.value)}
+                        placeholder="e.g., 192.168.1.1"
+                        disabled={loading}
+                      />
+                    </FormField>
                   </div>
                 )}
 
                 {sourceType === "network" && (
                   <div className="grid grid-cols-2 gap-4 mt-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="source-address-net">Network Address *</Label>
+                    <FormField label="Network Address" htmlFor="source-address-net" required>
                       <Input
                         id="source-address-net"
                         value={sourceAddress}
@@ -323,9 +327,8 @@ export function AddAccessListRuleModal({
                         placeholder="e.g., 192.168.1.0"
                         disabled={loading}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="source-mask-net">Inverse Mask *</Label>
+                    </FormField>
+                    <FormField label="Inverse Mask" htmlFor="source-mask-net" required>
                       <Input
                         id="source-mask-net"
                         value={sourceMask}
@@ -333,7 +336,7 @@ export function AddAccessListRuleModal({
                         placeholder="e.g., 0.0.0.255"
                         disabled={loading}
                       />
-                    </div>
+                    </FormField>
                   </div>
                 )}
               </>
@@ -348,7 +351,7 @@ export function AddAccessListRuleModal({
                       onCheckedChange={(checked) => setSourceAny(checked as boolean)}
                       disabled={loading}
                     />
-                    <Label htmlFor="source-any-v6" className="font-normal cursor-pointer">Any</Label>
+                    <label htmlFor="source-any-v6" className="font-normal cursor-pointer">Any</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -357,25 +360,27 @@ export function AddAccessListRuleModal({
                       onCheckedChange={(checked) => setSourceExactMatch(checked as boolean)}
                       disabled={loading || !!sourceNetwork.trim()}
                     />
-                    <Label htmlFor="source-exact-match" className="font-normal cursor-pointer">Exact Match</Label>
+                    <label htmlFor="source-exact-match" className="font-normal cursor-pointer">Exact Match</label>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Any can coexist with Exact Match OR Network. Exact Match and Network are mutually exclusive.
                   </p>
                 </div>
 
-                <div className="space-y-2 mt-4">
-                  <Label htmlFor="source-network-v6">Network (CIDR)</Label>
-                  <Input
-                    id="source-network-v6"
-                    value={sourceNetwork}
-                    onChange={(e) => setSourceNetwork(e.target.value)}
-                    placeholder="e.g., 2001:db8::/32"
-                    disabled={loading || sourceExactMatch}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Must include prefix length (e.g., /32, /64). Can coexist with Any, but not Exact Match.
-                  </p>
+                <div className="mt-4">
+                  <FormField
+                    label="Network (CIDR)"
+                    htmlFor="source-network-v6"
+                    description="Must include prefix length (e.g., /32, /64). Can coexist with Any, but not Exact Match."
+                  >
+                    <Input
+                      id="source-network-v6"
+                      value={sourceNetwork}
+                      onChange={(e) => setSourceNetwork(e.target.value)}
+                      placeholder="e.g., 2001:db8::/32"
+                      disabled={loading || sourceExactMatch}
+                    />
+                  </FormField>
                 </div>
               </>
             )}
@@ -384,74 +389,58 @@ export function AddAccessListRuleModal({
           {/* Destination Configuration (IPv4 only) */}
           {listType === "ipv4" && (
             <div className="space-y-3 border rounded-lg p-4">
-              <Label>Destination</Label>
-            <RadioGroup value={destinationType} onValueChange={(v: any) => setDestinationType(v)} disabled={loading}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="any" id="dest-any" />
-                <Label htmlFor="dest-any" className="font-normal cursor-pointer">Any</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="host" id="dest-host" />
-                <Label htmlFor="dest-host" className="font-normal cursor-pointer">Host</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="network" id="dest-network" />
-                <Label htmlFor="dest-network" className="font-normal cursor-pointer">Network</Label>
-              </div>
-            </RadioGroup>
+              <p className="text-sm font-semibold text-foreground">Destination</p>
+              <RadioGroup value={destinationType} onValueChange={(v: any) => setDestinationType(v)} disabled={loading}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="any" id="dest-any" />
+                  <label htmlFor="dest-any" className="font-normal cursor-pointer">Any</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="host" id="dest-host" />
+                  <label htmlFor="dest-host" className="font-normal cursor-pointer">Host</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="network" id="dest-network" />
+                  <label htmlFor="dest-network" className="font-normal cursor-pointer">Network</label>
+                </div>
+              </RadioGroup>
 
-            {destinationType === "host" && (
-              <div className="space-y-2 mt-3">
-                <Label htmlFor="dest-address">Host Address *</Label>
-                <Input
-                  id="dest-address"
-                  value={destinationAddress}
-                  onChange={(e) => setDestinationAddress(e.target.value)}
-                  placeholder={listType === "ipv4" ? "e.g., 10.0.0.1" : "e.g., 2001:db8::2"}
-                  disabled={loading}
-                />
-              </div>
-            )}
-
-            {destinationType === "network" && (
-              <div className="space-y-3 mt-3">
-                {listType === "ipv4" ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dest-address-net">Network Address *</Label>
-                      <Input
-                        id="dest-address-net"
-                        value={destinationAddress}
-                        onChange={(e) => setDestinationAddress(e.target.value)}
-                        placeholder="e.g., 10.0.0.0"
-                        disabled={loading}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dest-mask-net">Inverse Mask *</Label>
-                      <Input
-                        id="dest-mask-net"
-                        value={destinationMask}
-                        onChange={(e) => setDestinationMask(e.target.value)}
-                        placeholder="e.g., 0.0.0.255"
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="dest-address-net6">Network (CIDR) *</Label>
+              {destinationType === "host" && (
+                <div className="mt-3">
+                  <FormField label="Host Address" htmlFor="dest-address" required>
                     <Input
-                      id="dest-address-net6"
+                      id="dest-address"
                       value={destinationAddress}
                       onChange={(e) => setDestinationAddress(e.target.value)}
-                      placeholder="e.g., 2001:db8:1::/48"
+                      placeholder="e.g., 10.0.0.1"
                       disabled={loading}
                     />
-                  </div>
-                )}
-              </div>
-            )}
+                  </FormField>
+                </div>
+              )}
+
+              {destinationType === "network" && (
+                <div className="grid grid-cols-2 gap-4 mt-3">
+                  <FormField label="Network Address" htmlFor="dest-address-net" required>
+                    <Input
+                      id="dest-address-net"
+                      value={destinationAddress}
+                      onChange={(e) => setDestinationAddress(e.target.value)}
+                      placeholder="e.g., 10.0.0.0"
+                      disabled={loading}
+                    />
+                  </FormField>
+                  <FormField label="Inverse Mask" htmlFor="dest-mask-net" required>
+                    <Input
+                      id="dest-mask-net"
+                      value={destinationMask}
+                      onChange={(e) => setDestinationMask(e.target.value)}
+                      placeholder="e.g., 0.0.0.255"
+                      disabled={loading}
+                    />
+                  </FormField>
+                </div>
+              )}
             </div>
           )}
         </div>

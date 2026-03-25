@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# archon — ARCHON Framework CLI
+# The only file you need in your project root.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ARCHON_DIR="$SCRIPT_DIR/.archon"
+
+# Prefer the venv Python if it exists
+VENV_PYTHON="$ARCHON_DIR/venv/bin/python"
+if [ -x "$VENV_PYTHON" ]; then
+    exec "$VENV_PYTHON" "$ARCHON_DIR/framework.py" "$@"
+fi
+
+# Fallback: try venv Scripts (Windows Git Bash)
+VENV_PYTHON_WIN="$ARCHON_DIR/venv/Scripts/python.exe"
+if [ -x "$VENV_PYTHON_WIN" ]; then
+    exec "$VENV_PYTHON_WIN" "$ARCHON_DIR/framework.py" "$@"
+fi
+
+# Last resort: system python with source scripts/ path
+if [ -f "$ARCHON_DIR/framework.py" ]; then
+    exec python "$ARCHON_DIR/framework.py" "$@"
+else
+    exec python "$SCRIPT_DIR/scripts/framework.py" "$@"
+fi

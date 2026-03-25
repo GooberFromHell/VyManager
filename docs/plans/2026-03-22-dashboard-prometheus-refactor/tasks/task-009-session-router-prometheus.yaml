@@ -1,0 +1,51 @@
+id: "task-009"
+title: "Update session router for Prometheus fields in instance CRUD"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: []
+parallel_with: ["task-002", "task-003", "task-004"]
+
+files:
+  modify:
+    - "backend/routers/session/session.py"
+
+context_files:
+  - "backend/routers/session/session.py"
+
+instructions: |
+  Update the session router to handle Prometheus fields in instance create/update/get operations.
+
+  1. Add to `InstanceCreateRequest` model:
+     - `prometheus_enabled: bool = Field(default=False)`
+     - `prometheus_port: int = Field(default=9273, ge=1, le=65535)`
+     - `prometheus_auth: bool = Field(default=False)`
+     - `prometheus_username: Optional[str] = Field(None)`
+     - `prometheus_password: Optional[str] = Field(None)`
+
+  2. Add to `InstanceUpdateRequest` model (all Optional):
+     - Same fields as above but all Optional
+
+  3. Update the INSERT query in `create_instance()` to include the Prometheus columns
+  4. Update the UPDATE query in `update_instance()` to handle Prometheus fields
+  5. Update the SELECT query in instance detail/list to include Prometheus fields
+  6. Add Prometheus fields to the response dict in instance endpoints:
+     - `prometheus_enabled`, `prometheus_port`, `prometheus_auth`, `prometheus_username` (never return password)
+
+  IMPORTANT: Do NOT return `prometheus_password` in any response — treat it like API keys.
+
+acceptance_criteria:
+  - "Grep match: 'prometheus_enabled' in backend/routers/session/session.py"
+  - "Grep match: 'prometheus_port' in backend/routers/session/session.py"
+  - "Grep match: 'prometheusEnabled' in backend/routers/session/session.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

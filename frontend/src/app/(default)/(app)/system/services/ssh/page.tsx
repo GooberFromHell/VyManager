@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, AlertCircle, Pencil, Terminal, Shield, Key } from "lucide-react";
+import { RefreshCw, Pencil, Terminal, Shield, Key } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { ErrorAlert } from "@/components/ui/error-alert";
 import { sshService } from "@/lib/api/ssh";
 import type { SSHConfig, SSHCapabilities } from "@/lib/api/types/ssh";
 import { EditSSHSettingsModal } from "@/components/services/ssh/EditSSHSettingsModal";
@@ -56,42 +58,36 @@ export default function SSHPage() {
   if (error && !config) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Card className="border-destructive max-w-md">
-          <CardContent className="flex items-center gap-4 py-8">
-            <AlertCircle className="h-8 w-8 text-destructive" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-destructive">Error Loading SSH</h3>
-              <p className="text-sm text-muted-foreground mt-1">{error}</p>
-            </div>
-            <Button onClick={handleRefresh} variant="outline">Try Again</Button>
-          </CardContent>
-        </Card>
+        <ErrorAlert
+          title="Error Loading SSH"
+          message={error}
+          onRetry={handleRefresh}
+          className="max-w-md"
+        />
       </div>
     );
   }
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">SSH</h1>
-          <p className="text-muted-foreground mt-1">
-            Secure Shell access configuration
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {canWrite(FeatureGroup.SSH) && (
-            <Button variant="outline" onClick={() => setEditOpen(true)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
+      <PageHeader
+        title="SSH"
+        description="Secure Shell access configuration"
+        actions={
+          <>
+            {canWrite(FeatureGroup.SSH) && (
+              <Button variant="outline" onClick={() => setEditOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
             </Button>
-          )}
-          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>

@@ -1,0 +1,50 @@
+id: "task-008"
+title: "Final validation — TypeScript + lint check"
+phase: observe
+execution_phase: 3
+agent: general-purpose
+status: not_started
+depends_on: ["task-002", "task-005", "task-006", "task-007"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify: []
+
+context_files: []
+
+instructions: |
+  Run validation checks on the frontend.
+
+  ## Step 1: TypeScript type check
+  Run: cd frontend && npx tsc --noEmit
+  Expected: Zero errors. Fix any that appear.
+
+  ## Step 2: Lint check
+  Run: cd frontend && npm run lint
+  Expected: No new errors from our changes. Pre-existing errors in other files are OK.
+
+  ## Step 3: Verify all new files exist
+  Check that these files were created:
+  - frontend/src/components/ui/empty-state.tsx
+  - frontend/src/components/ui/contextual-hint.tsx
+  - frontend/src/hooks/useFirstVisit.ts
+  - frontend/src/components/layout/WelcomeCard.tsx
+
+  ## Step 4: Verify integration
+  Check that EmptyState is imported in at least 5 page files.
+  Check that useFirstVisit is imported in at least 3 files.
+  Check that ContextualHint is imported in at least 2 files.
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

@@ -16,7 +16,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Plus,
   RefreshCw,
-  AlertCircle,
   Pencil,
   Trash2,
   Globe,
@@ -24,6 +23,9 @@ import {
   Shield,
   Settings2,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { ErrorAlert } from "@/components/ui/error-alert";
+import { EmptyState } from "@/components/ui/empty-state";
 import { dnsForwardingService } from "@/lib/api/dns-forwarding";
 import type {
   DNSForwardingConfig,
@@ -110,23 +112,14 @@ export default function DNSForwardingPage() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            <p className="text-sm text-destructive">{error}</p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => {
-              setLoading(true);
-              loadData();
-            }}
-          >
-            Retry
-          </Button>
-        </div>
+        <ErrorAlert
+          message={error}
+          onRetry={() => {
+            setLoading(true);
+            loadData();
+          }}
+          retryLabel="Retry"
+        />
       </div>
     );
   }
@@ -134,19 +127,12 @@ export default function DNSForwardingPage() {
   if (!config) {
     return (
       <div className="p-6">
-        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center">
-          <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">DNS Forwarding Not Configured</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            No DNS forwarding configuration found on this device.
-          </p>
-          {!isReadOnly && (
-            <Button onClick={() => setEditOpen(true)}>
-              <Settings2 className="h-4 w-4 mr-2" />
-              Configure DNS Forwarding
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Globe}
+          title="DNS Forwarding Not Configured"
+          description="No DNS forwarding configuration found on this device."
+          action={!isReadOnly ? { label: "Configure DNS Forwarding", onClick: () => setEditOpen(true), icon: Settings2 } : undefined}
+        />
       </div>
     );
   }
@@ -155,30 +141,28 @@ export default function DNSForwardingPage() {
     <ScrollArea className="h-full">
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">DNS Forwarding</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Configure DNS forwarding service
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {!isReadOnly && (
-              <Button variant="outline" onClick={() => setEditOpen(true)}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
+        <PageHeader
+          title="DNS Forwarding"
+          description="Configure DNS forwarding service"
+          actions={
+            <>
+              {!isReadOnly && (
+                <Button variant="outline" onClick={() => setEditOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Global Settings & Upstream Servers */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -356,21 +340,12 @@ export default function DNSForwardingPage() {
             </Card>
           ) : (
             <Card>
-              <CardContent className="py-8 text-center">
-                <Globe className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  No domain forwarding rules configured
-                </p>
-                {!isReadOnly && (
-                  <Button
-                    variant="outline"
-                    className="mt-3"
-                    onClick={() => setCreateDomainOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Domain
-                  </Button>
-                )}
+              <CardContent>
+                <EmptyState
+                  icon={Globe}
+                  title="No domain forwarding rules configured"
+                  action={!isReadOnly ? { label: "Add Domain", onClick: () => setCreateDomainOpen(true), icon: Plus } : undefined}
+                />
               </CardContent>
             </Card>
           )}

@@ -23,9 +23,12 @@ export default function AppShellLayout({
   if (!activeSession) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Redirecting to site manager...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="text-center">
+            <p className="text-sm font-medium text-foreground">No active connection</p>
+            <p className="text-xs text-muted-foreground mt-1">Redirecting to site manager...</p>
+          </div>
         </div>
       </div>
     );

@@ -1,0 +1,50 @@
+# DERPO Goal Contract
+# VyOS Container Management Feature
+
+goal: "Add full-stack container management to VyManager — allowing users to configure, monitor, and manage OCI containers running on VyOS routers, including container images, networks, registries, volumes, and individual container settings."
+
+scope:
+  include:
+    - "backend/vyos_mappers/containers/**"
+    - "backend/vyos_builders/containers/**"
+    - "backend/routers/containers/**"
+    - "backend/vyos_mappers/__init__.py"
+    - "backend/vyos_builders/__init__.py"
+    - "backend/app.py"
+    - "backend/rbac_permissions.py"
+    - "frontend/src/lib/api/containers.ts"
+    - "frontend/src/lib/api/types/containers.ts"
+    - "frontend/src/components/services/containers/**"
+    - "frontend/src/app/(default)/(app)/system/services/containers/**"
+    - "frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must follow existing three-layer backend pattern (router → builder → mapper)"
+  - "Must follow version-aware mapper pattern (base = v1.5, v1.4 overrides)"
+  - "Must register with CommandMapperRegistry"
+  - "Must expose /capabilities endpoint"
+  - "Must use existing UI patterns from other service pages (shadcn/ui, dark mode)"
+  - "No new dependencies without user approval"
+  - "Must support VyOS 1.4 and 1.5 (containers available in both)"
+
+acceptance_criteria:
+  - "All backend files exist: mapper, builder, router with proper structure"
+  - "Container mapper registered in CommandMapperRegistry"
+  - "Container router included in app.py"
+  - "Frontend types, API service, components, and page exist"
+  - "Container page accessible via services layout navigation"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes (npm run lint)"
+
+human_checkpoints:
+  - after: evaluate
+  - after: resolve
+
+max_iterations: 3
+
+context: "VyOS containers feature uses podman under the hood. Key VyOS CLI paths: 'set container name <name>', 'set container network <name>', 'set container registry <name>'. Containers support: image, network, port mapping, volumes, environment variables, capabilities, restart policy, memory/cpu limits, labels, and device passthrough."

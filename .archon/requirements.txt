@@ -1,0 +1,7 @@
+# ARCHON dependencies are installed in .archon/venv/
+# To install manually: pip install -r .archon/requirements.txt
+# Or use: archon init (creates venv automatically)
+#
+# For the pinned versions used inside Docker, see .archon/mcp-bridge/requirements.txt
+
+-r .archon/requirements.txt

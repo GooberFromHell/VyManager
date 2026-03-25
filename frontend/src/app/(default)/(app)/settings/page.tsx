@@ -5,7 +5,7 @@ import { RebootModal } from "@/components/system/RebootModal";
 import { PoweroffModal } from "@/components/system/PoweroffModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -91,7 +91,7 @@ export default function SettingsPage() {
             <SettingsIcon className="h-8 w-8" />
             Settings
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-1">
             Manage system power and configuration settings
           </p>
         </div>
@@ -113,8 +113,7 @@ export default function SettingsPage() {
               {systemConfigLoading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
               ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="performance-select">Performance profile</Label>
+                <FormField label="Performance profile" htmlFor="performance-select" description="Save config to make the change persistent.">
                   <Select
                     value={systemConfig?.performance ?? ""}
                     onValueChange={handlePerformanceChange}
@@ -131,10 +130,7 @@ export default function SettingsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Save config to make the change persistent.
-                  </p>
-                </div>
+                </FormField>
               )}
             </CardContent>
           </Card>

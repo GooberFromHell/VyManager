@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { AlertCircle } from "lucide-react";
 import { ntpService } from "@/lib/api/ntp";
 import type { NTPCapabilities } from "@/lib/api/types/ntp";
@@ -78,13 +78,13 @@ export function CreateNTPServerModal({
     try {
       const operations = [{ op: "set_server" }];
 
-      if (pool && capabilities?.fields.pool.supported) {
+      if (pool && capabilities?.fields?.pool?.supported) {
         operations.push({ op: "set_pool" });
       }
-      if (prefer && capabilities?.fields.prefer.supported) {
+      if (prefer && capabilities?.fields?.prefer?.supported) {
         operations.push({ op: "set_prefer" });
       }
-      if (noselect && capabilities?.fields.noselect.supported) {
+      if (noselect && capabilities?.fields?.noselect?.supported) {
         operations.push({ op: "set_noselect" });
       }
 
@@ -100,6 +100,11 @@ export function CreateNTPServerModal({
     }
   };
 
+  const hasOptions =
+    capabilities?.fields?.pool?.supported ||
+    capabilities?.fields?.prefer?.supported ||
+    capabilities?.fields?.noselect?.supported;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -110,74 +115,70 @@ export function CreateNTPServerModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="address" className="required">
-              Server Address
-            </Label>
-            <Input
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g., 0.pool.ntp.org or 10.0.0.1"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Hostname or IP address of the NTP server
-            </p>
-          </div>
-
-          {capabilities?.fields.pool.supported && (
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="pool"
-                checked={pool}
-                onCheckedChange={(checked) => setPool(checked as boolean)}
+        <div className="space-y-5">
+          <Fieldset>
+            <FormField
+              label="Server Address"
+              htmlFor="address"
+              description="Hostname or IP address of the NTP server"
+              required
+            >
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="e.g., 0.pool.ntp.org or 10.0.0.1"
               />
-              <div className="space-y-1">
-                <Label htmlFor="pool" className="cursor-pointer">
-                  Pool
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Treat this address as a pool of multiple NTP servers
-                </p>
-              </div>
-            </div>
-          )}
+            </FormField>
+          </Fieldset>
 
-          {capabilities?.fields.prefer.supported && (
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="prefer"
-                checked={prefer}
-                onCheckedChange={(checked) => setPrefer(checked as boolean)}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="prefer" className="cursor-pointer">
-                  Prefer
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Mark this server as preferred for time synchronization
-                </p>
-              </div>
-            </div>
-          )}
+          {hasOptions && (
+            <Fieldset label="Server Options">
+              {capabilities?.fields?.pool?.supported && (
+                <FormField
+                  label="Pool"
+                  htmlFor="pool"
+                  description="Treat this address as a pool of multiple NTP servers"
+                  horizontal
+                >
+                  <Checkbox
+                    id="pool"
+                    checked={pool}
+                    onCheckedChange={(checked) => setPool(checked as boolean)}
+                  />
+                </FormField>
+              )}
 
-          {capabilities?.fields.noselect.supported && (
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="noselect"
-                checked={noselect}
-                onCheckedChange={(checked) => setNoselect(checked as boolean)}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="noselect" className="cursor-pointer">
-                  Noselect
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Query this server but do not use it for time synchronization
-                </p>
-              </div>
-            </div>
+              {capabilities?.fields?.prefer?.supported && (
+                <FormField
+                  label="Prefer"
+                  htmlFor="prefer"
+                  description="Mark this server as preferred for time synchronization"
+                  horizontal
+                >
+                  <Checkbox
+                    id="prefer"
+                    checked={prefer}
+                    onCheckedChange={(checked) => setPrefer(checked as boolean)}
+                  />
+                </FormField>
+              )}
+
+              {capabilities?.fields?.noselect?.supported && (
+                <FormField
+                  label="Noselect"
+                  htmlFor="noselect"
+                  description="Query this server but do not use it for time synchronization"
+                  horizontal
+                >
+                  <Checkbox
+                    id="noselect"
+                    checked={noselect}
+                    onCheckedChange={(checked) => setNoselect(checked as boolean)}
+                  />
+                </FormField>
+              )}
+            </Fieldset>
           )}
 
           {error && (

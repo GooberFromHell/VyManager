@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, X, ArrowRight } from "lucide-react";
 import { firewallZonesService } from "@/lib/api/firewall-zones";
@@ -150,43 +150,49 @@ export function ZonePolicyModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="policy-ipv4">IPv4 Firewall Ruleset</Label>
-            <div className="flex gap-2">
-              <Input
-                id="policy-ipv4"
-                value={ipv4Name}
-                onChange={(e) => setIpv4Name(e.target.value)}
-                placeholder={isIntraZone ? `e.g., ${sourceZone}-${sourceZone}` : `e.g., ${sourceZone}_TO_${destZone}`}
-                className="font-mono"
-                disabled={!canEdit}
-              />
-              {canEdit && ipv4Name && (
-                <Button variant="ghost" size="sm" onClick={() => setIpv4Name("")} className="px-2">
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+          <Fieldset label="Firewall Rulesets">
+            <FormField
+              label="IPv4 Firewall Ruleset"
+              htmlFor="policy-ipv4"
+            >
+              <div className="flex gap-2">
+                <Input
+                  id="policy-ipv4"
+                  value={ipv4Name}
+                  onChange={(e) => setIpv4Name(e.target.value)}
+                  placeholder={isIntraZone ? `e.g., ${sourceZone}-${sourceZone}` : `e.g., ${sourceZone}_TO_${destZone}`}
+                  className="font-mono"
+                  disabled={!canEdit}
+                />
+                {canEdit && ipv4Name && (
+                  <Button variant="ghost" size="sm" onClick={() => setIpv4Name("")} className="px-2">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="policy-ipv6">IPv6 Firewall Ruleset</Label>
-            <div className="flex gap-2">
-              <Input
-                id="policy-ipv6"
-                value={ipv6Name}
-                onChange={(e) => setIpv6Name(e.target.value)}
-                placeholder={isIntraZone ? `e.g., ${sourceZone}-${sourceZone}-V6` : `e.g., ${sourceZone}_TO_${destZone}_V6`}
-                className="font-mono"
-                disabled={!canEdit}
-              />
-              {canEdit && ipv6Name && (
-                <Button variant="ghost" size="sm" onClick={() => setIpv6Name("")} className="px-2">
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+            <FormField
+              label="IPv6 Firewall Ruleset"
+              htmlFor="policy-ipv6"
+            >
+              <div className="flex gap-2">
+                <Input
+                  id="policy-ipv6"
+                  value={ipv6Name}
+                  onChange={(e) => setIpv6Name(e.target.value)}
+                  placeholder={isIntraZone ? `e.g., ${sourceZone}-${sourceZone}-V6` : `e.g., ${sourceZone}_TO_${destZone}_V6`}
+                  className="font-mono"
+                  disabled={!canEdit}
+                />
+                {canEdit && ipv6Name && (
+                  <Button variant="ghost" size="sm" onClick={() => setIpv6Name("")} className="px-2">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </FormField>
+          </Fieldset>
 
           {!canEdit && !hasExisting && (
             <p className="text-sm text-muted-foreground text-center py-2">

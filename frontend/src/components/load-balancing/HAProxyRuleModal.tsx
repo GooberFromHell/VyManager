@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -226,8 +226,7 @@ export function HAProxyRuleModal({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Match Conditions</p>
 
             {/* Domain Names */}
-            <div className="space-y-1.5">
-              <Label className="text-sm">Domain Names</Label>
+            <FormField label="Domain Names">
               <div className="flex gap-2">
                 <Input
                   value={form.new_domain}
@@ -251,15 +250,11 @@ export function HAProxyRuleModal({
                   ))}
                 </div>
               )}
-            </div>
+            </FormField>
 
             {/* Wildcard Domains (v1.5+) */}
             {isV15 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm">Wildcard Domains</Label>
-                  <Badge variant="outline" className="text-xs">VyOS 1.5+</Badge>
-                </div>
+              <FormField label="Wildcard Domains">
                 <div className="flex gap-2">
                   <Input
                     value={form.new_wildcard}
@@ -283,27 +278,26 @@ export function HAProxyRuleModal({
                     ))}
                   </div>
                 )}
-              </div>
+              </FormField>
             )}
 
             {/* SSL Match */}
-            <div className="space-y-1.5">
-              <Label className="text-sm">SSL Match</Label>
+            <FormField label="SSL Match" htmlFor="rule-ssl">
               <Select
                 value={form.ssl || "_none"}
                 onValueChange={(v) => set("ssl", v === "_none" ? "" : v)}
               >
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger id="rule-ssl"><SelectValue placeholder="None" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">None</SelectItem>
                   <SelectItem value="hello">hello — match on TLS SNI</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
 
             {/* URL Path */}
             <div className="space-y-3">
-              <Label className="text-sm">URL Path</Label>
+              <span className="text-sm font-medium">URL Path</span>
               {(
                 [
                   { kind: "begin", tempKey: "new_url_begin", field: "url_path_begin", label: "Begins with", placeholder: "/api" },

@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { routeService, PolicyRoute } from "@/lib/api/route";
 import { ApiError } from "@/lib/types/api";
 
@@ -77,29 +77,35 @@ export function EditRoutePolicyModal({
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              placeholder="Policy description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+        <div className="space-y-5">
+          <Fieldset>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Policy description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+          </Fieldset>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="defaultLog"
-              checked={defaultLog}
-              onCheckedChange={(checked) => setDefaultLog(checked as boolean)}
-              disabled={loading}
-            />
-            <Label htmlFor="defaultLog" className="text-sm font-normal cursor-pointer">
-              Enable default logging for unmatched packets
-            </Label>
-          </div>
+          <FieldsetDivider />
+
+          <Fieldset label="Options">
+            <FormField
+              label="Enable default logging for unmatched packets"
+              htmlFor="defaultLog"
+              horizontal
+            >
+              <Checkbox
+                id="defaultLog"
+                checked={defaultLog}
+                onCheckedChange={(checked) => setDefaultLog(checked as boolean)}
+                disabled={loading}
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">

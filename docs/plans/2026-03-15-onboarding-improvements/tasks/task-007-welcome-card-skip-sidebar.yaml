@@ -1,0 +1,200 @@
+id: "task-007"
+title: "WelcomeCard on dashboard + onboarding skip + sidebar tooltips"
+phase: produce
+execution_phase: 2
+agent: react-specialist
+status: not_started
+depends_on: ["task-003"]
+blocks: ["task-008"]
+parallel_with: ["task-002", "task-005", "task-006"]
+
+files:
+  create:
+    - "frontend/src/components/layout/WelcomeCard.tsx"
+  modify:
+    - "frontend/src/app/(default)/(app)/page.tsx"
+    - "frontend/src/app/(auth)/onboarding/page.tsx"
+    - "frontend/src/components/layout/Sidebar.tsx"
+
+context_files:
+  - "frontend/src/app/(default)/(app)/page.tsx"
+  - "frontend/src/app/(auth)/onboarding/page.tsx"
+  - "frontend/src/components/layout/Sidebar.tsx"
+  - "frontend/src/hooks/useFirstVisit.ts"
+
+instructions: |
+  Three related improvements in one task: WelcomeCard, onboarding skip, and sidebar tooltips.
+
+  ## 1. WelcomeCard component (frontend/src/components/layout/WelcomeCard.tsx)
+
+  Create a welcome card shown on the dashboard for first-time users.
+
+  ```tsx
+  "use client";
+
+  import { useFirstVisit } from "@/hooks/useFirstVisit";
+  import { Card, CardContent } from "@/components/ui/card";
+  import { Button } from "@/components/ui/button";
+  import { CheckCircle2, X, Shield, Globe, Network, LayoutDashboard } from "lucide-react";
+  import Link from "next/link";
+
+  export function WelcomeCard() {
+    const { isFirstVisit, dismiss } = useFirstVisit("dashboard-welcome");
+
+    if (!isFirstVisit) return null;
+
+    return (
+      <Card className="col-span-full border-primary/20 bg-primary/5">
+        <CardContent className="pt-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-6 w-6 text-primary mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-foreground">You're connected!</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Here's what you can do with VyManager:
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={dismiss}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Dismiss welcome card"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 ml-9">
+            <Link href="/system/services" className="group">
+              <div className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent">
+                <Globe className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Services</p>
+                  <p className="text-xs text-muted-foreground">DNS, NTP, SSH, and more</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/firewall/policies" className="group">
+              <div className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent">
+                <Shield className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Firewall</p>
+                  <p className="text-xs text-muted-foreground">Rules, groups, and zones</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/network/interfaces" className="group">
+              <div className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent">
+                <Network className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Network</p>
+                  <p className="text-xs text-muted-foreground">Interfaces, NAT, DHCP</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  ```
+
+  ## 2. Add WelcomeCard to dashboard (frontend/src/app/(default)/(app)/page.tsx)
+
+  Read the file. Import WelcomeCard and render it at the top of the dashboard grid
+  (before the sortable cards), so it spans the full width above any dashboard cards.
+  It should appear even when the dashboard is empty (especially then).
+
+  Add it inside the cards grid area, before the mapped dashboard cards:
+  ```tsx
+  import { WelcomeCard } from "@/components/layout/WelcomeCard";
+  // ... in the grid:
+  <WelcomeCard />
+  {/* existing dashboard cards */}
+  ```
+
+  ## 3. Onboarding skip option (frontend/src/app/(auth)/onboarding/page.tsx)
+
+  Read the file. Add a "Skip" option on Step 2 (Create Site) and Step 3 (Add Instance).
+  Step 1 (Admin Account) must remain mandatory — can't skip creating the admin.
+
+  On Steps 2 and 3, add a text link below the Continue/Complete button:
+  ```tsx
+  {currentStep > 0 && (
+    <button
+      type="button"
+      onClick={() => handleSkipToEnd()}
+      className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+    >
+      I'll set this up later
+    </button>
+  )}
+  ```
+
+  The handleSkipToEnd function should:
+  - On Step 2 (site creation): Submit Step 1 data (admin account) without site/instance, then redirect to /sites
+  - On Step 3 (instance creation): Submit Step 1 + Step 2 data (admin + site) without instance, then redirect to /sites
+  - Basically: complete all steps up to (but not including) current step, then redirect
+
+  If the onboarding flow requires all 3 steps to submit at once, then the skip should:
+  - Create the admin account with Step 1 data
+  - Skip site/instance creation
+  - Redirect to /login or /sites
+
+  Read the submission logic carefully to determine the right approach. The key requirement is:
+  the admin account is always created, but site and instance are optional.
+
+  ## 4. Sidebar tooltip icons (frontend/src/components/layout/Sidebar.tsx)
+
+  Read the file. For each collapsible navigation category (Firewall, Network, Routing, Policies, VPN, Load Balancing),
+  add a small ? icon that shows a tooltip on hover explaining what the category contains.
+
+  Find the navigation items array and the CollapsibleTrigger rendering.
+  Add a tooltip using the shadcn Tooltip component (or a simple title attribute):
+
+  ```tsx
+  import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+  import { HelpCircle } from "lucide-react";
+  ```
+
+  For each nav category, add a HelpCircle icon that shows on hover of the category row:
+
+  ```tsx
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </TooltipTrigger>
+    <TooltipContent side="right">
+      <p className="text-xs">{category.tooltip}</p>
+    </TooltipContent>
+  </Tooltip>
+  ```
+
+  Tooltip text for each category:
+  - Firewall: "Configure firewall rules, groups, zones, and global options"
+  - Network: "Manage network interfaces, NAT, DHCP, and VRFs"
+  - Routing: "Set up routing protocols: BGP, OSPF, static routes"
+  - Policies: "Define route maps, access lists, prefix lists, and communities"
+  - VPN: "Configure WireGuard and IPSec VPN tunnels"
+  - Load Balancing: "Set up WAN load balancing and HAProxy"
+
+  The ? icon should be subtle — only visible on hover of the nav item row.
+  Add `group` class to the trigger container if not already present.
+
+  Wrap the sidebar in TooltipProvider if not already wrapped.
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/layout/WelcomeCard.tsx"
+  - "Grep match: 'WelcomeCard' in frontend/src/app/(default)/(app)/page.tsx"
+  - "Grep match: 'set this up later' in frontend/src/app/(auth)/onboarding/page.tsx"
+  - "Grep match: 'HelpCircle' in frontend/src/components/layout/Sidebar.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

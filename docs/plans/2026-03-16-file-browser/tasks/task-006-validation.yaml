@@ -1,0 +1,69 @@
+id: "task-006"
+title: "Validate TypeScript compilation and linting"
+phase: observe
+execution_phase: 4
+agent: "general-purpose"
+status: not_started
+depends_on: ["task-001", "task-002", "task-003", "task-004", "task-005"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify: []
+
+context_files: []
+
+instructions: |
+  Run validation checks to ensure the file browser feature compiles and lints cleanly.
+
+  ## Steps:
+
+  1. Run TypeScript compilation check:
+     ```bash
+     cd frontend && npx tsc --noEmit
+     ```
+     Fix any TypeScript errors found. Common issues:
+     - Missing imports
+     - Type mismatches between API service and types
+     - Missing props on components
+
+  2. Run ESLint:
+     ```bash
+     cd frontend && npm run lint
+     ```
+     Fix any linting errors.
+
+  3. Verify all files exist:
+     - backend/routers/file_browser/__init__.py
+     - backend/routers/file_browser/file_browser.py
+     - frontend/src/lib/api/types/file-browser.ts
+     - frontend/src/lib/api/file-browser.ts
+     - frontend/src/app/(default)/(app)/system/file-browser/page.tsx
+     - frontend/src/components/file-browser/FileBrowserContent.tsx
+     - frontend/src/components/file-browser/FilePreviewModal.tsx
+     - frontend/src/components/file-browser/UploadFileModal.tsx
+     - frontend/src/components/file-browser/CreateDirectoryModal.tsx
+     - frontend/src/components/file-browser/DeleteConfirmModal.tsx
+     - frontend/src/components/file-browser/RenameModal.tsx
+
+  4. Verify integration points:
+     - Grep for 'FILE_BROWSER' in backend/rbac_permissions.py
+     - Grep for 'FILE_BROWSER' in frontend/src/lib/api/user-management.ts
+     - Grep for 'file_browser' in backend/app.py
+     - Grep for 'file-browser' in frontend/src/components/layout/Sidebar.tsx
+
+  Fix any issues found. This task is allowed to modify any file to fix compilation/lint errors.
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+  - "Command passes: cd frontend && npm run lint"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

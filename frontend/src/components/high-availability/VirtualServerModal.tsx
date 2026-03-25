@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -188,32 +188,38 @@ export function VirtualServerModal({
             )}
 
             {/* Name */}
-            <div className="space-y-1.5">
-              <Label>Server Name <span className="text-destructive">*</span></Label>
+            <FormField
+              label="Server Name"
+              htmlFor="vs-name"
+              required
+              description={isEdit ? "Name cannot be changed" : undefined}
+            >
               <Input
+                id="vs-name"
                 value={form.name}
                 onChange={(e) => set("name")(e.target.value)}
                 disabled={isEdit}
                 placeholder="e.g. web-lb"
                 className={isEdit ? "opacity-60" : ""}
               />
-              {isEdit && <p className="text-xs text-muted-foreground">Name cannot be changed</p>}
-            </div>
+            </FormField>
 
             {/* Address & Port */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2 space-y-1.5">
-                <Label>Virtual IP Address</Label>
-                <Input
-                  value={form.address}
-                  onChange={(e) => set("address")(e.target.value)}
-                  placeholder="10.0.0.100"
-                  className="font-mono"
-                />
+              <div className="col-span-2">
+                <FormField label="Virtual IP Address" htmlFor="vs-address">
+                  <Input
+                    id="vs-address"
+                    value={form.address}
+                    onChange={(e) => set("address")(e.target.value)}
+                    placeholder="10.0.0.100"
+                    className="font-mono"
+                  />
+                </FormField>
               </div>
-              <div className="space-y-1.5">
-                <Label>Port</Label>
+              <FormField label="Port" htmlFor="vs-port">
                 <Input
+                  id="vs-port"
                   type="number"
                   min={1}
                   max={65535}
@@ -221,15 +227,14 @@ export function VirtualServerModal({
                   onChange={(e) => set("port")(e.target.value)}
                   placeholder="80"
                 />
-              </div>
+              </FormField>
             </div>
 
             {/* Protocol, Algorithm, Forward Method */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label>Protocol</Label>
+              <FormField label="Protocol" htmlFor="vs-proto">
                 <Select value={form.protocol} onValueChange={(v) => set("protocol")(v === "none" ? "" : v)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="vs-proto">
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
                   <SelectContent>
@@ -238,11 +243,10 @@ export function VirtualServerModal({
                     <SelectItem value="udp">UDP</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Algorithm</Label>
+              </FormField>
+              <FormField label="Algorithm" htmlFor="vs-algo">
                 <Select value={form.algorithm} onValueChange={(v) => set("algorithm")(v === "none" ? "" : v)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="vs-algo">
                     <SelectValue placeholder="Default" />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,11 +259,10 @@ export function VirtualServerModal({
                     <SelectItem value="destination-hashing">Destination Hashing</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Forward Method</Label>
+              </FormField>
+              <FormField label="Forward Method" htmlFor="vs-fwd">
                 <Select value={form.forward_method} onValueChange={(v) => set("forward_method")(v === "none" ? "" : v)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="vs-fwd">
                     <SelectValue placeholder="Default" />
                   </SelectTrigger>
                   <SelectContent>
@@ -269,39 +272,39 @@ export function VirtualServerModal({
                     <SelectItem value="tunnel">Tunnel</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
             </div>
 
             {/* Delay Loop, Persistence, FWMark */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label>Delay Loop (s)</Label>
+              <FormField label="Delay Loop (s)" htmlFor="vs-delay">
                 <Input
+                  id="vs-delay"
                   type="number"
                   min={1}
                   value={form.delay_loop}
                   onChange={(e) => set("delay_loop")(e.target.value)}
                   placeholder="10"
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Persistence Timeout (s)</Label>
+              </FormField>
+              <FormField label="Persistence Timeout (s)" htmlFor="vs-persist">
                 <Input
+                  id="vs-persist"
                   type="number"
                   min={1}
                   value={form.persistence_timeout}
                   onChange={(e) => set("persistence_timeout")(e.target.value)}
                   placeholder="360"
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label>FW Mark</Label>
+              </FormField>
+              <FormField label="FW Mark" htmlFor="vs-fwmark">
                 <Input
+                  id="vs-fwmark"
                   value={form.fwmark}
                   onChange={(e) => set("fwmark")(e.target.value)}
                   placeholder="Optional"
                 />
-              </div>
+              </FormField>
             </div>
 
             {/* Real Servers */}
@@ -309,7 +312,7 @@ export function VirtualServerModal({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Real Servers</Label>
+                  <span className="text-sm font-medium">Real Servers</span>
                   <p className="text-xs text-muted-foreground mt-0.5">Backend servers that receive traffic</p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={addRealServer}>
@@ -345,21 +348,21 @@ export function VirtualServerModal({
                       </div>
 
                       {/* Address row */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">IP Address <span className="text-destructive">*</span></Label>
+                      <FormField label="IP Address" htmlFor={`rs-addr-${idx}`} required>
                         <Input
+                          id={`rs-addr-${idx}`}
                           value={rs.address}
                           onChange={(e) => setRealServer(idx, "address", e.target.value)}
                           placeholder="192.168.1.10"
                           className="font-mono"
                         />
-                      </div>
+                      </FormField>
 
                       {/* Port + Timeout row */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Port</Label>
+                        <FormField label="Port" htmlFor={`rs-port-${idx}`}>
                           <Input
+                            id={`rs-port-${idx}`}
                             type="number"
                             min={1}
                             max={65535}
@@ -367,29 +370,29 @@ export function VirtualServerModal({
                             onChange={(e) => setRealServer(idx, "port", e.target.value)}
                             placeholder="e.g. 80"
                           />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs">Connection Timeout (s)</Label>
+                        </FormField>
+                        <FormField label="Connection Timeout (s)" htmlFor={`rs-timeout-${idx}`}>
                           <Input
+                            id={`rs-timeout-${idx}`}
                             type="number"
                             min={1}
                             value={rs.connection_timeout}
                             onChange={(e) => setRealServer(idx, "connection_timeout", e.target.value)}
                             placeholder="e.g. 5"
                           />
-                        </div>
+                        </FormField>
                       </div>
 
                       {/* Health check script */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Health Check Script</Label>
+                      <FormField label="Health Check Script" htmlFor={`rs-script-${idx}`}>
                         <Input
+                          id={`rs-script-${idx}`}
                           value={rs.health_check_script}
                           onChange={(e) => setRealServer(idx, "health_check_script", e.target.value)}
                           placeholder="/etc/keepalived/check.sh"
                           className="font-mono"
                         />
-                      </div>
+                      </FormField>
                     </div>
                   ))}
                 </div>

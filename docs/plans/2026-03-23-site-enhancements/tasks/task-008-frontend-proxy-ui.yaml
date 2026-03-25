@@ -1,0 +1,78 @@
+id: "task-008"
+title: "Add proxy host UI to EditSiteModal and site display"
+archetype: frontend-service
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-007"]
+blocks: ["task-010"]
+parallel_with: []
+files:
+  create: []
+  modify:
+    - frontend/src/components/sites/EditSiteModal.tsx
+    - frontend/src/app/(default)/sites/page.tsx
+context_files:
+  - frontend/src/components/sites/EditSiteModal.tsx
+  - frontend/src/components/sites/CreateSiteModal.tsx
+  - frontend/src/lib/api/session.ts
+instructions: |
+  1. Read `frontend/src/components/sites/EditSiteModal.tsx` fully
+  2. Read `frontend/src/components/sites/CreateSiteModal.tsx` for reference
+  3. Read `frontend/src/lib/api/session.ts` for the updated Site/SiteUpdateRequest types
+
+  **Modify EditSiteModal:**
+
+  a) Add state for proxy host:
+  ```typescript
+  const [proxyHostId, setProxyHostId] = useState<string | null>(site?.proxy_host_id ?? null);
+  const [siteInstances, setSiteInstances] = useState<Instance[]>([]);
+  ```
+
+  b) On modal open (or in useEffect when site changes), fetch instances for the site:
+  ```typescript
+  useEffect(() => {
+    if (open && site) {
+      sessionService.listInstances(site.id).then(setSiteInstances);
+    }
+  }, [open, site]);
+  ```
+
+  c) Add a "Proxy Host" section in the form, after the description field:
+  - Label: "Proxy Host" with a small info tooltip: "Designate a router as a jump host for connecting to other instances at this site"
+  - A Select component with options:
+    - "None" (value: empty/null)
+    - One option per instance: `{instance.name} ({instance.host})`
+  - Use shadcn/ui Select component
+
+  d) Include proxy_host_id in the update call:
+  ```typescript
+  await sessionService.updateSite(site.id, {
+    name,
+    description,
+    proxy_host_id: proxyHostId || null,
+  });
+  ```
+
+  e) Reset proxyHostId state when modal closes
+
+  **Modify sites page** (or SiteCard if that's where site info is displayed):
+  - When a site has `proxy_host_id` set, show a small badge or indicator near the site name
+  - Something like: a Shield icon or Network icon + "Proxy: {instance_name}" in small muted text
+  - This requires knowing the instance name — either look it up from the instances list, or include it in the site response
+
+  **Modify CreateSiteModal** (minimal):
+  - Do NOT add a proxy host field (site has no instances on creation)
+  - Optionally add a small note: "You can configure a proxy host after adding instances"
+acceptance_criteria:
+  - "Grep match: 'proxyHostId' in frontend/src/components/sites/EditSiteModal.tsx"
+  - "Grep match: 'Proxy Host' in frontend/src/components/sites/EditSiteModal.tsx"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

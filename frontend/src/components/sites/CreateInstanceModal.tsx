@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,20 +11,20 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AlertCircle, Loader2, Server } from "lucide-react";
-import { sessionService, Site } from "@/lib/api/session";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ApiError } from "@/lib/types/api";
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+  Loader2,
+  Server,
+  XCircle,
+} from "lucide-react";
+import {
+  sessionService,
+  Site,
+  ProvisioningEvent,
+} from "@/lib/api/session";
 
 interface CreateInstanceModalProps {
   open: boolean;
@@ -33,99 +33,182 @@ interface CreateInstanceModalProps {
   site: Site | null;
 }
 
+interface ProvisioningStep {
+  step: string;
+  status: "pending" | "running" | "complete" | "failed";
+  message: string;
+  detail?: string;
+}
+
+const INITIAL_STEPS: ProvisioningStep[] = [
+  { step: "connecting", status: "pending", message: "Connecting to router via SSH" },
+  { step: "detecting_version", status: "pending", message: "Detecting VyOS version" },
+  { step: "generating_credentials", status: "pending", message: "Generating API key and SSH keypair" },
+  { step: "configuring", status: "pending", message: "Entering configuration mode" },
+  { step: "enabling_https", status: "pending", message: "Enabling HTTPS API" },
+  { step: "configuring_api_key", status: "pending", message: "Configuring API key" },
+  { step: "enabling_rest_api", status: "pending", message: "Enabling REST API" },
+  { step: "enabling_graphql", status: "pending", message: "Enabling GraphQL" },
+  { step: "configuring_ssh_key", status: "pending", message: "Configuring SSH key authentication" },
+  { step: "committing", status: "pending", message: "Committing configuration" },
+  { step: "saving", status: "pending", message: "Saving configuration" },
+  { step: "verifying", status: "pending", message: "Verifying API connectivity" },
+];
+
+function StepIcon({ status }: { status: ProvisioningStep["status"] }) {
+  switch (status) {
+    case "pending":
+      return <Circle className="h-4 w-4 text-muted-foreground/40" />;
+    case "running":
+      return <Loader2 className="h-4 w-4 text-primary animate-spin" />;
+    case "complete":
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    case "failed":
+      return <XCircle className="h-4 w-4 text-destructive" />;
+  }
+}
+
 export function CreateInstanceModal({
   open,
   onOpenChange,
   onSuccess,
   site,
 }: CreateInstanceModalProps) {
+  // Form fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [host, setHost] = useState("");
-  const [port, setPort] = useState("443");
-  const [apiKey, setApiKey] = useState("");
-  const [vyosVersion, setVyosVersion] = useState("1.5");
-  const [protocol, setProtocol] = useState("https");
-  const [verifySsl, setVerifySsl] = useState(false);
-  const [isActive, setIsActive] = useState(true);
   const [sshPort, setSshPort] = useState("22");
-  const [sshUsername, setSshUsername] = useState("");
-  const [commitConfirmEnabled, setCommitConfirmEnabled] = useState(false);
-  const [commitConfirmMinutes, setCommitConfirmMinutes] = useState("5");
+  const [sshUsername, setSshUsername] = useState("vyos");
+  const [sshPassword, setSshPassword] = useState("");
+
+  // UI state
+  const [phase, setPhase] = useState<"form" | "provisioning">("form");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [provisioningSteps, setProvisioningSteps] = useState<ProvisioningStep[]>([]);
+  const [provisioningDone, setProvisioningDone] = useState(false);
+  const [provisioningSuccess, setProvisioningSuccess] = useState(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
-  const handleClose = () => {
+  const resetForm = () => {
     setName("");
     setDescription("");
     setHost("");
-    setPort("443");
-    setApiKey("");
-    setVyosVersion("1.5");
-    setProtocol("https");
-    setVerifySsl(false);
-    setIsActive(true);
     setSshPort("22");
-    setSshUsername("");
-    setCommitConfirmEnabled(false);
-    setCommitConfirmMinutes("5");
+    setSshUsername("vyos");
+    setSshPassword("");
+    setPhase("form");
+    setLoading(false);
     setError(null);
+    setProvisioningSteps([]);
+    setProvisioningDone(false);
+    setProvisioningSuccess(false);
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+  };
+
+  const handleClose = () => {
+    resetForm();
     onOpenChange(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!site) return;
 
     // Validation
     if (!name.trim()) {
-      setError("Instance name is required");
+      setError("Router name is required");
       return;
     }
     if (!host.trim()) {
       setError("Host is required");
       return;
     }
-    if (!apiKey.trim()) {
-      setError("API Key is required");
+    if (!sshUsername.trim()) {
+      setError("SSH username is required");
+      return;
+    }
+    if (!sshPassword) {
+      setError("SSH password is required");
       return;
     }
 
-    const portNum = parseInt(port);
-    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-      setError("Port must be between 1 and 65535");
+    const sshPortNum = parseInt(sshPort);
+    if (isNaN(sshPortNum) || sshPortNum < 1 || sshPortNum > 65535) {
+      setError("SSH port must be between 1 and 65535");
       return;
     }
 
     setLoading(true);
     setError(null);
+    setPhase("provisioning");
+    setProvisioningSteps(INITIAL_STEPS.map((s) => ({ ...s })));
 
     try {
-      const sshPortNum = parseInt(sshPort);
-
-      await sessionService.createInstance({
+      // Step 1: Create the instance in the database
+      const instance = await sessionService.createInstance({
         site_id: site.id,
         name: name.trim(),
         description: description.trim() || null,
         host: host.trim(),
-        port: portNum,
-        api_key: apiKey.trim(),
-        vyos_version: vyosVersion,
-        protocol,
-        verify_ssl: verifySsl,
-        is_active: isActive,
-        ssh_port: isNaN(sshPortNum) ? 22 : sshPortNum,
-        ssh_username: sshUsername.trim() || undefined,
-        commit_confirm_enabled: commitConfirmEnabled,
-        commit_confirm_minutes: parseInt(commitConfirmMinutes) || 5,
+        ssh_port: sshPortNum,
       });
 
-      handleClose();
-      onSuccess();
+      // Step 2: Start SSE provisioning
+      const cleanup = sessionService.provisionInstance(
+        instance.id,
+        sshUsername.trim(),
+        sshPassword,
+        (event: ProvisioningEvent) => {
+          setProvisioningSteps((prev) =>
+            prev.map((s) =>
+              s.step === event.step
+                ? {
+                    ...s,
+                    status: event.status as ProvisioningStep["status"],
+                    message: event.message,
+                    detail: event.detail,
+                  }
+                : s,
+            ),
+          );
+
+          if (event.step === "complete" && event.status === "complete") {
+            setProvisioningSuccess(true);
+            setProvisioningDone(true);
+            setLoading(false);
+          }
+          if (event.status === "failed") {
+            setProvisioningDone(true);
+            setProvisioningSuccess(false);
+            setError(event.message);
+            setLoading(false);
+          }
+        },
+        (errorMsg: string) => {
+          setError(errorMsg);
+          setProvisioningDone(true);
+          setLoading(false);
+        },
+        () => {
+          // Stream ended — if not already marked done (e.g. success event handled it)
+          setProvisioningDone((prev) => {
+            if (!prev) setLoading(false);
+            return true;
+          });
+        },
+      );
+
+      cleanupRef.current = cleanup;
     } catch (err) {
-      setError((err as ApiError).message || "Failed to create instance");
-    } finally {
+      setError(
+        (err as { message?: string }).message || "Failed to create instance",
+      );
+      setPhase("form");
       setLoading(false);
     }
   };
@@ -133,295 +216,237 @@ export function CreateInstanceModal({
   if (!site) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Server className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <DialogTitle>Create New Instance</DialogTitle>
-              <DialogDescription>
-                Add a new VyOS instance to {site.name}
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="connection">Connection</TabsTrigger>
-              <TabsTrigger value="ssh">SSH / Monitoring</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="basic" className="space-y-4 mt-4">
-              {/* Error Display */}
-              {error && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-destructive">{error}</p>
-                  </div>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) handleClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-[500px]">
+        {phase === "form" ? (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-primary/10 p-2">
+                  <Server className="h-5 w-5 text-primary" />
                 </div>
-              )}
+                <div>
+                  <DialogTitle>Add Router</DialogTitle>
+                  <DialogDescription>
+                    Add a VyOS router to {site.name}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
 
-              {/* Instance Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="required">
-                  Instance Name
-                </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., vyos-router-01"
-                  disabled={loading}
-                  required
-                />
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4 py-2">
+                {error && (
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  </div>
+                )}
+
+                <Fieldset>
+                  <FormField label="Router Name" htmlFor="name" required>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g., vyos-edge-01"
+                      disabled={loading}
+                      autoFocus
+                    />
+                  </FormField>
+
+                  <FormField label="Description" htmlFor="description">
+                    <Input
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Optional description"
+                      disabled={loading}
+                    />
+                  </FormField>
+                </Fieldset>
+
+                <FieldsetDivider />
+
+                <Fieldset label="Connection">
+                  <FormField
+                    label="Host"
+                    htmlFor="host"
+                    description="IP address or hostname of the VyOS router"
+                    required
+                  >
+                    <Input
+                      id="host"
+                      value={host}
+                      onChange={(e) => setHost(e.target.value)}
+                      placeholder="192.168.1.1"
+                      disabled={loading}
+                    />
+                  </FormField>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField label="SSH Username" htmlFor="sshUsername" required>
+                      <Input
+                        id="sshUsername"
+                        value={sshUsername}
+                        onChange={(e) => setSshUsername(e.target.value)}
+                        placeholder="vyos"
+                        disabled={loading}
+                      />
+                    </FormField>
+
+                    <FormField label="SSH Port" htmlFor="sshPort">
+                      <Input
+                        id="sshPort"
+                        type="number"
+                        value={sshPort}
+                        onChange={(e) => setSshPort(e.target.value)}
+                        placeholder="22"
+                        min="1"
+                        max="65535"
+                        disabled={loading}
+                      />
+                    </FormField>
+                  </div>
+
+                  <FormField label="SSH Password" htmlFor="sshPassword" required>
+                    <Input
+                      id="sshPassword"
+                      type="password"
+                      value={sshPassword}
+                      onChange={(e) => setSshPassword(e.target.value)}
+                      placeholder="Enter SSH password"
+                      disabled={loading}
+                    />
+                  </FormField>
+                </Fieldset>
+
+                <p className="text-xs text-muted-foreground">
+                  SSH credentials are used only during setup and are never stored.
+                </p>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Additional information..."
-                  rows={2}
-                  disabled={loading}
-                />
-              </div>
-
-              {/* VyOS Version */}
-              <div className="space-y-2">
-                <Label htmlFor="vyosVersion">VyOS Version</Label>
-                <Select
-                  value={vyosVersion}
-                  onValueChange={setVyosVersion}
+              <DialogFooter className="mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
                   disabled={loading}
                 >
-                  <SelectTrigger id="vyosVersion">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1.4">VyOS 1.4</SelectItem>
-                    <SelectItem value="1.5">VyOS 1.5</SelectItem>
-                  </SelectContent>
-                </Select>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Setting up...
+                    </>
+                  ) : (
+                    "Add Router"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-primary/10 p-2">
+                  <Server className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle>Setting up router</DialogTitle>
+                  <DialogDescription>{name}</DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="py-2">
+              <div className="space-y-1 max-h-[350px] overflow-y-auto">
+                {provisioningSteps.map((step) => (
+                  <div
+                    key={step.step}
+                    className="flex items-start gap-3 py-1.5 px-1"
+                  >
+                    <div className="mt-0.5">
+                      <StepIcon status={step.status} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-sm ${
+                          step.status === "pending"
+                            ? "text-muted-foreground/60"
+                            : step.status === "failed"
+                              ? "text-destructive"
+                              : "text-foreground"
+                        }`}
+                      >
+                        {step.message}
+                      </p>
+                      {step.detail && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {step.detail}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Active Checkbox */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isActive"
-                  checked={isActive}
-                  onCheckedChange={(checked) => setIsActive(checked as boolean)}
-                  disabled={loading}
-                />
-                <Label htmlFor="isActive" className="cursor-pointer">
-                  Instance is active
-                </Label>
-              </div>
-
-              {/* Commit-Confirm */}
-              <div className="space-y-3 rounded-lg border p-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="commitConfirmEnabled"
-                    checked={commitConfirmEnabled}
-                    onCheckedChange={(checked) => setCommitConfirmEnabled(checked as boolean)}
-                    disabled={loading || vyosVersion === "1.4"}
-                  />
-                  <div>
-                    <Label htmlFor="commitConfirmEnabled" className="cursor-pointer">
-                      Enable Commit-Confirm
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {vyosVersion === "1.4"
-                        ? "Not supported on VyOS 1.4"
-                        : "All changes will require confirmation or VyOS will auto-revert"}
+              {provisioningDone && provisioningSuccess && (
+                <div className="mt-4 rounded-lg border border-green-500/20 bg-green-500/10 p-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-green-400">
+                      Router configured successfully. You can now connect to it.
                     </p>
                   </div>
                 </div>
-                {commitConfirmEnabled && (
-                  <div className="flex items-center gap-3 pl-6">
-                    <Label htmlFor="commitConfirmMinutes" className="whitespace-nowrap text-sm">
-                      Confirm window
-                    </Label>
-                    <Input
-                      id="commitConfirmMinutes"
-                      type="number"
-                      min={1}
-                      max={60}
-                      value={commitConfirmMinutes}
-                      onChange={(e) => setCommitConfirmMinutes(e.target.value)}
-                      disabled={loading}
-                      className="w-20"
-                    />
-                    <span className="text-sm text-muted-foreground">minutes</span>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
+              )}
 
-            <TabsContent value="connection" className="space-y-4 mt-4">
-              {/* Error Display */}
-              {error && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+              {provisioningDone && !provisioningSuccess && error && (
+                <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/10 p-3">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-destructive">{error}</p>
+                    <div>
+                      <p className="text-sm text-destructive">{error}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        The instance was created but provisioning failed. You can
+                        retry from the instance settings.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* Host */}
-              <div className="space-y-2">
-                <Label htmlFor="host" className="required">
-                  Host
-                </Label>
-                <Input
-                  id="host"
-                  value={host}
-                  onChange={(e) => setHost(e.target.value)}
-                  placeholder="192.168.1.1 or vyos.example.com"
-                  disabled={loading}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  IP address or hostname of the VyOS device
-                </p>
-              </div>
-
-              {/* Port */}
-              <div className="space-y-2">
-                <Label htmlFor="port">Port</Label>
-                <Input
-                  id="port"
-                  type="number"
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
-                  placeholder="443"
-                  min="1"
-                  max="65535"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Protocol */}
-              <div className="space-y-2">
-                <Label htmlFor="protocol">Protocol</Label>
-                <Select
-                  value={protocol}
-                  onValueChange={setProtocol}
-                  disabled={loading}
+            <DialogFooter>
+              {provisioningDone ? (
+                <Button
+                  onClick={() => {
+                    handleClose();
+                    onSuccess();
+                  }}
                 >
-                  <SelectTrigger id="protocol">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="https">HTTPS</SelectItem>
-                    <SelectItem value="http">HTTP</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* API Key */}
-              <div className="space-y-2">
-                <Label htmlFor="apiKey" className="required">
-                  API Key
-                </Label>
-                <Input
-                  id="apiKey"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="VyOS API key"
-                  disabled={loading}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  API key from VyOS configuration
-                </p>
-              </div>
-
-              {/* Verify SSL */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="verifySsl"
-                  checked={verifySsl}
-                  onCheckedChange={(checked) => setVerifySsl(checked as boolean)}
-                  disabled={loading}
-                />
-                <Label htmlFor="verifySsl" className="cursor-pointer">
-                  Verify SSL certificate
-                </Label>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="ssh" className="space-y-4 mt-4">
-              {/* SSH Username */}
-              <div className="space-y-2">
-                <Label htmlFor="sshUsername">SSH Username</Label>
-                <Input
-                  id="sshUsername"
-                  value={sshUsername}
-                  onChange={(e) => setSshUsername(e.target.value)}
-                  placeholder="vyos"
-                  disabled={loading}
-                />
-                <p className="text-xs text-muted-foreground">
-                  SSH username for monitoring connections (defaults to &quot;vyos&quot;)
-                </p>
-              </div>
-
-              {/* SSH Port */}
-              <div className="space-y-2">
-                <Label htmlFor="sshPort">SSH Port</Label>
-                <Input
-                  id="sshPort"
-                  type="number"
-                  value={sshPort}
-                  onChange={(e) => setSshPort(e.target.value)}
-                  placeholder="22"
-                  min="1"
-                  max="65535"
-                  disabled={loading}
-                />
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                SSH settings are used for real-time monitoring features. You can
-                configure SSH keys after creating the instance.
-              </p>
-            </TabsContent>
-          </Tabs>
-
-          <DialogFooter className="mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
-                </>
+                  {provisioningSuccess ? "Done" : "Close"}
+                </Button>
               ) : (
-                "Create Instance"
+                <Button variant="outline" disabled>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Provisioning...
+                </Button>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

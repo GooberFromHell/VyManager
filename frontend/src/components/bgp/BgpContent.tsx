@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -557,8 +557,10 @@ export function BgpContent() {
                 <Card>
                   <CardContent className="p-6">
                     <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label>System AS Number</Label>
+                      <FormField
+                        label="System AS Number"
+                        description="The autonomous system number for this BGP router"
+                      >
                         {overviewEditing ? (
                           <Input
                             value={systemAs}
@@ -570,12 +572,11 @@ export function BgpContent() {
                             {config?.system_as || <span className="text-muted-foreground">Not configured</span>}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          The autonomous system number for this BGP router
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Router ID</Label>
+                      </FormField>
+                      <FormField
+                        label="Router ID"
+                        description="Override the default router identifier"
+                      >
                         {overviewEditing ? (
                           <Input
                             value={routerId}
@@ -587,12 +588,11 @@ export function BgpContent() {
                             {config?.parameters.router_id || <span className="text-muted-foreground">Auto-detect</span>}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          Override the default router identifier
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Keepalive Interval (seconds)</Label>
+                      </FormField>
+                      <FormField
+                        label="Keepalive Interval (seconds)"
+                        description="How often to send keepalive messages to peers"
+                      >
                         {overviewEditing ? (
                           <Input
                             type="number"
@@ -605,12 +605,11 @@ export function BgpContent() {
                             {config?.timers.keepalive ?? <span className="text-muted-foreground">60 (default)</span>}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          How often to send keepalive messages to peers
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Hold Time (seconds)</Label>
+                      </FormField>
+                      <FormField
+                        label="Hold Time (seconds)"
+                        description="Time to wait for keepalive before declaring peer dead"
+                      >
                         {overviewEditing ? (
                           <Input
                             type="number"
@@ -623,10 +622,7 @@ export function BgpContent() {
                             {config?.timers.holdtime ?? <span className="text-muted-foreground">180 (default)</span>}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          Time to wait for keepalive before declaring peer dead
-                        </p>
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -992,7 +988,7 @@ export function BgpContent() {
 
                         <div className="flex items-end gap-3 mt-4">
                           <div className="flex-1 space-y-1">
-                            <Label className="text-xs">Prefix</Label>
+                            <p className="text-xs font-medium">Prefix</p>
                             <Input
                               value={afNetworkPrefix}
                               onChange={(e) => setAfNetworkPrefix(e.target.value)}
@@ -1001,7 +997,7 @@ export function BgpContent() {
                             />
                           </div>
                           <div className="flex-1 space-y-1">
-                            <Label className="text-xs">Route Map (optional)</Label>
+                            <p className="text-xs font-medium">Route Map (optional)</p>
                             <Select value={afNetworkRouteMap || "__none__"} onValueChange={(v) => setAfNetworkRouteMap(v === "__none__" ? "" : v)}>
                               <SelectTrigger className="h-9">
                                 <SelectValue placeholder="None" />
@@ -1065,7 +1061,7 @@ export function BgpContent() {
 
                         <div className="flex items-end gap-3 mt-4">
                           <div className="w-[160px] space-y-1">
-                            <Label className="text-xs">Protocol</Label>
+                            <p className="text-xs font-medium">Protocol</p>
                             <Select value={afRedistProto} onValueChange={setAfRedistProto}>
                               <SelectTrigger className="h-9">
                                 <SelectValue placeholder="Select..." />
@@ -1078,7 +1074,7 @@ export function BgpContent() {
                             </Select>
                           </div>
                           <div className="flex-1 space-y-1">
-                            <Label className="text-xs">Route Map (optional)</Label>
+                            <p className="text-xs font-medium">Route Map (optional)</p>
                             <Select value={afRedistRouteMap || "__none__"} onValueChange={(v) => setAfRedistRouteMap(v === "__none__" ? "" : v)}>
                               <SelectTrigger className="h-9">
                                 <SelectValue placeholder="None" />
@@ -1092,7 +1088,7 @@ export function BgpContent() {
                             </Select>
                           </div>
                           <div className="w-[100px] space-y-1">
-                            <Label className="text-xs">Metric</Label>
+                            <p className="text-xs font-medium">Metric</p>
                             <Input
                               value={afRedistMetric}
                               onChange={(e) => setAfRedistMetric(e.target.value)}
@@ -1153,7 +1149,7 @@ export function BgpContent() {
 
                         <div className="flex items-end gap-3 mt-4">
                           <div className="flex-1 space-y-1">
-                            <Label className="text-xs">Prefix</Label>
+                            <p className="text-xs font-medium">Prefix</p>
                             <Input
                               value={afAggPrefix}
                               onChange={(e) => setAfAggPrefix(e.target.value)}
@@ -1162,7 +1158,7 @@ export function BgpContent() {
                             />
                           </div>
                           <div className="flex-1 space-y-1">
-                            <Label className="text-xs">Route Map (optional)</Label>
+                            <p className="text-xs font-medium">Route Map (optional)</p>
                             <Select value={afAggRouteMap || "__none__"} onValueChange={(v) => setAfAggRouteMap(v === "__none__" ? "" : v)}>
                               <SelectTrigger className="h-9">
                                 <SelectValue placeholder="None" />
@@ -1182,7 +1178,7 @@ export function BgpContent() {
                                 checked={afAggAsSet}
                                 onCheckedChange={(c) => setAfAggAsSet(c === true)}
                               />
-                              <Label htmlFor="agg-as-set" className="text-xs cursor-pointer">AS Set</Label>
+                              <label htmlFor="agg-as-set" className="text-xs cursor-pointer">AS Set</label>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Checkbox
@@ -1190,7 +1186,7 @@ export function BgpContent() {
                                 checked={afAggSummaryOnly}
                                 onCheckedChange={(c) => setAfAggSummaryOnly(c === true)}
                               />
-                              <Label htmlFor="agg-summary" className="text-xs cursor-pointer">Summary Only</Label>
+                              <label htmlFor="agg-summary" className="text-xs cursor-pointer">Summary Only</label>
                             </div>
                           </div>
                           <Button size="sm" onClick={handleAddAggregate} disabled={afSaving || !afAggPrefix.trim()}>
@@ -1208,11 +1204,11 @@ export function BgpContent() {
                           <h3 className="text-sm font-medium mb-4">Maximum Paths</h3>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <Label className="text-xs text-muted-foreground">eBGP</Label>
+                              <p className="text-xs text-muted-foreground">eBGP</p>
                               <p className="font-mono">{currentAf.maximum_paths_ebgp ?? "Default"}</p>
                             </div>
                             <div>
-                              <Label className="text-xs text-muted-foreground">iBGP</Label>
+                              <p className="text-xs text-muted-foreground">iBGP</p>
                               <p className="font-mono">{currentAf.maximum_paths_ibgp ?? "Default"}</p>
                             </div>
                           </div>
@@ -1267,8 +1263,7 @@ export function BgpContent() {
                   <CardContent className="p-6">
                     <h3 className="text-sm font-medium mb-4">General Settings</h3>
                     <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="space-y-2">
-                        <Label className="text-xs">Cluster ID</Label>
+                      <FormField label="Cluster ID">
                         {paramsEditing && editParams ? (
                           <Input
                             value={editParams.cluster_id || ""}
@@ -1281,9 +1276,8 @@ export function BgpContent() {
                             {config?.parameters.cluster_id || <span className="text-muted-foreground">Not set</span>}
                           </p>
                         )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs">Default Local Preference</Label>
+                      </FormField>
+                      <FormField label="Default Local Preference">
                         {paramsEditing && editParams ? (
                           <Input
                             type="number"
@@ -1297,7 +1291,7 @@ export function BgpContent() {
                             {config?.parameters.default_local_pref ?? <span className="text-muted-foreground">100 (default)</span>}
                           </p>
                         )}
-                      </div>
+                      </FormField>
                     </div>
 
                     {/* Boolean flags */}
@@ -1325,7 +1319,13 @@ export function BgpContent() {
                         const params = paramsEditing ? editParams : config?.parameters;
                         const checked = (params?.[key] as boolean) ?? false;
                         return (
-                          <div key={key} className="flex items-center space-x-3">
+                          <FormField
+                            key={key}
+                            label={label}
+                            htmlFor={`param-${key}`}
+                            description={desc}
+                            horizontal
+                          >
                             <Checkbox
                               id={`param-${key}`}
                               checked={checked}
@@ -1336,16 +1336,7 @@ export function BgpContent() {
                                 }
                               }}
                             />
-                            <div className="flex-1">
-                              <Label
-                                htmlFor={`param-${key}`}
-                                className={`cursor-pointer text-sm ${destructive ? "text-destructive" : ""}`}
-                              >
-                                {label}
-                              </Label>
-                              <p className="text-xs text-muted-foreground">{desc}</p>
-                            </div>
-                          </div>
+                          </FormField>
                         );
                       })}
                     </div>
@@ -1367,7 +1358,13 @@ export function BgpContent() {
                         const bp = paramsEditing ? editParams?.bestpath : config?.parameters.bestpath;
                         const checked = bp?.[key] ?? false;
                         return (
-                          <div key={key} className="flex items-center space-x-3">
+                          <FormField
+                            key={key}
+                            label={label}
+                            htmlFor={`bp-${key}`}
+                            description={desc}
+                            horizontal
+                          >
                             <Checkbox
                               id={`bp-${key}`}
                               checked={checked}
@@ -1381,11 +1378,7 @@ export function BgpContent() {
                                 }
                               }}
                             />
-                            <div className="flex-1">
-                              <Label htmlFor={`bp-${key}`} className="cursor-pointer text-sm">{label}</Label>
-                              <p className="text-xs text-muted-foreground">{desc}</p>
-                            </div>
-                          </div>
+                          </FormField>
                         );
                       })}
                     </div>
@@ -1404,8 +1397,7 @@ export function BgpContent() {
                       ] as const).map(({ key, label, placeholder }) => {
                         const dg = paramsEditing ? editParams?.distance_global : config?.parameters.distance_global;
                         return (
-                          <div key={key} className="space-y-2">
-                            <Label className="text-xs">{label}</Label>
+                          <FormField key={key} label={label}>
                             {paramsEditing && editParams ? (
                               <Input
                                 type="number"
@@ -1427,7 +1419,7 @@ export function BgpContent() {
                                 {dg?.[key] ?? <span className="text-muted-foreground">{placeholder} (default)</span>}
                               </p>
                             )}
-                          </div>
+                          </FormField>
                         );
                       })}
                     </div>

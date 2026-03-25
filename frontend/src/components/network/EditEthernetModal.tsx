@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -192,144 +192,147 @@ export function EditEthernetModal({
             </div>
           )}
 
-          {/* Description */}
-          {capabilities?.features.basic.description && (
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                placeholder="WAN Interface"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-          )}
+          <Fieldset label="Basic">
+            {capabilities?.features.basic.description && (
+              <FormField label="Description" htmlFor="description">
+                <Input
+                  id="description"
+                  placeholder="e.g., WAN, LAN, DMZ"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </FormField>
+            )}
+          </Fieldset>
 
-          {/* IP Addresses */}
           {capabilities?.features.basic.address && (
-            <div className="space-y-2">
-              <Label>IP Addresses</Label>
-              {addresses.map((address, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    placeholder="10.0.0.1/24 or 2001:db8::1/64"
-                    value={address}
-                    onChange={(e) => handleAddressChange(index, e.target.value)}
-                  />
-                  {addresses.length > 1 && (
+            <>
+              <FieldsetDivider />
+              <Fieldset label="IP Addresses">
+                <FormField label="Addresses">
+                  <div className="space-y-2">
+                    {addresses.map((address, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          placeholder="10.0.0.1/24 or 2001:db8::1/64"
+                          value={address}
+                          onChange={(e) => handleAddressChange(index, e.target.value)}
+                        />
+                        {addresses.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemoveAddress(index)}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRemoveAddress(index)}
+                      onClick={handleAddAddress}
                     >
-                      Remove
+                      Add Address
                     </Button>
+                  </div>
+                </FormField>
+              </Fieldset>
+            </>
+          )}
+
+          {(capabilities?.features.ethernet.speed || capabilities?.features.ethernet.duplex || capabilities?.features.basic.mtu || capabilities?.features.basic.vrf || iface.hw_id) && (
+            <>
+              <FieldsetDivider />
+              <Fieldset label="Interface Settings">
+                <div className="grid grid-cols-2 gap-4">
+                  {capabilities?.features.ethernet.speed && (
+                    <FormField label="Speed" htmlFor="speed">
+                      <Select value={speed} onValueChange={setSpeed}>
+                        <SelectTrigger id="speed">
+                          <SelectValue placeholder="Auto" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Auto</SelectItem>
+                          <SelectItem value="10">10 Mbps</SelectItem>
+                          <SelectItem value="100">100 Mbps</SelectItem>
+                          <SelectItem value="1000">1 Gbps</SelectItem>
+                          <SelectItem value="2500">2.5 Gbps</SelectItem>
+                          <SelectItem value="5000">5 Gbps</SelectItem>
+                          <SelectItem value="10000">10 Gbps</SelectItem>
+                          <SelectItem value="25000">25 Gbps</SelectItem>
+                          <SelectItem value="40000">40 Gbps</SelectItem>
+                          <SelectItem value="50000">50 Gbps</SelectItem>
+                          <SelectItem value="100000">100 Gbps</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+                  )}
+
+                  {capabilities?.features.ethernet.duplex && (
+                    <FormField label="Duplex" htmlFor="duplex">
+                      <Select value={duplex} onValueChange={setDuplex}>
+                        <SelectTrigger id="duplex">
+                          <SelectValue placeholder="Auto" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Auto</SelectItem>
+                          <SelectItem value="half">Half</SelectItem>
+                          <SelectItem value="full">Full</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+                  )}
+
+                  {capabilities?.features.basic.mtu && (
+                    <FormField label="MTU" htmlFor="mtu">
+                      <Input
+                        id="mtu"
+                        type="number"
+                        placeholder="1500"
+                        value={mtu}
+                        onChange={(e) => setMtu(e.target.value)}
+                      />
+                    </FormField>
+                  )}
+
+                  {capabilities?.features.basic.vrf && (
+                    <FormField label="VRF" htmlFor="vrf">
+                      <Input
+                        id="vrf"
+                        placeholder="MGMT"
+                        value={vrf}
+                        onChange={(e) => setVrf(e.target.value)}
+                      />
+                    </FormField>
                   )}
                 </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddAddress}
-              >
-                Add Address
-              </Button>
-            </div>
+
+                {iface.hw_id && (
+                  <FormField label="Hardware ID">
+                    <Input value={iface.hw_id} disabled className="font-mono" />
+                  </FormField>
+                )}
+              </Fieldset>
+            </>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Speed */}
-            {capabilities?.features.ethernet.speed && (
-              <div className="space-y-2">
-                <Label htmlFor="speed">Speed</Label>
-                <Select value={speed} onValueChange={setSpeed}>
-                  <SelectTrigger id="speed">
-                    <SelectValue placeholder="Auto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">Auto</SelectItem>
-                    <SelectItem value="10">10 Mbps</SelectItem>
-                    <SelectItem value="100">100 Mbps</SelectItem>
-                    <SelectItem value="1000">1 Gbps</SelectItem>
-                    <SelectItem value="2500">2.5 Gbps</SelectItem>
-                    <SelectItem value="5000">5 Gbps</SelectItem>
-                    <SelectItem value="10000">10 Gbps</SelectItem>
-                    <SelectItem value="25000">25 Gbps</SelectItem>
-                    <SelectItem value="40000">40 Gbps</SelectItem>
-                    <SelectItem value="50000">50 Gbps</SelectItem>
-                    <SelectItem value="100000">100 Gbps</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Duplex */}
-            {capabilities?.features.ethernet.duplex && (
-              <div className="space-y-2">
-                <Label htmlFor="duplex">Duplex</Label>
-                <Select value={duplex} onValueChange={setDuplex}>
-                  <SelectTrigger id="duplex">
-                    <SelectValue placeholder="Auto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">Auto</SelectItem>
-                    <SelectItem value="half">Half</SelectItem>
-                    <SelectItem value="full">Full</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* MTU */}
-            {capabilities?.features.basic.mtu && (
-              <div className="space-y-2">
-                <Label htmlFor="mtu">MTU</Label>
-                <Input
-                  id="mtu"
-                  type="number"
-                  placeholder="1500"
-                  value={mtu}
-                  onChange={(e) => setMtu(e.target.value)}
-                />
-              </div>
-            )}
-
-            {/* VRF */}
-            {capabilities?.features.basic.vrf && (
-              <div className="space-y-2">
-                <Label htmlFor="vrf">VRF</Label>
-                <Input
-                  id="vrf"
-                  placeholder="MGMT"
-                  value={vrf}
-                  onChange={(e) => setVrf(e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Hardware ID (Read-only) */}
-          {iface.hw_id && (
-            <div className="space-y-2">
-              <Label>Hardware ID</Label>
-              <Input value={iface.hw_id} disabled className="font-mono" />
-            </div>
-          )}
-
-          {/* Disable Interface */}
           {capabilities?.features.basic.disable && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="disable"
-                checked={disabled}
-                onCheckedChange={(checked) => setDisabled(checked as boolean)}
-              />
-              <Label htmlFor="disable" className="cursor-pointer">
-                Administratively disable interface
-              </Label>
-            </div>
+            <>
+              <FieldsetDivider />
+              <Fieldset>
+                <FormField label="Administratively Disable" htmlFor="disable" horizontal>
+                  <Checkbox
+                    id="disable"
+                    checked={disabled}
+                    onCheckedChange={(checked) => setDisabled(checked as boolean)}
+                  />
+                </FormField>
+              </Fieldset>
+            </>
           )}
 
           <DialogFooter>

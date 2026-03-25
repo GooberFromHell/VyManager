@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Plus, X } from "lucide-react";
 import { dnsForwardingService } from "@/lib/api/dns-forwarding";
 import type {
@@ -273,159 +273,180 @@ export function EditDNSForwardingModal({
         <ScrollArea className="flex-1 pr-4 min-h-0">
           <div className="space-y-6 pb-4">
             {/* Listen Addresses */}
-            <div>
-              <Label className="required">Listen Addresses</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                IP addresses the DNS forwarder listens on
-              </p>
-              <div className="space-y-2">
-                {listenAddresses.map((addr, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={addr}
-                      onChange={(e) =>
-                        updateListenAddress(index, e.target.value)
-                      }
-                      placeholder="e.g., 10.0.0.1"
-                    />
-                    {listenAddresses.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeListenAddress(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addListenAddress}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Listen Address
-                </Button>
-              </div>
-            </div>
+            <Fieldset label="Listen Addresses">
+              <FormField
+                label="Addresses"
+                description="IP addresses the DNS forwarder listens on"
+                required
+              >
+                <div className="space-y-2">
+                  {listenAddresses.map((addr, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={addr}
+                        onChange={(e) =>
+                          updateListenAddress(index, e.target.value)
+                        }
+                        placeholder="e.g., 10.0.0.1"
+                      />
+                      {listenAddresses.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeListenAddress(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addListenAddress}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Listen Address
+                  </Button>
+                </div>
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Allow From Networks */}
-            <div>
-              <Label className="required">Allow From Networks</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Networks allowed to query (CIDR notation)
-              </p>
-              <div className="space-y-2">
-                {allowFrom.map((network, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={network}
-                      onChange={(e) => updateAllowFrom(index, e.target.value)}
-                      placeholder="e.g., 10.0.0.0/8"
-                    />
-                    {allowFrom.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeAllowFromEntry(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addAllowFrom}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Network
-                </Button>
-              </div>
-            </div>
+            <Fieldset label="Allow From Networks">
+              <FormField
+                label="Networks"
+                description="Networks allowed to query (CIDR notation)"
+                required
+              >
+                <div className="space-y-2">
+                  {allowFrom.map((network, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={network}
+                        onChange={(e) => updateAllowFrom(index, e.target.value)}
+                        placeholder="e.g., 10.0.0.0/8"
+                      />
+                      {allowFrom.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeAllowFromEntry(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addAllowFrom}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Network
+                  </Button>
+                </div>
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
 
             {/* Upstream Name Servers */}
-            <div>
-              <Label>Upstream Name Servers</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                DNS servers to forward queries to
-              </p>
-              <div className="space-y-2">
-                {nameServers.map((server, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={server}
-                      onChange={(e) => updateNameServer(index, e.target.value)}
-                      placeholder="e.g., 8.8.8.8"
-                    />
-                    {nameServers.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeNameServer(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addNameServer}
+            <Fieldset label="Upstream Name Servers">
+              <FormField
+                label="Servers"
+                description="DNS servers to forward queries to"
+              >
+                <div className="space-y-2">
+                  {nameServers.map((server, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={server}
+                        onChange={(e) => updateNameServer(index, e.target.value)}
+                        placeholder="e.g., 8.8.8.8"
+                      />
+                      {nameServers.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeNameServer(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addNameServer}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Name Server
+                  </Button>
+                </div>
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
+
+            {/* Cache and DNSSEC */}
+            <Fieldset label="Cache &amp; Security">
+              {capabilities?.fields?.cache_size?.supported !== false && (
+                <FormField
+                  label="Cache Size"
+                  htmlFor="cacheSize"
+                  description="Number of DNS entries to cache (default: 10000)"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Name Server
-                </Button>
-              </div>
-            </div>
+                  <Input
+                    id="cacheSize"
+                    type="number"
+                    value={cacheSize}
+                    onChange={(e) => setCacheSize(e.target.value)}
+                    placeholder="10000"
+                  />
+                </FormField>
+              )}
 
-            {/* Cache Size */}
-            {capabilities?.fields.cache_size.supported !== false && (
-              <div>
-                <Label htmlFor="cacheSize">Cache Size</Label>
-                <Input
-                  id="cacheSize"
-                  type="number"
-                  value={cacheSize}
-                  onChange={(e) => setCacheSize(e.target.value)}
-                  placeholder="10000"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Number of DNS entries to cache (default: 10000)
-                </p>
-              </div>
-            )}
-
-            {/* DNSSEC */}
-            {capabilities?.fields.dnssec.supported !== false && (
-              <div>
-                <Label htmlFor="dnssec">DNSSEC</Label>
-                <select
-                  id="dnssec"
-                  value={dnssec}
-                  onChange={(e) => setDnssec(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              {capabilities?.fields?.dnssec?.supported !== false && (
+                <FormField
+                  label="DNSSEC"
+                  htmlFor="dnssec"
                 >
-                  <option value="auto">Auto</option>
-                  <option value="off">Off</option>
-                  <option value="on">On</option>
-                </select>
-              </div>
-            )}
+                  <select
+                    id="dnssec"
+                    value={dnssec}
+                    onChange={(e) => setDnssec(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="auto">Auto</option>
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                  </select>
+                </FormField>
+              )}
+            </Fieldset>
 
-            {/* Boolean options */}
-            <div className="space-y-4">
-              {capabilities?.fields.no_serve_rfc1918.supported !== false && (
-                <div className="flex items-start space-x-3">
+            <FieldsetDivider />
+
+            {/* Boolean Options */}
+            <Fieldset label="Options">
+              {capabilities?.fields?.no_serve_rfc1918?.supported !== false && (
+                <FormField
+                  label="No Serve RFC1918"
+                  htmlFor="noServeRfc1918"
+                  description="Block private IP (RFC1918) reverse lookup zones"
+                  horizontal
+                >
                   <Checkbox
                     id="noServeRfc1918"
                     checked={noServeRfc1918}
@@ -433,19 +454,16 @@ export function EditDNSForwardingModal({
                       setNoServeRfc1918(checked as boolean)
                     }
                   />
-                  <div className="space-y-1">
-                    <Label htmlFor="noServeRfc1918" className="cursor-pointer">
-                      No Serve RFC1918
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Block private IP (RFC1918) reverse lookup zones
-                    </p>
-                  </div>
-                </div>
+                </FormField>
               )}
 
-              {capabilities?.fields.system.supported !== false && (
-                <div className="flex items-start space-x-3">
+              {capabilities?.fields?.system?.supported !== false && (
+                <FormField
+                  label="Use System Nameservers"
+                  htmlFor="useSystemNameservers"
+                  description="Also use name servers configured in the system settings"
+                  horizontal
+                >
                   <Checkbox
                     id="useSystemNameservers"
                     checked={useSystemNameservers}
@@ -453,22 +471,16 @@ export function EditDNSForwardingModal({
                       setUseSystemNameservers(checked as boolean)
                     }
                   />
-                  <div className="space-y-1">
-                    <Label
-                      htmlFor="useSystemNameservers"
-                      className="cursor-pointer"
-                    >
-                      Use System Nameservers
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Also use name servers configured in the system settings
-                    </p>
-                  </div>
-                </div>
+                </FormField>
               )}
 
-              {capabilities?.fields.ignore_hosts_file.supported !== false && (
-                <div className="flex items-start space-x-3">
+              {capabilities?.fields?.ignore_hosts_file?.supported !== false && (
+                <FormField
+                  label="Ignore Hosts File"
+                  htmlFor="ignoreHostsFile"
+                  description="Do not use the local /etc/hosts file for DNS resolution"
+                  horizontal
+                >
                   <Checkbox
                     id="ignoreHostsFile"
                     checked={ignoreHostsFile}
@@ -476,20 +488,9 @@ export function EditDNSForwardingModal({
                       setIgnoreHostsFile(checked as boolean)
                     }
                   />
-                  <div className="space-y-1">
-                    <Label
-                      htmlFor="ignoreHostsFile"
-                      className="cursor-pointer"
-                    >
-                      Ignore Hosts File
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Do not use the local /etc/hosts file for DNS resolution
-                    </p>
-                  </div>
-                </div>
+                </FormField>
               )}
-            </div>
+            </Fieldset>
           </div>
         </ScrollArea>
 

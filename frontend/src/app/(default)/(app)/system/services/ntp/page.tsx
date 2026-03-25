@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, AlertCircle, Pencil, Trash2, Clock } from "lucide-react";
+import { Plus, RefreshCw, Pencil, Trash2, Clock } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { ErrorAlert } from "@/components/ui/error-alert";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ntpService } from "@/lib/api/ntp";
 import type { NTPConfig, NTPCapabilities, NTPServer } from "@/lib/api/types/ntp";
 import { CreateNTPServerModal } from "@/components/services/ntp/CreateNTPServerModal";
@@ -69,16 +72,12 @@ export default function NTPPage() {
   if (error && !config) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Card className="border-destructive max-w-md">
-          <CardContent className="flex items-center gap-4 py-8">
-            <AlertCircle className="h-8 w-8 text-destructive" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-destructive">Error Loading NTP</h3>
-              <p className="text-sm text-muted-foreground mt-1">{error}</p>
-            </div>
-            <Button onClick={handleRefresh} variant="outline">Try Again</Button>
-          </CardContent>
-        </Card>
+        <ErrorAlert
+          title="Error Loading NTP"
+          message={error}
+          onRetry={handleRefresh}
+          className="max-w-md"
+        />
       </div>
     );
   }
@@ -89,26 +88,24 @@ export default function NTPPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">NTP</h1>
-          <p className="text-muted-foreground mt-1">
-            Network Time Protocol server configuration
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {canWrite(FeatureGroup.NTP) && (
-            <Button variant="outline" onClick={() => setEditSettingsOpen(true)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Settings
+      <PageHeader
+        title="NTP"
+        description="Network Time Protocol server configuration"
+        actions={
+          <>
+            {canWrite(FeatureGroup.NTP) && (
+              <Button variant="outline" onClick={() => setEditSettingsOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit Settings
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
             </Button>
-          )}
-          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <Card>
         <CardContent className="pt-6">
@@ -166,12 +163,14 @@ export default function NTPPage() {
           <TableBody>
             {servers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canWrite(FeatureGroup.NTP) ? 5 : 4} className="h-32">
-                  <div className="flex flex-col items-center justify-center">
-                    <Clock className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p className="text-sm font-medium text-foreground">No NTP servers configured</p>
-                    <p className="text-xs text-muted-foreground mt-1">Add an NTP server to synchronize time</p>
-                  </div>
+                <TableCell colSpan={canWrite(FeatureGroup.NTP) ? 5 : 4}>
+                  <EmptyState
+                    icon={Clock}
+                    title="No NTP servers configured"
+                    description="Add an NTP server to synchronize time"
+                    action={canWrite(FeatureGroup.NTP) ? { label: "Add Server", onClick: () => setCreateOpen(true), icon: Plus } : undefined}
+                    compact
+                  />
                 </TableCell>
               </TableRow>
             ) : (

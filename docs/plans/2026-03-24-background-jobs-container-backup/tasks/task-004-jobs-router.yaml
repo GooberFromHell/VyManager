@@ -1,0 +1,163 @@
+id: task-004-jobs-router
+title: "Create job management API router at /session/jobs"
+archetype: custom
+phase: 2
+depends_on: [task-003]
+parallel_with: [task-005]
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "backend/routers/site_tools/jobs.py"
+  modify: []
+
+context_files:
+  - ".derpo/architecture.md"
+  - ".derpo/pattern-snippets/backend-router.py"
+  - "backend/background_jobs.py"
+  - "backend/routers/site_tools/backup.py"
+  - "backend/middleware/auth.py"
+  - "backend/app.py"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Create `backend/routers/site_tools/jobs.py` — the API router for listing, viewing, cancelling,
+  and downloading background job results. Mounted at prefix `/session/jobs`.
+
+  ## Step 1: Read reference files
+  - Read `backend/routers/site_tools/backup.py` for the existing site_tools router pattern
+    (how auth is checked, how db_pool is accessed from request.app.state).
+  - Read `backend/background_jobs.py` (created in task-003) for the available functions.
+  - Read `backend/middleware/auth.py` to understand how `request.state.user` is populated.
+
+  ## Step 2: Create the router file
+  Create `backend/routers/site_tools/jobs.py` with the following structure:
+
+  ```python
+  """
+  Background Jobs Router
+
+  API endpoints for listing, viewing, cancelling, and downloading
+  background job results. Accessible at /session/jobs.
+
+  Auth: Requires authenticated user (via request.state.user).
+  RBAC: ADMIN sees all jobs; non-ADMIN sees own jobs only.
+  No active VyOS instance required — these are app-level operations.
+  """
+
+  import json
+  from fastapi import APIRouter, HTTPException, Request
+  from fastapi.responses import Response
+  from typing import Optional
+  import asyncpg
+
+  import background_jobs
+
+  logger = logging.getLogger(__name__)
+
+  router = APIRouter(prefix="/session/jobs", tags=["background-jobs"])
+  ```
+
+  ## Step 3: Implement endpoints
+
+  ### GET / — List jobs
+  ```python
+  @router.get("/")
+  async def list_jobs(
+      request: Request,
+      site_id: Optional[str] = None,
+      trigger_id: Optional[str] = None,
+  ):
+      """
+      List background jobs visible to the current user.
+      ADMIN sees all users' jobs. Non-ADMIN sees only their own.
+      Supports optional ?site_id and ?trigger_id query params.
+      """
+  ```
+  Implementation:
+  1. Extract user from `request.state.user` (raise 401 if missing).
+  2. Get `db_pool` from `request.app.state.db_pool` (raise 503 if missing).
+  3. Query user role: `SELECT role FROM users WHERE id = $1` to determine if ADMIN.
+  4. Call `background_jobs.list_jobs(pool, user_id=user_id, site_id=site_id,
+     trigger_id=trigger_id, is_admin=(role == "ADMIN"))`.
+  5. Return the list directly (already serialised to dicts by _row_to_dict).
+
+  ### GET /{job_id} — Get single job
+  ```python
+  @router.get("/{job_id}")
+  async def get_job(request: Request, job_id: str):
+      """Get a single background job by ID."""
+  ```
+  Implementation:
+  1. Auth check (same as above).
+  2. Call `background_jobs.get_job(pool, job_id)`.
+  3. If None, raise 404.
+  4. If user is not ADMIN and job's user_id != current user_id, raise 403.
+  5. Return the job dict.
+
+  ### DELETE /{job_id} — Cancel a job
+  ```python
+  @router.delete("/{job_id}")
+  async def cancel_job(request: Request, job_id: str):
+      """Cancel a running or queued background job."""
+  ```
+  Implementation:
+  1. Auth check.
+  2. Call `background_jobs.get_job(pool, job_id)` to verify existence and ownership.
+  3. If None, raise 404.
+  4. If user is not ADMIN and job's user_id != current user_id, raise 403.
+  5. Call `background_jobs.request_cancel(pool, job_id)`.
+  6. If returns False, raise 400 with "Job is not in a cancellable state".
+  7. Return `{"success": True, "message": "Cancellation requested"}`.
+
+  ### GET /{job_id}/download — Download completed backup
+  ```python
+  @router.get("/{job_id}/download")
+  async def download_job_backup(request: Request, job_id: str):
+      """Download the backup result of a completed job as a JSON file."""
+  ```
+  Implementation:
+  1. Auth check.
+  2. Fetch job, verify ownership (same pattern as get_job).
+  3. If job status is not "success", raise 400 "Job has not completed successfully".
+  4. If job result is None, raise 404 "No backup data available".
+  5. Serialise result to JSON bytes: `json.dumps(job["result"], indent=2).encode("utf-8")`.
+  6. Build filename: `backup_{instance_name}_{timestamp}.json` where instance_name is
+     sanitized (replace non-alphanumeric with underscore) and timestamp is the finished_at.
+  7. Return `Response(content=json_bytes, media_type="application/json",
+     headers={"Content-Disposition": f'attachment; filename="{filename}"'})`.
+
+  ## Step 4: Common patterns
+  - Use a helper function `_get_user_and_pool(request)` that extracts user from
+    `request.state.user`, gets db_pool, and fetches user role. Returns
+    `(user_id, role, db_pool)`. This avoids repetition across all endpoints.
+  - All endpoints return JSON. The download endpoint returns a file attachment.
+
+  ## Important notes
+  - The router prefix is `/session/jobs` — this goes through the existing
+    `src/app/api/session/[...path]/route.ts` catch-all proxy on the frontend side.
+    No new Next.js API route is needed.
+  - These endpoints do NOT require an active VyOS instance (no `require_active_instance`).
+  - Import `logging` at the top of the file.
+
+acceptance_criteria:
+  - "backend/routers/site_tools/jobs.py exists with APIRouter at prefix /session/jobs"
+  - "GET / endpoint lists jobs with optional site_id and trigger_id query params"
+  - "GET / filters by user ownership for non-ADMIN users"
+  - "GET /{job_id} returns a single job with 404 on missing and 403 on unauthorized"
+  - "DELETE /{job_id} calls request_cancel and returns success/failure"
+  - "GET /{job_id}/download serves the job result as a JSON file attachment"
+  - "GET /{job_id}/download returns 400 if job status is not 'success'"
+  - "All endpoints validate authentication via request.state.user"
+  - "No endpoint calls require_active_instance (not needed for job management)"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

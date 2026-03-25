@@ -11,10 +11,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, Loader2, Building2 } from "lucide-react";
-import { sessionService, Site } from "@/lib/api/session";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AlertCircle, Loader2, Building2, Network } from "lucide-react";
+import { sessionService, Site, Instance } from "@/lib/api/session";
 import { ApiError } from "@/lib/types/api";
 
 interface EditSiteModalProps {
@@ -32,6 +39,8 @@ export function EditSiteModal({
 }: EditSiteModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [proxyHostId, setProxyHostId] = useState<string | null>(null);
+  const [siteInstances, setSiteInstances] = useState<Instance[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,12 +48,24 @@ export function EditSiteModal({
     if (site && open) {
       setName(site.name);
       setDescription(site.description || "");
+      setProxyHostId(site.proxy_host_id ?? null);
     }
   }, [site, open]);
+
+  useEffect(() => {
+    if (open && site) {
+      sessionService
+        .listInstances(site.id)
+        .then(setSiteInstances)
+        .catch(() => setSiteInstances([]));
+    }
+  }, [open, site]);
 
   const handleClose = () => {
     setName("");
     setDescription("");
+    setProxyHostId(null);
+    setSiteInstances([]);
     setError(null);
     onOpenChange(false);
   };
@@ -66,6 +87,7 @@ export function EditSiteModal({
       await sessionService.updateSite(site.id, {
         name: name.trim(),
         description: description.trim() || null,
+        proxy_host_id: proxyHostId,
       });
 
       handleClose();
@@ -108,33 +130,77 @@ export function EditSiteModal({
               </div>
             )}
 
-            {/* Site Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="required">
-                Site Name
-              </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Main Office, Data Center 1"
-                disabled={loading}
+            <Fieldset>
+              <FormField
+                label="Site Name"
+                htmlFor="name"
                 required
-              />
-            </div>
+              >
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Main Office, Data Center 1"
+                  disabled={loading}
+                  required
+                />
+              </FormField>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Additional information about this site..."
-                rows={3}
-                disabled={loading}
-              />
-            </div>
+              <FormField
+                label="Description (Optional)"
+                htmlFor="description"
+              >
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Additional information about this site..."
+                  rows={3}
+                  disabled={loading}
+                />
+              </FormField>
+            </Fieldset>
+
+            <FieldsetDivider />
+
+            <Fieldset
+              label="Advanced"
+              description="Optional network topology settings for this site"
+            >
+              <FormField
+                label="Proxy Host"
+                htmlFor="proxy-host"
+                description="Designate a router as a jump host for connecting to other instances at this site"
+              >
+                <Select
+                  value={proxyHostId ?? "__none__"}
+                  onValueChange={(value) =>
+                    setProxyHostId(value === "__none__" ? null : value)
+                  }
+                  disabled={loading}
+                >
+                  <SelectTrigger id="proxy-host" className="w-full">
+                    <div className="flex items-center gap-2">
+                      <Network className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <SelectValue placeholder="None" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">
+                      <span className="text-muted-foreground">None</span>
+                    </SelectItem>
+                    {siteInstances.map((instance) => (
+                      <SelectItem key={instance.id} value={instance.id}>
+                        {instance.name}
+                        <span className="ml-1.5 text-xs text-muted-foreground font-mono">
+                          ({instance.host})
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </Fieldset>
           </div>
 
           <DialogFooter>

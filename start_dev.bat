@@ -61,7 +61,7 @@ popd
 
 REM --- Override Docker-internal hostnames for local dev ---
 set "DATABASE_URL=postgresql://vymanager:vymanager_secure_password@localhost:5432/vymanager_auth"
-set "FRONTEND_URL=http://localhost:3000"
+set "FRONTEND_URL=http://192.168.20.219:3000"
 set "BACKEND_URL=http://localhost:8000"
 
 REM --- Load backend secrets from backend\.env ---
@@ -73,8 +73,8 @@ for /f "usebackq tokens=1,* delims==" %%A in ("%PROJECT_ROOT%\backend\.env") do 
 )
 REM Re-apply local dev overrides (backend\.env has Docker hostnames)
 set "DATABASE_URL=postgresql://vymanager:vymanager_secure_password@localhost:5432/vymanager_auth"
-set "FRONTEND_URL=http://localhost:3000"
-set "TRUSTED_ORIGINS=http://localhost:3000,http://localhost:3001"
+set "FRONTEND_URL=http://192.168.20.219:3000"
+set "TRUSTED_ORIGINS=http://*:3000,http://localhost:3001"
 
 REM --- Backend ---
 echo.

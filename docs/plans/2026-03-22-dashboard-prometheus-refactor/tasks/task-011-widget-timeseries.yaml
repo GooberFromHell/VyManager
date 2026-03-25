@@ -1,0 +1,83 @@
+id: "task-011"
+title: "Create PrometheusTimeSeries widget (multi-line chart)"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005", "task-006", "task-008"]
+blocks: ["task-015"]
+parallel_with: ["task-010", "task-012", "task-013", "task-014"]
+
+files:
+  create:
+    - "frontend/src/components/dashboard/widgets/PrometheusTimeSeries.tsx"
+  modify:
+    - "frontend/src/components/dashboard/widget-registry.ts"
+
+context_files:
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/dashboard/WidgetShell.tsx"
+  - "frontend/src/components/dashboard/NetworkSpeedCard.tsx"
+  - "frontend/src/hooks/usePrometheusData.ts"
+
+instructions: |
+  Create a configurable multi-line time-series chart widget — the "power user" widget.
+
+  ## Component: PrometheusTimeSeries.tsx
+
+  - Subscribe to configured Prometheus metric families
+  - Use Recharts LineChart with multiple Line children (one per series)
+  - Rolling time window (configurable: 1m, 5m, 15m, 30m)
+  - Features:
+    - Auto-scaling Y-axis
+    - Tooltip with all series values at hover point
+    - Legend showing series names with color dots
+    - Gradient fill under lines (subtle, like NetworkSpeedCard)
+    - Responsive container
+    - Up to 8 concurrent series with distinct colors
+  - Dark theme: axis/grid in muted colors, white text, colored lines
+
+  ## Config Panel
+
+  Must include a config panel component for the WidgetConfigDrawer:
+  - Metric family selector (dropdown/multi-select from available families)
+  - Label filter (optional: e.g., filter by `interface="eth0"`)
+  - Time window selector (1m/5m/15m/30m)
+  - Y-axis unit selector (raw, bytes, percent, bps, packets)
+  - Refresh interval (5s/10s/30s)
+
+  Use a simple multi-step form:
+  1. Select metric families
+  2. Configure display options
+
+  ## Register in widget-registry.ts
+
+  ```typescript
+  registerWidget({
+    type: "prometheus-timeseries",
+    name: "Time Series Chart",
+    description: "Configurable multi-line chart for any Prometheus metric",
+    icon: TrendingUp,
+    component: PrometheusTimeSeries,
+    configPanel: PrometheusTimeSeriesConfig,
+    defaultConfig: { families: [], timeWindow: 300000, unit: "raw", refreshInterval: 5000 },
+    defaultSpan: 6,
+    defaultHeight: 2,
+    dataSource: "prometheus",
+  });
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/widgets/PrometheusTimeSeries.tsx"
+  - "Grep match: 'prometheus-timeseries' in frontend/src/components/dashboard/widget-registry.ts"
+  - "Grep match: 'LineChart' in frontend/src/components/dashboard/widgets/PrometheusTimeSeries.tsx"
+  - "Grep match: 'configPanel' in frontend/src/components/dashboard/widgets/PrometheusTimeSeries.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

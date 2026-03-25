@@ -202,9 +202,9 @@ export default function InterfacesPage() {
 
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+      <div className="flex items-center justify-center h-96">
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
@@ -235,7 +235,7 @@ export default function InterfacesPage() {
               {/* Stats Dashboard */}
               <div className="grid grid-cols-3 gap-4">
                 <Card className="border-border">
-                  <CardContent className="p-4">
+                  <CardContent className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                         <Network className="h-5 w-5 text-primary" />
@@ -249,7 +249,7 @@ export default function InterfacesPage() {
                 </Card>
 
                 <Card className="border-border">
-                  <CardContent className="p-4">
+                  <CardContent className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
                         <Cable className="h-5 w-5 text-blue-500" />
@@ -263,7 +263,7 @@ export default function InterfacesPage() {
                 </Card>
 
                 <Card className="border-border">
-                  <CardContent className="p-4">
+                  <CardContent className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
                         <Network className="h-5 w-5 text-purple-500" />
@@ -358,7 +358,7 @@ export default function InterfacesPage() {
                           const vlanCount = (iface.vif?.length || 0) + (iface.vif_s?.length || 0);
                           return (
                             <Card key={iface.name} className="border-border hover:border-primary/50 transition-colors group">
-                              <CardContent className="p-4">
+                              <CardContent className="px-4">
                                 <div className="flex items-start justify-between mb-3">
                                   <div className="flex items-center gap-2">
                                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
@@ -450,7 +450,7 @@ export default function InterfacesPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredVlans.map((vlan) => (
                           <Card key={vlan.fullName} className="border-border hover:border-primary/50 transition-colors group">
-                            <CardContent className="p-4">
+                            <CardContent className="px-4">
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10">
@@ -552,8 +552,8 @@ export default function InterfacesPage() {
                             {searchQuery
                               ? "No interfaces or VLANs found matching your search"
                               : typeFilter === "vlan"
-                              ? "No VLANs configured"
-                              : "No interfaces configured"}
+                                ? "No VLANs configured"
+                                : "No interfaces configured"}
                           </p>
                         </div>
                       </CardContent>
@@ -595,7 +595,7 @@ export default function InterfacesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tunnelInterfaces.map((tun) => (
                     <Card key={tun.name} className="border-border hover:border-primary/50 transition-colors group">
-                      <CardContent className="p-4">
+                      <CardContent className="px-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/10">
@@ -728,7 +728,7 @@ export default function InterfacesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {vxlanInterfaces.map((vx) => (
                     <Card key={vx.name} className="border-border hover:border-primary/50 transition-colors group">
-                      <CardContent className="p-4">
+                      <CardContent className="px-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/10">

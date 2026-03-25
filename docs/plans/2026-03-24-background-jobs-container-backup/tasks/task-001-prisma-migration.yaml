@@ -1,0 +1,137 @@
+id: task-001-prisma-migration
+title: "Add BackgroundJob model to Prisma schema and create migration"
+archetype: custom
+phase: 1
+depends_on: []
+parallel_with: [task-002]
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "frontend/prisma/migrations/20260324_add_background_jobs/migration.sql"
+  modify:
+    - "frontend/prisma/schema.prisma"
+
+context_files:
+  - ".derpo/architecture.md"
+  - "frontend/prisma/schema.prisma"
+  - "frontend/prisma/migrations/20260322_add_prometheus_fields/migration.sql"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+
+instructions: |
+  Add a new `BackgroundJob` model to the Prisma schema and create the corresponding migration SQL.
+
+  ## Step 1: Read the existing schema
+  Read `frontend/prisma/schema.prisma` to understand the existing model patterns (naming conventions,
+  index patterns, `@@map` usage, field types).
+
+  ## Step 2: Add the BackgroundJob model to schema.prisma
+  Add the following model at the end of the schema file, before the closing of the file,
+  in a new section with a clear comment header:
+
+  ```prisma
+  // ============================================================================
+  // Background Jobs
+  // ============================================================================
+
+  model BackgroundJob {
+    id               String    @id @default(cuid())
+    triggerId        String
+    jobType          String
+    instanceId       String
+    instanceName     String
+    siteId           String
+    siteName         String
+    userId           String
+    status           String    @default("queued")
+    progress         Int       @default(0)
+    createdAt        DateTime  @default(now())
+    startedAt        DateTime?
+    finishedAt       DateTime?
+    result           Json?
+    log              Json      @default("[]")
+    error            String?   @db.Text
+    cancelRequested  Boolean   @default(false)
+
+    @@index([userId])
+    @@index([triggerId])
+    @@index([instanceId])
+    @@index([status])
+    @@map("background_jobs")
+  }
+  ```
+
+  Key design decisions:
+  - `id` uses `@default(cuid())` consistent with all other models in this schema.
+  - No foreign key relations to Instance, Site, or User — these are soft references because
+    instances/sites can be deleted after a job completes, and we want to preserve job history.
+  - `status` is a plain String (not an enum) to allow the backend to use values like
+    "queued", "running", "success", "partial", "failed", "cancelled" without a Prisma enum migration.
+  - `result` is `Json?` (nullable) — stores the full InstanceBackupResult payload on completion.
+  - `log` is `Json` with default `"[]"` — stores an array of timestamped log strings.
+  - `error` is `String? @db.Text` for potentially long error messages.
+  - `cancelRequested` is the durable cancellation flag (the in-memory asyncio.Event is transient).
+
+  ## Step 3: Create the migration SQL file
+  Create `frontend/prisma/migrations/20260324_add_background_jobs/migration.sql` with:
+
+  ```sql
+  -- CreateTable
+  CREATE TABLE "background_jobs" (
+      "id" TEXT NOT NULL,
+      "triggerId" TEXT NOT NULL,
+      "jobType" TEXT NOT NULL,
+      "instanceId" TEXT NOT NULL,
+      "instanceName" TEXT NOT NULL,
+      "siteId" TEXT NOT NULL,
+      "siteName" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "status" TEXT NOT NULL DEFAULT 'queued',
+      "progress" INTEGER NOT NULL DEFAULT 0,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "startedAt" TIMESTAMP(3),
+      "finishedAt" TIMESTAMP(3),
+      "result" JSONB,
+      "log" JSONB NOT NULL DEFAULT '[]',
+      "error" TEXT,
+      "cancelRequested" BOOLEAN NOT NULL DEFAULT false,
+
+      CONSTRAINT "background_jobs_pkey" PRIMARY KEY ("id")
+  );
+
+  -- CreateIndex
+  CREATE INDEX "background_jobs_userId_idx" ON "background_jobs"("userId");
+  CREATE INDEX "background_jobs_triggerId_idx" ON "background_jobs"("triggerId");
+  CREATE INDEX "background_jobs_instanceId_idx" ON "background_jobs"("instanceId");
+  CREATE INDEX "background_jobs_status_idx" ON "background_jobs"("status");
+  ```
+
+  Follow the exact naming convention used by existing migrations. Look at
+  `frontend/prisma/migrations/20260322_add_prometheus_fields/migration.sql` for reference
+  on how migration files are structured (comment headers, column quoting style).
+
+  ## Step 4: Verify
+  Confirm that:
+  - The model name in Prisma is `BackgroundJob` (PascalCase).
+  - The table name via `@@map` is `background_jobs` (snake_case).
+  - All four indexes are present.
+  - The migration SQL matches the Prisma model exactly.
+
+acceptance_criteria:
+  - "BackgroundJob model exists in frontend/prisma/schema.prisma with all 17 fields"
+  - "Model has @@map('background_jobs') directive"
+  - "Four @@index directives exist for userId, triggerId, instanceId, and status"
+  - "Migration SQL file exists at frontend/prisma/migrations/20260324_add_background_jobs/migration.sql"
+  - "Migration SQL creates the background_jobs table with all columns matching the Prisma model"
+  - "Migration SQL creates all four indexes"
+  - "No foreign key constraints are defined (soft references only)"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

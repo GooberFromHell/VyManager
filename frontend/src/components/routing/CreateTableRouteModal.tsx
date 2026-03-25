@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
 import { staticRoutesService, type RoutingTable } from "@/lib/api/static-routes";
 import { showService } from "@/lib/api/show";
@@ -210,44 +210,44 @@ export function CreateTableRouteModal({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Route Type</Label>
-              <Select value={routeType} onValueChange={(v) => setRouteType(v as "ipv4" | "ipv6")}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ipv4">IPv4</SelectItem>
-                  <SelectItem value="ipv6">IPv6</SelectItem>
-                </SelectContent>
-              </Select>
+          <Fieldset>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Route Type">
+                <Select value={routeType} onValueChange={(v) => setRouteType(v as "ipv4" | "ipv6")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ipv4">IPv4</SelectItem>
+                    <SelectItem value="ipv6">IPv6</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField label="Destination (CIDR)" htmlFor="destination">
+                <Input
+                  id="destination"
+                  placeholder={routeType === "ipv4" ? "10.0.0.0/8" : "2001:db8::/32"}
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                />
+              </FormField>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="destination">Destination (CIDR)</Label>
-              <Input
-                id="destination"
-                placeholder={routeType === "ipv4" ? "10.0.0.0/8" : "2001:db8::/32"}
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Input
-              id="description"
-              placeholder="Route description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Route description (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormField>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Next Hops */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Next Hops</Label>
+          <Fieldset label="Next Hops">
+            <div className="flex justify-end -mt-2">
               <Button type="button" variant="outline" size="sm" onClick={addNextHop} disabled={isBlackhole || isReject}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -275,22 +275,26 @@ export function CreateTableRouteModal({
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <FormField
+                  label="Disable"
+                  htmlFor={`nh-disable-${index}`}
+                  horizontal
+                >
                   <Checkbox
                     id={`nh-disable-${index}`}
                     checked={nh.disable}
                     onCheckedChange={(checked) => updateNextHop(index, "disable", !!checked)}
                   />
-                  <Label htmlFor={`nh-disable-${index}`} className="text-sm">Disable</Label>
-                </div>
+                </FormField>
               </div>
             ))}
-          </div>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Interfaces */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Interfaces</Label>
+          <Fieldset label="Interfaces">
+            <div className="flex justify-end -mt-2">
               <Button type="button" variant="outline" size="sm" onClick={addInterface} disabled={isBlackhole || isReject}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -327,75 +331,88 @@ export function CreateTableRouteModal({
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <FormField
+                  label="Disable"
+                  htmlFor={`iface-disable-${index}`}
+                  horizontal
+                >
                   <Checkbox
                     id={`iface-disable-${index}`}
                     checked={iface.disable}
                     onCheckedChange={(checked) => updateInterface(index, "disable", !!checked)}
                   />
-                  <Label htmlFor={`iface-disable-${index}`} className="text-sm">Disable</Label>
-                </div>
+                </FormField>
               </div>
             ))}
-          </div>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Blackhole / Reject */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="blackhole"
-                  checked={isBlackhole}
-                  onCheckedChange={(checked) => {
-                    setIsBlackhole(!!checked);
-                    if (checked) {
-                      setIsReject(false);
-                      setNextHops([]);
-                      setInterfaces([]);
-                    }
-                  }}
-                />
-                <Label htmlFor="blackhole">Blackhole</Label>
+          <Fieldset label="Special Routes">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <FormField
+                  label="Blackhole"
+                  htmlFor="blackhole"
+                  horizontal
+                >
+                  <Checkbox
+                    id="blackhole"
+                    checked={isBlackhole}
+                    onCheckedChange={(checked) => {
+                      setIsBlackhole(!!checked);
+                      if (checked) {
+                        setIsReject(false);
+                        setNextHops([]);
+                        setInterfaces([]);
+                      }
+                    }}
+                  />
+                </FormField>
+                {isBlackhole && (
+                  <Input
+                    placeholder="Distance"
+                    type="number"
+                    min="1"
+                    max="255"
+                    value={blackholeDistance}
+                    onChange={(e) => setBlackholeDistance(e.target.value)}
+                  />
+                )}
               </div>
-              {isBlackhole && (
-                <Input
-                  placeholder="Distance"
-                  type="number"
-                  min="1"
-                  max="255"
-                  value={blackholeDistance}
-                  onChange={(e) => setBlackholeDistance(e.target.value)}
-                />
-              )}
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="reject"
-                  checked={isReject}
-                  onCheckedChange={(checked) => {
-                    setIsReject(!!checked);
-                    if (checked) {
-                      setIsBlackhole(false);
-                      setNextHops([]);
-                      setInterfaces([]);
-                    }
-                  }}
-                />
-                <Label htmlFor="reject">Reject</Label>
+              <div className="space-y-2">
+                <FormField
+                  label="Reject"
+                  htmlFor="reject"
+                  horizontal
+                >
+                  <Checkbox
+                    id="reject"
+                    checked={isReject}
+                    onCheckedChange={(checked) => {
+                      setIsReject(!!checked);
+                      if (checked) {
+                        setIsBlackhole(false);
+                        setNextHops([]);
+                        setInterfaces([]);
+                      }
+                    }}
+                  />
+                </FormField>
+                {isReject && (
+                  <Input
+                    placeholder="Distance"
+                    type="number"
+                    min="1"
+                    max="255"
+                    value={rejectDistance}
+                    onChange={(e) => setRejectDistance(e.target.value)}
+                  />
+                )}
               </div>
-              {isReject && (
-                <Input
-                  placeholder="Distance"
-                  type="number"
-                  min="1"
-                  max="255"
-                  value={rejectDistance}
-                  onChange={(e) => setRejectDistance(e.target.value)}
-                />
-              )}
             </div>
-          </div>
+          </Fieldset>
         </div>
 
         <DialogFooter>

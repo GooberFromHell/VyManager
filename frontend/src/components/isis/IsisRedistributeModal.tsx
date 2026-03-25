@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -100,11 +100,10 @@ export function IsisRedistributeModal({
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Protocol <span className="text-destructive">*</span></Label>
+        <Fieldset>
+          <FormField label="Protocol" htmlFor="isis-redist-proto" required>
             <Select value={protocol} onValueChange={setProtocol}>
-              <SelectTrigger>
+              <SelectTrigger id="isis-redist-proto">
                 <SelectValue placeholder="Select protocol" />
               </SelectTrigger>
               <SelectContent>
@@ -113,12 +112,11 @@ export function IsisRedistributeModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label>IS-IS Level <span className="text-destructive">*</span></Label>
+          <FormField label="IS-IS Level" htmlFor="isis-redist-level" required>
             <Select value={level} onValueChange={setLevel}>
-              <SelectTrigger>
+              <SelectTrigger id="isis-redist-level">
                 <SelectValue placeholder="Select level" />
               </SelectTrigger>
               <SelectContent>
@@ -127,7 +125,7 @@ export function IsisRedistributeModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
           {isDuplicate && (
             <p className="text-sm text-destructive">
@@ -135,9 +133,9 @@ export function IsisRedistributeModal({
             </p>
           )}
 
-          <div className="space-y-2">
-            <Label>Metric (optional)</Label>
+          <FormField label="Metric" htmlFor="isis-redist-metric">
             <Input
+              id="isis-redist-metric"
               type="number"
               value={metric}
               onChange={(e) => setMetric(e.target.value)}
@@ -145,12 +143,11 @@ export function IsisRedistributeModal({
               min={1}
               max={16777214}
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label>Route Map (optional)</Label>
+          <FormField label="Route Map" htmlFor="isis-redist-route-map">
             <Select value={routeMap} onValueChange={(v) => setRouteMap(v === "__none__" ? "" : v)}>
-              <SelectTrigger>
+              <SelectTrigger id="isis-redist-route-map">
                 <SelectValue placeholder="None" />
               </SelectTrigger>
               <SelectContent>
@@ -160,8 +157,8 @@ export function IsisRedistributeModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        </div>
+          </FormField>
+        </Fieldset>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

@@ -1,0 +1,72 @@
+id: "task-005"
+title: "Validation - type checking, linting, and verification"
+phase: observe
+execution_phase: 3
+agent: "general-purpose"
+status: not_started
+
+depends_on: ["task-002", "task-004"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify: []
+
+context_files:
+  - "backend/provisioning.py"
+  - "backend/routers/session/session.py"
+  - "frontend/src/lib/api/session.ts"
+  - "frontend/src/components/sites/CreateInstanceModal.tsx"
+
+instructions: |
+  Run validation checks across the entire implementation to verify everything compiles
+  and follows project patterns.
+
+  ## 1. TypeScript type checking
+  ```bash
+  cd frontend && npx tsc --noEmit
+  ```
+  If there are errors, fix them directly.
+
+  ## 2. Frontend linting
+  ```bash
+  cd frontend && npm run lint
+  ```
+  If there are errors, fix them directly.
+
+  ## 3. Backend syntax check
+  ```bash
+  cd backend && python3 -c "import provisioning; print('provisioning module OK')"
+  cd backend && python3 -c "from routers.session.session import router; print('session router OK')"
+  ```
+
+  ## 4. Verify acceptance criteria from all tasks
+
+  Verify all files exist and contain expected patterns:
+  - `backend/provisioning.py` contains `ProvisioningResult`, `provision_vyos_device`, `asyncssh.connect`, `generate_keypair`
+  - `backend/routers/session/session.py` contains `provision_ssh_username`, `ProvisionRequest`, `/session/instances/{instance_id}/provision`
+  - `frontend/src/lib/api/session.ts` contains `ProvisioningResult`, `provisionInstance`, optional `api_key`
+  - `frontend/src/components/sites/CreateInstanceModal.tsx` contains `provisionEnabled`, `Auto-Provisioning`, `Collapsible`
+
+  ## 5. Fix any issues found
+
+  If type errors or lint errors are found, fix them directly in the relevant files.
+  Common issues to watch for:
+  - Missing imports
+  - Type mismatches between frontend types and what the backend returns
+  - Unused variables from the provisioning additions
+  - Any ESLint warnings about the new code
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+  - "Command passes: cd frontend && npm run lint"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

@@ -1,0 +1,145 @@
+id: "task-010"
+title: "Registration & Integration — wire all 4 services into app"
+phase: produce
+agent: general-purpose
+status: not_started
+depends_on: ["task-002", "task-003", "task-004", "task-005", "task-006", "task-007", "task-008", "task-009"]
+blocks: ["task-011"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "backend/vyos_mappers/__init__.py"
+    - "backend/vyos_builders/__init__.py"
+    - "backend/app.py"
+    - "frontend/src/app/(default)/(app)/system/services/layout.tsx"
+
+context_files:
+  - "backend/vyos_mappers/__init__.py"
+  - "backend/vyos_builders/__init__.py"
+  - "backend/app.py"
+  - "frontend/src/app/(default)/(app)/system/services/layout.tsx"
+
+instructions: |
+  Wire all 4 Phase 3 services into the application. This touches shared files so it runs
+  after all service implementation tasks complete.
+
+  ## Step 1: Register mappers (backend/vyos_mappers/__init__.py)
+
+  Read the file first. Add 4 new imports and registrations following the existing pattern:
+
+  ```python
+  from .router_advert.router_advert_versions import get_router_advert_mapper
+  from .tftp_server.tftp_server_versions import get_tftp_server_mapper
+  from .broadcast_relay.broadcast_relay_versions import get_broadcast_relay_mapper
+  from .conntrack_sync.conntrack_sync_versions import get_conntrack_sync_mapper
+
+  CommandMapperRegistry.register_feature("router_advert", get_router_advert_mapper)
+  CommandMapperRegistry.register_feature("tftp_server", get_tftp_server_mapper)
+  CommandMapperRegistry.register_feature("broadcast_relay", get_broadcast_relay_mapper)
+  CommandMapperRegistry.register_feature("conntrack_sync", get_conntrack_sync_mapper)
+  ```
+
+  Place imports with other service imports. Place registrations with other register_feature calls.
+
+  ## Step 2: Export builders (backend/vyos_builders/__init__.py)
+
+  Read the file. Add imports and __all__ entries:
+
+  ```python
+  from .router_advert import RouterAdvertBatchBuilder
+  from .tftp_server import TFTPServerBatchBuilder
+  from .broadcast_relay import BroadcastRelayBatchBuilder
+  from .conntrack_sync import ConntrackSyncBatchBuilder
+  ```
+
+  Add all 4 to the `__all__` list.
+
+  ## Step 3: Include routers (backend/app.py)
+
+  Read the file. Add imports and include_router calls following existing pattern:
+
+  ```python
+  from routers.router_advert import router_advert as router_advert_router
+  from routers.tftp_server import tftp_server as tftp_server_router
+  from routers.broadcast_relay import broadcast_relay as broadcast_relay_router
+  from routers.conntrack_sync import conntrack_sync as conntrack_sync_router
+
+  app.include_router(router_advert_router.router)
+  app.include_router(tftp_server_router.router)
+  app.include_router(broadcast_relay_router.router)
+  app.include_router(conntrack_sync_router.router)
+  ```
+
+  Place with other service router imports/inclusions.
+
+  ## Step 4: Update services layout (frontend/src/app/(default)/(app)/system/services/layout.tsx)
+
+  Read the file. Add 4 new entries to:
+
+  1. The `ServiceType` union type — add: "router-advert" | "tftp-server" | "broadcast-relay" | "conntrack-sync"
+
+  2. The `allServices` array — add 4 entries after the existing services:
+
+  ```typescript
+  {
+    id: "router-advert" as ServiceType,
+    name: "Router Advert",
+    description: "IPv6 Router Advertisement configuration",
+    icon: Radio,        // import from lucide-react
+    href: "/system/services/router-advert",
+    permission: FeatureGroup.ROUTER_ADVERT,
+  },
+  {
+    id: "tftp-server" as ServiceType,
+    name: "TFTP Server",
+    description: "Trivial File Transfer Protocol server",
+    icon: FileUp,       // import from lucide-react
+    href: "/system/services/tftp-server",
+    permission: FeatureGroup.TFTP_SERVER,
+  },
+  {
+    id: "broadcast-relay" as ServiceType,
+    name: "Broadcast Relay",
+    description: "UDP broadcast relay between interfaces",
+    icon: ArrowLeftRight,  // import from lucide-react
+    href: "/system/services/broadcast-relay",
+    permission: FeatureGroup.BROADCAST_RELAY,
+  },
+  {
+    id: "conntrack-sync" as ServiceType,
+    name: "Conntrack Sync",
+    description: "Connection tracking synchronization for HA",
+    icon: RefreshCw,    // import from lucide-react (may already be imported)
+    href: "/system/services/conntrack-sync",
+    permission: FeatureGroup.CONNTRACK_SYNC,
+  },
+  ```
+
+  Add the necessary lucide-react icon imports. Check if any are already imported.
+
+acceptance_criteria:
+  - "Grep match: 'register_feature.*router_advert' in backend/vyos_mappers/__init__.py"
+  - "Grep match: 'register_feature.*tftp_server' in backend/vyos_mappers/__init__.py"
+  - "Grep match: 'register_feature.*broadcast_relay' in backend/vyos_mappers/__init__.py"
+  - "Grep match: 'register_feature.*conntrack_sync' in backend/vyos_mappers/__init__.py"
+  - "Grep match: 'RouterAdvertBatchBuilder' in backend/vyos_builders/__init__.py"
+  - "Grep match: 'TFTPServerBatchBuilder' in backend/vyos_builders/__init__.py"
+  - "Grep match: 'router_advert_router' in backend/app.py"
+  - "Grep match: 'tftp_server_router' in backend/app.py"
+  - "Grep match: 'broadcast_relay_router' in backend/app.py"
+  - "Grep match: 'conntrack_sync_router' in backend/app.py"
+  - "Grep match: 'router-advert' in frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  - "Grep match: 'tftp-server' in frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  - "Grep match: 'broadcast-relay' in frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  - "Grep match: 'conntrack-sync' in frontend/src/app/(default)/(app)/system/services/layout.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

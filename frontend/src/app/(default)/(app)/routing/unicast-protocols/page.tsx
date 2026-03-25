@@ -46,36 +46,36 @@ export default function UnicastProtocolsPage() {
   }, [protocols, selectedProtocol]);
 
   return (
-      <div className="flex h-full">
-        {/* Left Sidebar - Protocol Selector */}
-        <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-          <div className="p-6 pb-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Network className="h-6 w-6 text-primary" />
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Unicast Protocols</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Dynamic routing protocols
-                </p>
-              </div>
+    <div className="flex h-full">
+      {/* Left Sidebar - Protocol Selector */}
+      <div className="w-80 border-r border-border bg-card flex flex-col h-full">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <Network className="h-6 w-6 text-primary" />
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Unicast Protocols</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Dynamic routing protocols
+              </p>
             </div>
           </div>
+        </div>
 
-          <Separator />
+        <Separator />
 
-          {/* Protocol List */}
-          <ScrollArea className="flex-1 px-3">
-            <div className="space-y-1 py-3">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-sm text-muted-foreground">Loading protocols...</p>
-                </div>
-              ) : protocols.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-sm text-muted-foreground">No accessible protocols</p>
-                </div>
-              ) : (
-                protocols.map((protocol) => (
+        {/* Protocol List */}
+        <ScrollArea className="flex-1 px-3">
+          <div className="space-y-1 py-3">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-sm text-muted-foreground">Loading protocols...</p>
+              </div>
+            ) : protocols.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-sm text-muted-foreground">No accessible protocols</p>
+              </div>
+            ) : (
+              protocols.map((protocol) => (
                 <button
                   key={protocol.id}
                   onClick={() => setSelectedProtocol(protocol.id)}
@@ -115,27 +115,27 @@ export default function UnicastProtocolsPage() {
                   </div>
                 </button>
               ))
-              )}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1">
-          {selectedProtocol === "bgp" ? (
-            <BgpContent />
-          ) : selectedProtocol === "ospf" ? (
-            <OspfContent />
-          ) : selectedProtocol === "ospfv3" ? (
-            <Ospfv3Content />
-          ) : selectedProtocol === "babel" ? (
-            <BabelContent />
-          ) : selectedProtocol === "isis" ? (
-            <IsisContent />
-          ) : (
-            <InProgress />
-          )}
-        </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1">
+        {selectedProtocol === "bgp" ? (
+          <BgpContent />
+        ) : selectedProtocol === "ospf" ? (
+          <OspfContent />
+        ) : selectedProtocol === "ospfv3" ? (
+          <Ospfv3Content />
+        ) : selectedProtocol === "babel" ? (
+          <BabelContent />
+        ) : selectedProtocol === "isis" ? (
+          <IsisContent />
+        ) : (
+          <InProgress />
+        )}
+      </div>
+    </div>
   );
 }

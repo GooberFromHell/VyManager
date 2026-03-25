@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { largeCommunityListService, type LargeCommunityListCapabilities, type LargeCommunityListRule } from "@/lib/api/large-community-list";
 
 interface EditLargeCommunityListRuleModalProps {
@@ -52,7 +52,7 @@ export function EditLargeCommunityListRuleModal({
     // Validate large community format: ASN:NN:NN or IP:NN:NN
     const parts = regex.trim().split(':');
     if (parts.length !== 3) {
-      setError("Large community must be in format ASN:NN:NN or IP:NN:NN (e.g., 4242420696:10[0-1]:.*)" );
+      setError("Large community must be in format ASN:NN:NN or IP:NN:NN (e.g., 4242420696:10[0-1]:.*)");
       return;
     }
 
@@ -93,43 +93,44 @@ export function EditLargeCommunityListRuleModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="action">Action *</Label>
-            <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
-              <SelectTrigger id="action">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="permit">Permit</SelectItem>
-                <SelectItem value="deny">Deny</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Fieldset>
+            <FormField label="Action" htmlFor="action" required>
+              <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
+                <SelectTrigger id="action">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="permit">Permit</SelectItem>
+                  <SelectItem value="deny">Deny</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="regex">Regex Pattern *</Label>
-            <Input
-              id="regex"
-              placeholder="e.g., 4242420696:10[0-1]:.*"
-              value={regex}
-              onChange={(e) => setRegex(e.target.value)}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Large community pattern (ASN:NN:NN or IP:NN:NN format)
-            </p>
-          </div>
+            <FormField
+              label="Regex Pattern"
+              htmlFor="regex"
+              description="Large community pattern (ASN:NN:NN or IP:NN:NN format)"
+              required
+            >
+              <Input
+                id="regex"
+                placeholder="e.g., 4242420696:10[0-1]:.*"
+                value={regex}
+                onChange={(e) => setRegex(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              placeholder="Optional description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Optional description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
+          </Fieldset>
 
           {error && (
             <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">

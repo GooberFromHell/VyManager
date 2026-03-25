@@ -2,19 +2,27 @@
 
 import { useEffect, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Globe, Clock, Terminal, Server, ChevronRight } from "lucide-react";
+import { SplitLayout } from "@/components/ui/split-layout";
+import { NavItem } from "@/components/ui/nav-item";
+import { Globe, Clock, Terminal, ArrowLeftRight, Network, Radio, Eye, Wifi, FileUp, RefreshCw } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
 import { FeatureGroup } from "@/lib/api/user-management";
 
-type ServiceType = "dns-forwarding" | "ntp" | "ssh";
+type ServiceType = "dns-forwarding" | "ntp" | "ssh" | "dhcp-relay" | "dhcpv6-server" | "lldp" | "snmp" | "router-advert" | "tftp-server" | "broadcast-relay" | "conntrack-sync";
 
 const allServices = [
   { id: "dns-forwarding" as ServiceType, name: "DNS Forwarding", description: "Forward DNS queries to upstream servers", icon: Globe, href: "/system/services/dns-forwarding", permission: FeatureGroup.DNS_FORWARDING },
   { id: "ntp" as ServiceType, name: "NTP", description: "Network Time Protocol server", icon: Clock, href: "/system/services/ntp", permission: FeatureGroup.NTP },
   { id: "ssh" as ServiceType, name: "SSH", description: "Secure Shell access configuration", icon: Terminal, href: "/system/services/ssh", permission: FeatureGroup.SSH },
+  { id: "dhcp-relay" as ServiceType, name: "DHCP Relay", description: "Relay DHCP requests to upstream servers", icon: ArrowLeftRight, href: "/system/services/dhcp-relay", permission: FeatureGroup.DHCP_RELAY },
+  { id: "dhcpv6-server" as ServiceType, name: "DHCPv6 Server", description: "IPv6 address assignment via DHCPv6", icon: Network, href: "/system/services/dhcpv6-server", permission: FeatureGroup.DHCPV6_SERVER },
+  { id: "lldp" as ServiceType, name: "LLDP", description: "Link Layer Discovery Protocol", icon: Eye, href: "/system/services/lldp", permission: FeatureGroup.LLDP },
+  { id: "snmp" as ServiceType, name: "SNMP", description: "Simple Network Management Protocol", icon: Radio, href: "/system/services/snmp", permission: FeatureGroup.SNMP },
+  { id: "router-advert" as ServiceType, name: "Router Advertisement", description: "IPv6 router advertisement (radvd)", icon: Wifi, href: "/system/services/router-advert", permission: FeatureGroup.ROUTER_ADVERT },
+  { id: "tftp-server" as ServiceType, name: "TFTP Server", description: "Trivial File Transfer Protocol server", icon: FileUp, href: "/system/services/tftp-server", permission: FeatureGroup.TFTP_SERVER },
+  { id: "broadcast-relay" as ServiceType, name: "Broadcast Relay", description: "UDP broadcast relay across interfaces", icon: ArrowLeftRight, href: "/system/services/broadcast-relay", permission: FeatureGroup.BROADCAST_RELAY },
+  { id: "conntrack-sync" as ServiceType, name: "Conntrack Sync", description: "Connection tracking synchronization", icon: RefreshCw, href: "/system/services/conntrack-sync", permission: FeatureGroup.CONNTRACK_SYNC },
 ];
 
 export default function ServicesLayout({
@@ -25,7 +33,6 @@ export default function ServicesLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { canRead, isLoading } = usePermissions();
-
   const services = useMemo(() => {
     if (isLoading) return [];
     return allServices.filter((service) => canRead(service.permission));
@@ -43,78 +50,30 @@ export default function ServicesLayout({
   const isActive = (href: string) => pathname === href;
 
   return (
-    <div className="flex h-full">
-        {/* Left Sidebar - Service Selector */}
-        <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-          <div className="p-6 pb-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Server className="h-6 w-6 text-primary" />
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Services</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Manage VyOS network services
-                </p>
-              </div>
-            </div>
+    <SplitLayout
+      sidebar={
+        <>
+          <div className="flex h-16 items-center border-b px-6 shrink-0">
+            <h2 className="text-lg font-semibold text-foreground">Services</h2>
           </div>
-
-          <Separator />
-
-          {/* Service List */}
           <ScrollArea className="flex-1 px-3">
             <div className="space-y-1 py-3">
-              {services.map((service) => {
-                const Icon = service.icon;
-                const active = isActive(service.href);
-                return (
-                  <button
-                    key={service.id}
-                    onClick={() => router.push(service.href)}
-                    className={cn(
-                      "w-full text-left rounded-lg px-3 py-3 transition-all",
-                      active
-                        ? "bg-accent text-accent-foreground shadow-sm"
-                        : "hover:bg-accent/50"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "mt-0.5 rounded-md p-1.5",
-                        active ? "bg-primary/10" : "bg-muted"
-                      )}>
-                        <Icon className={cn(
-                          "h-4 w-4",
-                          active ? "text-primary" : "text-muted-foreground"
-                        )} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className={cn(
-                            "font-medium text-sm",
-                            active ? "text-foreground" : "text-foreground"
-                          )}>
-                            {service.name}
-                          </span>
-                          {active && (
-                            <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {service.description}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+              {services.map((service) => (
+                <NavItem
+                  key={service.id}
+                  icon={service.icon}
+                  name={service.name}
+                  description={service.description}
+                  active={isActive(service.href)}
+                  onClick={() => router.push(service.href)}
+                />
+              ))}
             </div>
           </ScrollArea>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1">
-          {children}
-        </div>
-    </div>
+        </>
+      }
+    >
+      {children}
+    </SplitLayout>
   );
 }

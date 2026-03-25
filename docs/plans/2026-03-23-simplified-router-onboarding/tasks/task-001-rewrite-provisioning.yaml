@@ -1,0 +1,159 @@
+id: "001"
+title: "Rewrite provisioning.py with paramiko + step-by-step generator"
+phase: 1
+status: not_started
+agent_type: general-purpose
+depends_on: []
+parallel_with: []
+
+description: |
+  Replace the monolithic asyncssh provisioning with paramiko-based step-by-step provisioning.
+  The new module exposes a synchronous generator that yields status events as each VyOS CLI
+  command is executed. This generator is consumed by the SSE endpoint in the session router.
+
+files:
+  modify:
+    - backend/requirements.txt
+    - backend/provisioning.py
+
+context_files:
+  - backend/ssh_key_manager.py
+  - backend/provisioning.py (current version for reference)
+
+instructions: |
+  1. Add `paramiko>=3.4.0` to `backend/requirements.txt`
+
+  2. Rewrite `backend/provisioning.py` completely. The new module should:
+
+  a) Keep the `ProvisioningResult` dataclass (same fields) for backward compatibility.
+
+  b) Add a `ProvisioningEvent` dataclass:
+     ```python
+     @dataclass
+     class ProvisioningEvent:
+         step: str          # machine-readable step ID
+         status: str        # "running" | "complete" | "failed"
+         message: str       # human-readable status message
+         detail: str | None = None  # optional extra info
+         data: dict | None = None   # optional payload (e.g., api_key, version on completion)
+     ```
+
+  c) Create a synchronous generator function (not async — will be run in a thread):
+     ```python
+     def provision_vyos_device_stream(
+         host: str,
+         ssh_port: int,
+         ssh_username: str,
+         ssh_password: str,
+         timeout: int = 30,
+     ) -> Generator[ProvisioningEvent, None, ProvisioningResult]:
+     ```
+
+  d) The generator should yield ProvisioningEvent for each step:
+
+     Step 1 - "connecting": Connect via paramiko SSHClient with password auth
+       - client = paramiko.SSHClient()
+       - client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+       - client.connect(host, port=ssh_port, username=ssh_username, password=ssh_password, timeout=timeout)
+
+     Step 2 - "detecting_version": Run `show version` via client.exec_command()
+       - Parse output for "VyOS" and version number (look for "1.4" or "1.5")
+       - Default to "1.5" if not detected
+       - Yield event with detected version in data
+
+     Step 3 - "generating_credentials": Generate API key + SSH keypair
+       - api_key = secrets.token_urlsafe(32)
+       - keypair = generate_keypair() from ssh_key_manager
+       - Yield event confirming generation
+
+     Step 4 - "configuring": Open interactive shell and enter configure mode
+       - channel = client.invoke_shell()
+       - Send "configure\n"
+       - Wait for prompt (look for "#" or ">" characters after reading output)
+
+     Step 5 - "enabling_https": set service https listen-address 0.0.0.0
+       - Send command, wait for prompt
+
+     Step 6 - "configuring_api_key": set service https api keys id vymanager key {api_key}
+       - Send command, wait for prompt
+
+     Step 7 - "enabling_rest_api": set service https api rest
+       - Send command, wait for prompt
+
+     Step 8 - "enabling_graphql": set service https api graphql
+       - Send command, wait for prompt
+
+     Step 9 - "configuring_ssh_key": Two commands for SSH key:
+       - set system login user {ssh_username} authentication public-keys vymanager type ssh-ed25519
+       - set system login user {ssh_username} authentication public-keys vymanager key {pubkey_base64}
+       - Send both, wait for prompt after each
+
+     Step 10 - "committing": commit
+       - Send command, wait for prompt with longer timeout (60s) since commits can be slow
+
+     Step 11 - "saving": save
+       - Send command, wait for prompt
+
+     Step 12 - "complete": Yield final event with data containing:
+       - api_key, ssh_public_key, ssh_encrypted_private_key, ssh_key_nonce, vyos_version
+
+  e) Helper function for reading shell output:
+     ```python
+     def _read_until_prompt(channel, timeout=30):
+         """Read from paramiko channel until we see a VyOS prompt."""
+         import time
+         output = ""
+         end_time = time.time() + timeout
+         while time.time() < end_time:
+             if channel.recv_ready():
+                 chunk = channel.recv(4096).decode("utf-8", errors="replace")
+                 output += chunk
+                 # VyOS prompts end with # (configure mode) or $ (operational mode)
+                 if output.rstrip().endswith("#") or output.rstrip().endswith("$"):
+                     break
+             else:
+                 time.sleep(0.1)
+         return output
+     ```
+
+  f) Error handling: If any step fails, yield a failed event with error details, cleanup
+     the SSH connection, and return a failed ProvisioningResult.
+
+  g) Always close the SSH connection in a finally block.
+
+  h) Also keep a simple async wrapper for backward compatibility:
+     ```python
+     async def provision_vyos_device(
+         host, ssh_port, ssh_username, ssh_password, vyos_username,
+         api_key_name="vymanager", ssh_key_name="vymanager", timeout=30,
+     ) -> ProvisioningResult:
+         """Non-streaming provisioning for backward compatibility."""
+         import asyncio
+         def _run():
+             result = None
+             for event in provision_vyos_device_stream(host, ssh_port, ssh_username, ssh_password, timeout):
+                 if event.data and "api_key" in event.data:
+                     result = event.data
+             # Return the result from the generator
+             ...
+         return await asyncio.to_thread(_run)
+     ```
+
+acceptance_criteria:
+  - backend/requirements.txt contains paramiko
+  - backend/provisioning.py exports ProvisioningEvent, ProvisioningResult, provision_vyos_device_stream
+  - provision_vyos_device_stream is a synchronous generator yielding ProvisioningEvent instances
+  - All 12 provisioning steps are present in the generator
+  - VyOS version detection via "show version" is implemented
+  - SSH key and API key generation still uses existing ssh_key_manager.generate_keypair()
+  - Error handling with cleanup exists for SSH connection failures
+  - The async provision_vyos_device wrapper still exists for backward compat
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

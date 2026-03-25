@@ -278,23 +278,23 @@ export default function NATPage() {
   // Check permissions
   if (permissionsLoading) {
     return (
-        <div className="flex h-full items-center justify-center">
-          <LoadingSpinner />
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
     );
   }
 
   if (!canRead(FeatureGroup.NAT)) {
     return (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center max-w-md">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-            <p className="text-muted-foreground">
-              You do not have permission to view NAT configurations. Please contact your administrator for access.
-            </p>
-          </div>
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">
+            You do not have permission to view NAT configurations. Please contact your administrator for access.
+          </p>
         </div>
+      </div>
     );
   }
 
@@ -303,7 +303,7 @@ export default function NATPage() {
       <div className="flex h-full">
         {/* Left Sidebar - Rule Type Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-          <div className="p-6 pb-4">
+          <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">NAT Rules</h2>
@@ -487,8 +487,8 @@ export default function NATPage() {
                   {selectedType === "source"
                     ? "Outbound traffic translation (SNAT, Masquerade)"
                     : selectedType === "destination"
-                    ? "Inbound traffic translation (DNAT, Port Forwarding)"
-                    : "One-to-one IP address mapping"}
+                      ? "Inbound traffic translation (DNAT, Port Forwarding)"
+                      : "One-to-one IP address mapping"}
                 </p>
               </div>
               <Button

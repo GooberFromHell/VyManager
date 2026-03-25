@@ -104,6 +104,20 @@ async function proxyRequest(
 
     // Check if this is a CSV export (file download)
     const responseContentType = response.headers.get("content-type");
+
+    // Stream SSE responses directly without buffering
+    if (responseContentType && responseContentType.includes("text/event-stream")) {
+      return new Response(response.body, {
+        status: response.status,
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "X-Accel-Buffering": "no",
+          "Connection": "keep-alive",
+        },
+      });
+    }
+
     if (responseContentType && responseContentType.includes("text/csv")) {
       // Return the CSV file as-is
       const blob = await response.blob();

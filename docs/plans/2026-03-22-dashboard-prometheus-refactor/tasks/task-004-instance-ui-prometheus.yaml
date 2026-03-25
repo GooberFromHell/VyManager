@@ -1,0 +1,66 @@
+id: "task-004"
+title: "Add Prometheus config to Edit Instance modal"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-001"]
+blocks: []
+parallel_with: ["task-002", "task-003"]
+
+files:
+  modify:
+    - "frontend/src/components/sites/EditInstanceModal.tsx"
+    - "frontend/src/components/sites/CreateInstanceModal.tsx"
+    - "frontend/src/lib/api/session.ts"
+
+context_files:
+  - "frontend/src/components/sites/EditInstanceModal.tsx"
+  - "frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "frontend/src/lib/api/session.ts"
+
+instructions: |
+  Add Prometheus configuration fields to both the Edit Instance and Create Instance modals.
+
+  ## 1. Update `session.ts` API types
+
+  Add Prometheus fields to the instance request/response types:
+  - `prometheus_enabled?: boolean`
+  - `prometheus_port?: number`
+  - `prometheus_auth?: boolean`
+  - `prometheus_username?: string`
+  - `prometheus_password?: string`
+
+  ## 2. Update EditInstanceModal.tsx
+
+  Add a "Prometheus Monitoring" collapsible section (using the existing Collapsible pattern from the auto-provisioning section in CreateInstanceModal).
+
+  Fields:
+  - Enable Prometheus toggle (Switch component)
+  - Port (Input, default 9273, only shown when enabled)
+  - Require Authentication toggle (Switch, only when enabled)
+  - Username (Input, only when auth enabled)
+  - Password (Input type=password, only when auth enabled)
+
+  Load existing values from instance data. Include in the update request payload.
+
+  ## 3. Update CreateInstanceModal.tsx
+
+  Add the same Prometheus section as a collapsible, similar to the auto-provisioning section.
+  Default prometheusEnabled to false.
+
+  Use the existing Collapsible, Fieldset, Input, and Switch components from shadcn/ui.
+
+acceptance_criteria:
+  - "Grep match: 'prometheusEnabled' in frontend/src/components/sites/EditInstanceModal.tsx"
+  - "Grep match: 'prometheus_enabled' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'Prometheus' in frontend/src/components/sites/CreateInstanceModal.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

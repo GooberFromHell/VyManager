@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -57,6 +56,8 @@ export default function MonitoringPage() {
   const [logLines, setLogLines] = useState("50");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [testingSSH, setTestingSSH] = useState(false);
+  const [sshTestError, setSSHTestError] = useState<string | null>(null);
 
   // monitor_traffic specific capture params
   const [captureIface, setCaptureIface] = useState("");
@@ -176,7 +177,7 @@ export default function MonitoringPage() {
             <Activity className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Monitoring</h1>
+            <h1 className="text-3xl font-bold text-foreground">Monitoring</h1>
             <p className="text-sm text-muted-foreground">
               Real-time monitoring via SSH
             </p>
@@ -215,14 +216,14 @@ export default function MonitoringPage() {
           </Card>
         ) : !sshStatus?.configured ? (
           <Card>
-            <CardContent className="py-12 text-center space-y-2">
+            <CardContent className="py-12 text-center space-y-3">
               <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
               <p className="text-sm font-medium">SSH Not Configured</p>
               <p className="text-sm text-muted-foreground">
                 SSH key monitoring is not set up for{" "}
                 <span className="font-medium">{session.instance_name}</span>.
               </p>
-              <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 pt-1">
+              <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                 Go to{" "}
                 <span className="font-medium inline-flex items-center gap-1">
                   Sites &rarr; Edit Instance &rarr; SSH
@@ -230,6 +231,49 @@ export default function MonitoringPage() {
                 </span>{" "}
                 to configure.
               </p>
+              <div className="pt-2 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Already configured SSH keys outside of VyManager?
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    setTestingSSH(true);
+                    setSSHTestError(null);
+                    try {
+                      await monitoringService.testSSHConnection();
+                      // Reload status — should now be configured
+                      const newStatus = await monitoringService.getMonitoringStatus();
+                      setSSHStatus(newStatus);
+                      if (newStatus.configured) {
+                        // Reload commands
+                        const cmds = await monitoringService.getCommands();
+                        setCommands(cmds.commands);
+                        if (cmds.commands.length > 0) setSelectedCommand(cmds.commands[0].name);
+                      }
+                    } catch (err: unknown) {
+                      const apiErr = err as { message?: string };
+                      setSSHTestError(apiErr?.message || "SSH test failed");
+                    } finally {
+                      setTestingSSH(false);
+                    }
+                  }}
+                  disabled={testingSSH}
+                >
+                  {testingSSH ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Testing Connection...
+                    </>
+                  ) : (
+                    "Test SSH Connection"
+                  )}
+                </Button>
+                {sshTestError && (
+                  <p className="text-xs text-destructive">{sshTestError}</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -264,9 +308,9 @@ export default function MonitoringPage() {
                     {/* Inline param for show_log_tail */}
                     {selectedCommand === "show_log_tail" && !isRunning && (
                       <div className="flex items-center gap-2">
-                        <Label className="text-sm text-muted-foreground whitespace-nowrap">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
                           Lines:
-                        </Label>
+                        </span>
                         <Input
                           type="number"
                           value={logLines}
@@ -341,10 +385,10 @@ export default function MonitoringPage() {
                   <div className="flex items-end gap-3 flex-wrap border-t pt-3">
                     {/* Interface */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Interface{" "}
                         <span className="text-destructive">*</span>
-                      </Label>
+                      </p>
                       <Select
                         value={captureIface}
                         onValueChange={(v) => {
@@ -377,12 +421,12 @@ export default function MonitoringPage() {
 
                     {/* Filter bar */}
                     <div className="flex-1 min-w-[200px] space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Filter Expression
                         <span className="ml-1 text-muted-foreground/60 font-normal">
                           (BPF syntax, optional)
                         </span>
-                      </Label>
+                      </p>
                       <div className="flex items-center gap-1.5">
                         <div className="relative flex-1">
                           <Input

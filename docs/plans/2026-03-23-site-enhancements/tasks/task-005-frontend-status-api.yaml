@@ -1,0 +1,60 @@
+id: "task-005"
+title: "Add reachability status types and API method"
+archetype: frontend-service
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-002"]
+blocks: ["task-006"]
+parallel_with: ["task-007", "task-003"]
+files:
+  create: []
+  modify:
+    - frontend/src/lib/api/session.ts
+context_files:
+  - frontend/src/lib/api/session.ts
+instructions: |
+  1. Read `frontend/src/lib/api/session.ts` fully
+  2. Find the existing interfaces and SessionService class
+
+  Add the following:
+
+  **New interface** (near other interfaces):
+  ```typescript
+  export interface InstanceStatus {
+    instance_id: string;
+    status: "online" | "offline" | "error";
+    latency_ms?: number;
+    error?: string;
+  }
+
+  export interface SiteStatusResponse {
+    site_id: string;
+    instances: InstanceStatus[];
+  }
+  ```
+
+  **New method in SessionService class:**
+  ```typescript
+  async checkSiteStatus(siteId: string): Promise<InstanceStatus[]> {
+    const response = await this.request<SiteStatusResponse>(
+      `/vyos/session/sites/${siteId}/instances/status`
+    );
+    return response.instances;
+  }
+  ```
+
+  Make sure to use the same `this.request` pattern that the other methods in the class use.
+acceptance_criteria:
+  - "Grep match: 'InstanceStatus' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'checkSiteStatus' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'SiteStatusResponse' in frontend/src/lib/api/session.ts"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

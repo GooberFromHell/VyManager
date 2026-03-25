@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   AlertCircle,
   Settings,
@@ -223,97 +223,92 @@ export function EditInterfaceModal({
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
-            {/* Interface Status */}
-            <div className={`flex items-center space-x-2 rounded-lg border p-3 ${disabled ? 'border-amber-500/50 bg-amber-500/5' : ''}`}>
-              <Checkbox
-                id="edit-disabled"
-                checked={disabled}
-                onCheckedChange={(checked) => setDisabled(checked === true)}
-              />
-              <div className="flex-1">
-                <Label htmlFor="edit-disabled" className="cursor-pointer">
-                  Disable Interface
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  When disabled, the interface will be inactive and all peers will be disconnected.
-                </p>
-              </div>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Disable Interface"
+                htmlFor="edit-disabled"
+                description="When disabled, the interface will be inactive and all peers will be disconnected."
+                horizontal
+              >
+                <Checkbox
+                  id="edit-disabled"
+                  checked={disabled}
+                  onCheckedChange={(checked) => setDisabled(checked === true)}
+                />
+              </FormField>
+            </Fieldset>
 
-            {/* Interface Name (read-only) */}
-            <div className="space-y-2">
-              <Label>Interface Name</Label>
-              <Input value={interfaceData.name} disabled className="bg-muted" />
-            </div>
+            <Fieldset>
+              <FormField label="Interface Name">
+                <Input value={interfaceData.name} disabled className="bg-muted" />
+              </FormField>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Input
-                id="edit-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="VPN tunnel description"
-              />
-            </div>
+              <FormField label="Description" htmlFor="edit-description">
+                <Input
+                  id="edit-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="VPN tunnel description"
+                />
+              </FormField>
 
-            {/* Private Key */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-privateKey">Private Key</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    id="edit-privateKey"
-                    type={showPrivateKey ? "text" : "password"}
-                    value={privateKey}
-                    onChange={(e) => {
-                      setPrivateKey(e.target.value);
-                      setGeneratedPublicKey(null);
-                    }}
-                    placeholder="Leave as *** to keep current key"
-                    className="pr-10 font-mono text-sm"
-                  />
+              <FormField
+                label="Private Key"
+                htmlFor="edit-privateKey"
+                description={'Keep as "***" to preserve existing key, or generate/enter a new one.'}
+              >
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="edit-privateKey"
+                      type={showPrivateKey ? "text" : "password"}
+                      value={privateKey}
+                      onChange={(e) => {
+                        setPrivateKey(e.target.value);
+                        setGeneratedPublicKey(null);
+                      }}
+                      placeholder="Leave as *** to keep current key"
+                      className="pr-10 font-mono text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowPrivateKey(!showPrivateKey)}
+                    >
+                      {showPrivateKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPrivateKey(!showPrivateKey)}
+                    variant="outline"
+                    onClick={handleGenerateKey}
+                    disabled={generating}
+                    className="gap-2"
                   >
-                    {showPrivateKey ? (
-                      <EyeOff className="h-4 w-4" />
+                    {generating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Sparkles className="h-4 w-4" />
                     )}
+                    Regenerate
                   </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleGenerateKey}
-                  disabled={generating}
-                  className="gap-2"
-                >
-                  {generating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
-                  Regenerate
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Keep as "***" to preserve existing key, or generate/enter a new one.
-              </p>
-            </div>
+              </FormField>
+            </Fieldset>
 
             {/* Show Public Key after generation */}
             {generatedPublicKey && (
               <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-sm font-medium text-green-600">
+                  <span className="text-sm font-medium text-green-600">
                     New Public Key (share with peers)
-                  </Label>
+                  </span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -340,68 +335,66 @@ export function EditInterfaceModal({
               </div>
             )}
 
-            {/* Addresses */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-addresses">Interface Addresses</Label>
-              <Input
-                id="edit-addresses"
-                value={addresses}
-                onChange={(e) => setAddresses(e.target.value)}
-                placeholder="10.0.0.1/24, fd00::1/64"
-              />
-              <p className="text-xs text-muted-foreground">
-                Comma-separated list of IP addresses with CIDR notation.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Interface Addresses"
+                htmlFor="edit-addresses"
+                description="Comma-separated list of IP addresses with CIDR notation."
+              >
+                <Input
+                  id="edit-addresses"
+                  value={addresses}
+                  onChange={(e) => setAddresses(e.target.value)}
+                  placeholder="10.0.0.1/24, fd00::1/64"
+                />
+              </FormField>
 
-            {/* Listen Port */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-port">Listen Port</Label>
-              <Input
-                id="edit-port"
-                type="number"
-                value={port}
-                onChange={(e) => setPort(e.target.value)}
-                placeholder="51820"
-              />
-            </div>
+              <FormField label="Listen Port" htmlFor="edit-port">
+                <Input
+                  id="edit-port"
+                  type="number"
+                  value={port}
+                  onChange={(e) => setPort(e.target.value)}
+                  placeholder="51820"
+                />
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           <TabsContent value="advanced" className="space-y-4 mt-4">
-            {/* MTU */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-mtu">MTU</Label>
-              <Input
-                id="edit-mtu"
-                type="number"
-                value={mtu}
-                onChange={(e) => setMtu(e.target.value)}
-                placeholder="1420"
-              />
-              <p className="text-xs text-muted-foreground">
-                Maximum transmission unit. Leave empty for automatic.
-              </p>
-            </div>
-
-            {/* Per-Client Thread */}
-            {capabilities?.features.per_client_thread.supported && (
-              <div className="flex items-center space-x-2 rounded-lg border p-3">
-                <Checkbox
-                  id="edit-perClientThread"
-                  checked={perClientThread}
-                  onCheckedChange={(checked) =>
-                    setPerClientThread(checked === true)
-                  }
+            <Fieldset>
+              <FormField
+                label="MTU"
+                htmlFor="edit-mtu"
+                description="Maximum transmission unit. Leave empty for automatic."
+              >
+                <Input
+                  id="edit-mtu"
+                  type="number"
+                  value={mtu}
+                  onChange={(e) => setMtu(e.target.value)}
+                  placeholder="1420"
                 />
-                <div className="flex-1">
-                  <Label htmlFor="edit-perClientThread" className="cursor-pointer">
-                    Per-Client Thread
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    {capabilities.features.per_client_thread.description}
-                  </p>
-                </div>
-              </div>
+              </FormField>
+            </Fieldset>
+
+            {capabilities?.features.per_client_thread.supported && (
+              <Fieldset>
+                <FormField
+                  label="Per-Client Thread"
+                  htmlFor="edit-perClientThread"
+                  description={capabilities.features.per_client_thread.description}
+                  horizontal
+                >
+                  <Checkbox
+                    id="edit-perClientThread"
+                    checked={perClientThread}
+                    onCheckedChange={(checked) =>
+                      setPerClientThread(checked === true)
+                    }
+                  />
+                </FormField>
+              </Fieldset>
             )}
           </TabsContent>
         </Tabs>

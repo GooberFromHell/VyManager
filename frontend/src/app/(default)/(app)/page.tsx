@@ -2,16 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Save, Edit3, X } from "lucide-react";
+import { Loader2, Plus, Save, Edit3, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Github, Globe, MessageCircle, Sparkles } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useSession } from "@/lib/auth-client";
 import { useSessionStore } from "@/store/session-store";
 import { dashboardService, DashboardCard, DashboardLayout } from "@/lib/api/dashboard";
-import { InterfaceStatisticsCard } from "@/components/dashboard/InterfaceStatisticsCard";
-import { SystemInfoCard } from "@/components/dashboard/SystemInfoCard";
-import { WireGuardPeersCard } from "@/components/dashboard/WireGuardPeersCard";
-import { NetworkSpeedCard } from "@/components/dashboard/NetworkSpeedCard";
+import { getWidget } from "@/components/dashboard/widget-registry";
+import { migrateLayout } from "@/components/dashboard/layout-migration";
 import { AddCardModal } from "@/components/dashboard/AddCardModal";
 import {
   DndContext,
@@ -31,6 +29,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { ApiError } from "@/lib/types/api";
 import { DashboardDataProvider } from "@/contexts/DashboardDataContext";
+import { WelcomeCard } from "@/components/layout/WelcomeCard";
 
 // Sortable card wrapper component
 function SortableCard({ card, children }: { card: DashboardCard; children: React.ReactNode }) {
@@ -54,9 +53,8 @@ function SortableCard({ card, children }: { card: DashboardCard; children: React
     <div
       ref={setNodeRef}
       style={style}
-      className={`${isDragging ? "cursor-grabbing" : "cursor-grab"} ${
-        isOver ? "ring-2 ring-primary ring-offset-2" : ""
-      }`}
+      className={`${isDragging ? "cursor-grabbing" : "cursor-grab"} ${isOver ? "ring-2 ring-primary ring-offset-2" : ""
+        }`}
       {...attributes}
       {...listeners}
     >
@@ -81,23 +79,22 @@ function DroppableColumnOverlay({
 
   if (!editMode) return null;
 
-  const columnNumber = parseInt(columnId.split("-")[1]) + 1;
+  const zoneIndex = parseInt(columnId.split("-")[1]);
+  const zoneLabels = ["Left", "Center", "Right"];
 
   return (
     <div
       ref={setNodeRef}
-      className={`relative h-full min-h-[800px] rounded-lg transition-all ${
-        isOver
+      className={`relative h-full min-h-[800px] rounded-lg transition-all ${isOver
           ? "bg-primary/30 border-4 border-primary border-solid shadow-2xl"
           : isDragging
             ? "border-2 border-dashed border-primary/50 bg-primary/5"
             : "border-2 border-dashed border-border/20 bg-transparent"
-      }`}
+        }`}
     >
-      <div className={`flex flex-col items-center justify-center h-full text-lg font-bold pointer-events-none ${
-        isDragging ? "opacity-100 text-primary" : "opacity-30 text-muted-foreground"
-      }`}>
-        <div>Column {columnNumber}</div>
+      <div className={`flex flex-col items-center justify-center h-full text-lg font-bold pointer-events-none ${isDragging ? "opacity-100 text-primary" : "opacity-30 text-muted-foreground"
+        }`}>
+        <div>{zoneLabels[zoneIndex]} Zone</div>
         {isDragging && <div className="text-sm font-normal mt-2">Drop here</div>}
       </div>
     </div>
@@ -118,7 +115,6 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [canEditDashboard, setCanEditDashboard] = useState(false);
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -132,18 +128,18 @@ export default function Home() {
     try {
       const response = await dashboardService.getLayout();
       if (response.exists && response.layout) {
-        // Ensure all cards have a span property (backward compatibility)
-        const cardsWithSpan = (response.layout.cards || []).map((card) => {
-          if (card.span === undefined) {
-            // Set default span based on card type
-            if (card.type === "interface-statistics" || card.type === "network-speed") {
-              return { ...card, span: 2 };
-            }
-            return { ...card, span: 1 };
-          }
-          return card;
+        // Ensure all cards have span and height properties (backward compatibility)
+        const cardsWithDefaults = (response.layout.cards || []).map((card) => {
+          const reg = getWidget(card.type);
+          return {
+            ...card,
+            span: card.span ?? reg?.defaultSpan ?? 4,
+            height: card.height ?? reg?.defaultHeight ?? 2,
+          };
         });
-        setCards(cardsWithSpan);
+        // Migrate old 3-column layouts to 12-column format
+        const migrated = migrateLayout({ cards: cardsWithDefaults });
+        setCards(migrated.cards);
       } else {
         setCards([]);
       }
@@ -239,15 +235,16 @@ export default function Home() {
       return;
     }
 
-    const cardSpan = activeCard.span || 1;
+    const cardSpan = activeCard.span || 4;
     let targetColumn = 0;
     let targetPosition = 0;
 
     // Check if dropped on a column zone
     const columnMatch = over.id.toString().match(/^column-(\d+)$/);
     if (columnMatch) {
-      targetColumn = parseInt(columnMatch[1]);
-      console.log(`[Drag] Dropped on Column ${targetColumn + 1} overlay`);
+      // Drop zones map to 12-col positions: zone 0→col 0, 1→col 4, 2→col 8
+      targetColumn = parseInt(columnMatch[1]) * 4;
+      console.log(`[Drag] Dropped on zone ${columnMatch[1]}, mapped to column ${targetColumn}`);
     } else {
       // Check if dropped on another card
       const overCard = cards.find((c) => c.id === over.id);
@@ -267,9 +264,8 @@ export default function Home() {
       console.log(`[Drag] Dropped on card at column=${targetColumn}, position=${targetPosition}`);
     }
 
-    // SMART VALIDATION: Adjust column if span would overflow
-    // A card can only start at a column where it won't exceed column 2
-    const maxStartColumn = 3 - cardSpan; // span 1: max col 2, span 2: max col 1, span 3: max col 0
+    // SMART VALIDATION: Adjust column if span would overflow the 12-column grid
+    const maxStartColumn = 12 - cardSpan;
     if (targetColumn > maxStartColumn) {
       targetColumn = maxStartColumn;
     }
@@ -279,9 +275,9 @@ export default function Home() {
     for (const card of cards) {
       if (card.id === activeCard.id) continue;
 
-      const span = card.span || 1;
+      const span = card.span || 4;
       const startCol = card.column;
-      const endCol = Math.min(startCol + span - 1, 2);
+      const endCol = Math.min(startCol + span - 1, 11);
 
       if (!rowOccupancy.has(card.position)) {
         rowOccupancy.set(card.position, new Set());
@@ -340,15 +336,10 @@ export default function Home() {
   };
 
   const handleAddCard = (cardType: string) => {
-    // Determine default span based on card type
-    let defaultSpan = 1;
-    if (cardType === "interface-statistics") {
-      defaultSpan = 2;
-    }
-    if (cardType === "network-speed") {
-      defaultSpan = 2;
-    }
-    // system-info defaults to 1 column (already set above)
+    // Look up defaults from the widget registry
+    const reg = getWidget(cardType);
+    const defaultSpan = reg?.defaultSpan ?? 4;
+    const defaultHeight = reg?.defaultHeight ?? 2;
 
     // New cards always start at column 0
     const targetColumn = 0;
@@ -356,9 +347,9 @@ export default function Home() {
     // Build occupancy map from existing cards
     const rowOccupancy: Map<number, Set<number>> = new Map();
     for (const card of cards) {
-      const span = card.span || 1;
+      const span = card.span || 4;
       const startCol = card.column;
-      const endCol = Math.min(startCol + span - 1, 2);
+      const endCol = Math.min(startCol + span - 1, 11);
 
       if (!rowOccupancy.has(card.position)) {
         rowOccupancy.set(card.position, new Set());
@@ -402,6 +393,7 @@ export default function Home() {
       column: targetColumn,
       position: targetPosition,
       span: defaultSpan,
+      height: defaultHeight,
     };
 
     setCards([...cards, newCard]);
@@ -417,6 +409,16 @@ export default function Home() {
     setCards(cards.map((c) => {
       if (c.id === cardId) {
         return { ...c, span: newSpan };
+      }
+      return c;
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleCardHeightChange = (cardId: string, newHeight: number) => {
+    setCards(cards.map((c) => {
+      if (c.id === cardId) {
+        return { ...c, height: newHeight };
       }
       return c;
     }));
@@ -450,167 +452,131 @@ export default function Home() {
   };
 
   const renderCard = (card: DashboardCard) => {
+    const reg = getWidget(card.type);
+    if (!reg) return null;
+
+    const Component = reg.component;
     const baseProps = {
-      config: card.config,
+      id: card.id,
+      config: card.config ?? {},
+      span: card.span || 4,
+      height: card.height ?? 2,
+      editMode,
       onRemove: editMode ? () => handleRemoveCard(card.id) : undefined,
-      span: card.span || 1,
       onSpanChange: editMode ? (newSpan: number) => handleCardSpanChange(card.id, newSpan) : undefined,
+      onHeightChange: editMode ? (newHeight: number) => handleCardHeightChange(card.id, newHeight) : undefined,
       onConfigChange: editMode
         ? (config: Record<string, unknown>) => handleCardConfigChange(card.id, config)
         : undefined,
     };
 
-    switch (card.type) {
-      case "interface-statistics":
-        return <InterfaceStatisticsCard {...baseProps} />;
-      case "system-info":
-        return <SystemInfoCard {...baseProps} />;
-      case "wireguard-peers":
-        return <WireGuardPeersCard {...baseProps} />;
-      case "network-speed":
-        return <NetworkSpeedCard {...baseProps} />;
-      default:
-        return null;
-    }
+    return <Component {...baseProps} />;
   };
 
-  // Get grid placement classes and styles for explicit positioning
+  // Get grid placement classes and styles for explicit positioning (12-column grid)
   const getGridClasses = (card: DashboardCard) => {
-    const span = card.span || 1;
-    let classes = "";
+    const span = card.span || 4;
 
-    // Column span
-    if (span === 2) classes += "col-span-2 ";
-    if (span === 3) classes += "col-span-3 ";
+    // Column span classes
+    const spanMap: Record<number, string> = {
+      3: "col-span-3",
+      4: "col-span-4",
+      6: "col-span-6",
+      8: "col-span-8",
+      12: "col-span-12",
+    };
 
-    // Column start position
-    if (card.column === 1) classes += "col-start-2 ";
-    if (card.column === 2) classes += "col-start-3 ";
+    // Column start classes (1-indexed for CSS grid)
+    const startMap: Record<number, string> = {
+      0: "",          // col-start-1 is the default
+      1: "col-start-2",
+      2: "col-start-3",
+      3: "col-start-4",
+      4: "col-start-5",
+      5: "col-start-6",
+      6: "col-start-7",
+      7: "col-start-8",
+      8: "col-start-9",
+      9: "col-start-10",
+    };
 
-    return classes.trim();
+    const spanClass = spanMap[span] || `col-span-${span}`;
+    const startClass = startMap[card.column] || "";
+
+    return [spanClass, startClass].filter(Boolean).join(" ");
   };
 
   const getGridStyle = (card: DashboardCard) => {
-    // Explicit row placement
+    const height = card.height ?? 2;
     return {
-      gridRow: card.position + 1
+      gridRow: card.position + 1,
+      minHeight: `${height * 260}px`,
     };
   };
 
   return (
-      <div className="p-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-              <p className="text-muted-foreground mt-2">
-                Welcome to VyManager - Professional VyOS Management Interface
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {canEditDashboard && (
-                <>
-                  {hasUnsavedChanges && (
+    <div className="p-8">
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Welcome to VyManager - Professional VyOS Management Interface
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {canEditDashboard && (
+              <>
+                {hasUnsavedChanges && (
+                  <>
+                    <Button variant="outline" onClick={handleCancel} disabled={saving}>
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSave} disabled={saving}>
+                      <Save className="h-4 w-4 mr-2" />
+                      {saving ? "Saving..." : "Save Layout"}
+                    </Button>
+                  </>
+                )}
+                {editMode && (
+                  <Button onClick={() => setAddCardModalOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Card
+                  </Button>
+                )}
+                <Button
+                  variant={editMode ? "default" : "outline"}
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  {editMode ? (
                     <>
-                      <Button variant="outline" onClick={handleCancel} disabled={saving}>
-                        <X className="h-4 w-4 mr-2" />
-                        Cancel
-                      </Button>
-                      <Button onClick={handleSave} disabled={saving}>
-                        <Save className="h-4 w-4 mr-2" />
-                        {saving ? "Saving..." : "Save Layout"}
-                      </Button>
+                      <X className="h-4 w-4 mr-2" />
+                      Exit Edit
+                    </>
+                  ) : (
+                    <>
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      Edit Dashboard
                     </>
                   )}
-                  {editMode && (
-                    <Button onClick={() => setAddCardModalOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Card
-                    </Button>
-                  )}
-                  <Button
-                    variant={editMode ? "default" : "outline"}
-                    onClick={() => setEditMode(!editMode)}
-                  >
-                    {editMode ? (
-                      <>
-                        <X className="h-4 w-4 mr-2" />
-                        Exit Edit
-                      </>
-                    ) : (
-                      <>
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit Dashboard
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Beta Information Card */}
-          <div className="mt-6 relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-br from-primary/5 via-purple-500/5 to-cyan-500/5 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
-            <div className="relative p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">Open Beta</span>
-              </div>
-
-              <div className="flex flex-wrap gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Github className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Development by</span>
-                  <a
-                    href="https://github.com/Community-VyProjects/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80 font-medium transition-colors underline decoration-primary/30 hover:decoration-primary/60"
-                  >
-                    VyProjects Org
-                  </a>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href="https://vyprojects.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80 font-medium transition-colors underline decoration-primary/30 hover:decoration-primary/60"
-                  >
-                    Website
-                  </a>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Join our</span>
-                  <a
-                    href="https://discord.gg/4mE6QsZtKm"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-500 hover:text-purple-400 font-medium transition-colors underline decoration-purple-500/30 hover:decoration-purple-500/60"
-                  >
-                    Discord
-                  </a>
-                </div>
-              </div>
-            </div>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Dashboard Grid */}
-        <DashboardDataProvider>
+      </div>
+
+      {/* Dashboard Grid */}
+      <DashboardDataProvider>
         {cards.length === 0 && !editMode ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              {canEditDashboard
-                ? "Your dashboard is empty. Click \"Edit Dashboard\" to add cards."
-                : "Your dashboard is empty."}
-            </p>
-          </div>
+          <EmptyState
+            icon={LayoutDashboard}
+            title="Your dashboard is empty"
+            description={canEditDashboard ? "Click \"Edit Dashboard\" to add cards." : undefined}
+            action={canEditDashboard ? { label: "Edit Dashboard", onClick: () => setEditMode(true), icon: Edit3 } : undefined}
+          />
         ) : (
           <DndContext
             sensors={sensors}
@@ -622,7 +588,8 @@ export default function Home() {
             {/* Wrapper for grid and overlays */}
             <div className="relative">
               {/* Main grid with explicit card placement */}
-              <div className="grid grid-cols-3 gap-6 auto-rows-min relative z-0">
+              <div className="grid grid-cols-12 gap-6 auto-rows-min relative z-0">
+                <WelcomeCard />
                 <SortableContext
                   items={cards.map((c) => c.id)}
                   strategy={verticalListSortingStrategy}
@@ -651,24 +618,25 @@ export default function Home() {
               </div>
 
               {/* Droppable column overlays (always visible in edit mode) */}
+              {/* 3 drop zones spanning the 12-column grid: zone 0→cols 0-3, zone 1→cols 4-7, zone 2→cols 8-11 */}
               {editMode && (
                 <div className={`absolute inset-0 grid grid-cols-3 gap-6 z-20 ${activeId ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                   <DroppableColumnOverlay
                     columnId="column-0"
                     editMode={editMode}
-                    hasCards={cards.some(c => c.column === 0)}
+                    hasCards={cards.some(c => c.column >= 0 && c.column < 4)}
                     isDragging={!!activeId}
                   />
                   <DroppableColumnOverlay
                     columnId="column-1"
                     editMode={editMode}
-                    hasCards={cards.some(c => c.column === 1)}
+                    hasCards={cards.some(c => c.column >= 4 && c.column < 8)}
                     isDragging={!!activeId}
                   />
                   <DroppableColumnOverlay
                     columnId="column-2"
                     editMode={editMode}
-                    hasCards={cards.some(c => c.column === 2)}
+                    hasCards={cards.some(c => c.column >= 8 && c.column < 12)}
                     isDragging={!!activeId}
                   />
                 </div>
@@ -692,7 +660,7 @@ export default function Home() {
           onOpenChange={setAddCardModalOpen}
           onAddCard={handleAddCard}
         />
-        </DashboardDataProvider>
-      </div>
+      </DashboardDataProvider>
+    </div>
   );
 }

@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -136,6 +136,79 @@ export default function OnboardingPage() {
     setStep(3);
   };
 
+  const handleSkip = async () => {
+    setError("");
+    setLoading(true);
+    setIsSubmitting(true);
+
+    try {
+      // Re-check onboarding status before proceeding
+      const statusCheck = await fetch("/api/session/onboarding-status", { method: "GET" });
+      if (statusCheck.ok) {
+        const statusData = await statusCheck.json();
+        if (!statusData.needs_onboarding) {
+          setError("Onboarding has already been completed by another user. Please log in.");
+          setLoading(false);
+          setIsSubmitting(false);
+          setTimeout(() => router.push("/login"), 2000);
+          return;
+        }
+      }
+
+      // Always create the admin account first
+      const signUpResult = await signUp.email({
+        email: adminData.email,
+        password: adminData.password,
+        name: adminData.name,
+      });
+
+      if (signUpResult.error) {
+        setError(signUpResult.error.message || "Failed to create admin account");
+        setLoading(false);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const signInResult = await signIn.email({
+        email: adminData.email,
+        password: adminData.password,
+      });
+
+      if (signInResult.error) {
+        setError("Account created but failed to sign in. Please go to login page.");
+        setLoading(false);
+        setIsSubmitting(false);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      await fetch("/api/session/set-first-user-admin", { method: "POST" });
+
+      if (step === 2) {
+        // Skipping site setup — redirect to login
+        router.push("/login");
+        return;
+      }
+
+      // Step 3 skip: also create the site, then redirect to /sites
+      const createdSite = await sessionService.createSite({
+        name: siteData.name,
+        description: siteData.description || undefined,
+      });
+
+      console.log("[Onboarding] Site created, skipping instance setup. Site ID:", createdSite.id);
+      router.push("/sites");
+      router.refresh();
+    } catch (err) {
+      console.error("[Onboarding] Skip error:", err);
+      setError((err as ApiError).message || "Failed to complete setup. Please try again.");
+      setIsSubmitting(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStep3 = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -262,7 +335,7 @@ export default function OnboardingPage() {
   // Show loading state while checking if onboarding is allowed
   if (isCheckingAccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Verifying access...</p>
@@ -272,8 +345,8 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl animate-fade-up">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex h-16 w-16 items-center justify-center">
@@ -282,7 +355,7 @@ export default function OnboardingPage() {
                 alt="VyOS Logo"
                 width={64}
                 height={64}
-                className="object-contain"
+                className="object-contain animate-scale-fade"
                 loader={({ src }) => src}
               />
             </div>
@@ -297,15 +370,19 @@ export default function OnboardingPage() {
           {/* Progress Indicator */}
           <div className="flex items-center justify-center mb-8">
             <div className="flex items-center gap-2">
-              <div className={`flex items-center justify-center h-10 w-10 rounded-full ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <div className={`flex items-center justify-center h-10 w-10 rounded-full transition-all duration-300 ease-[var(--ease-out-quart)] ${step >= 1 ? "bg-primary text-primary-foreground scale-100" : "bg-muted text-muted-foreground scale-90"}`}>
                 {step > 1 ? <CheckCircle2 className="h-5 w-5" /> : <User className="h-5 w-5" />}
               </div>
-              <div className={`h-1 w-16 ${step >= 2 ? "bg-primary" : "bg-muted"}`} />
-              <div className={`flex items-center justify-center h-10 w-10 rounded-full ${step >= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <div className="h-1 w-16 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full bg-primary rounded-full transition-transform duration-500 ease-[var(--ease-out-expo)] origin-left ${step >= 2 ? "scale-x-100" : "scale-x-0"}`} />
+              </div>
+              <div className={`flex items-center justify-center h-10 w-10 rounded-full transition-all duration-300 ease-[var(--ease-out-quart)] ${step >= 2 ? "bg-primary text-primary-foreground scale-100" : "bg-muted text-muted-foreground scale-90"}`}>
                 {step > 2 ? <CheckCircle2 className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
               </div>
-              <div className={`h-1 w-16 ${step >= 3 ? "bg-primary" : "bg-muted"}`} />
-              <div className={`flex items-center justify-center h-10 w-10 rounded-full ${step >= 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              <div className="h-1 w-16 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full bg-primary rounded-full transition-transform duration-500 ease-[var(--ease-out-expo)] origin-left ${step >= 3 ? "scale-x-100" : "scale-x-0"}`} />
+              </div>
+              <div className={`flex items-center justify-center h-10 w-10 rounded-full transition-all duration-300 ease-[var(--ease-out-quart)] ${step >= 3 ? "bg-primary text-primary-foreground scale-100" : "bg-muted text-muted-foreground scale-90"}`}>
                 <Server className="h-5 w-5" />
               </div>
             </div>
@@ -313,7 +390,7 @@ export default function OnboardingPage() {
 
           {/* Error Display */}
           {error && (
-            <div className="mb-6 rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+            <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-3">
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-destructive">{error}</p>
@@ -323,16 +400,15 @@ export default function OnboardingPage() {
 
           {/* Step 1: Create Admin Account */}
           {step === 1 && (
-            <form onSubmit={handleStep1} className="space-y-4">
+            <form onSubmit={handleStep1} className="space-y-4 animate-fade-up" key="step-1">
               <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold mb-2">Step 1: Create Admin Account</h3>
+                <h2 className="text-xl font-semibold mb-2">Step 1: Create Admin Account</h2>
                 <p className="text-sm text-muted-foreground">
                   You'll be the owner with full access to everything
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+              <FormField label="Full Name" htmlFor="name">
                 <Input
                   id="name"
                   value={adminData.name}
@@ -340,10 +416,9 @@ export default function OnboardingPage() {
                   placeholder="John Doe"
                   required
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <FormField label="Email" htmlFor="email">
                 <Input
                   id="email"
                   type="email"
@@ -352,10 +427,9 @@ export default function OnboardingPage() {
                   placeholder="admin@example.com"
                   required
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <FormField label="Password" htmlFor="password" description="Must be at least 8 characters">
                 <Input
                   id="password"
                   type="password"
@@ -364,13 +438,9 @@ export default function OnboardingPage() {
                   placeholder="••••••••"
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Must be at least 8 characters
-                </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <FormField label="Confirm Password" htmlFor="confirmPassword">
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -379,7 +449,7 @@ export default function OnboardingPage() {
                   placeholder="••••••••"
                   required
                 />
-              </div>
+              </FormField>
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
@@ -396,16 +466,15 @@ export default function OnboardingPage() {
 
           {/* Step 2: Create Site */}
           {step === 2 && (
-            <form onSubmit={handleStep2} className="space-y-4">
+            <form onSubmit={handleStep2} className="space-y-4 animate-fade-up" key="step-2">
               <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold mb-2">Step 2: Create Your First Site</h3>
+                <h2 className="text-xl font-semibold mb-2">Step 2: Create Your First Site</h2>
                 <p className="text-sm text-muted-foreground">
                   A site is a logical grouping of VyOS instances
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="siteName">Site Name</Label>
+              <FormField label="Site Name" htmlFor="siteName">
                 <Input
                   id="siteName"
                   value={siteData.name}
@@ -413,10 +482,9 @@ export default function OnboardingPage() {
                   placeholder="Headquarters"
                   required
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="siteDescription">Description (Optional)</Label>
+              <FormField label="Description (Optional)" htmlFor="siteDescription">
                 <Textarea
                   id="siteDescription"
                   value={siteData.description}
@@ -424,7 +492,7 @@ export default function OnboardingPage() {
                   placeholder="Main datacenter location"
                   rows={3}
                 />
-              </div>
+              </FormField>
 
               <div className="flex gap-3 mt-6">
                 <Button
@@ -447,14 +515,25 @@ export default function OnboardingPage() {
                   )}
                 </Button>
               </div>
+              {step > 1 && (
+                <div className="flex justify-center mt-3">
+                  <button
+                    type="button"
+                    onClick={handleSkip}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                  >
+                    I&apos;ll set this up later
+                  </button>
+                </div>
+              )}
             </form>
           )}
 
           {/* Step 3: Add Instance */}
           {step === 3 && (
-            <form onSubmit={handleStep3} className="space-y-4">
+            <form onSubmit={handleStep3} className="space-y-4 animate-fade-up" key="step-3">
               <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold mb-2">Step 3: Add Your First VyOS Instance</h3>
+                <h2 className="text-xl font-semibold mb-2">Step 3: Add Your First VyOS Instance</h2>
                 <p className="text-sm text-muted-foreground">
                   Connect to your VyOS router
                 </p>
@@ -467,8 +546,7 @@ export default function OnboardingPage() {
                 </TabsList>
 
                 <TabsContent value="basic" className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="instanceName">Instance Name</Label>
+                  <FormField label="Instance Name" htmlFor="instanceName">
                     <Input
                       id="instanceName"
                       value={instanceData.name}
@@ -476,10 +554,9 @@ export default function OnboardingPage() {
                       placeholder="vyos-router-01"
                       required
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="instanceDescription">Description (Optional)</Label>
+                  <FormField label="Description (Optional)" htmlFor="instanceDescription">
                     <Textarea
                       id="instanceDescription"
                       value={instanceData.description}
@@ -487,15 +564,14 @@ export default function OnboardingPage() {
                       placeholder="Main gateway router"
                       rows={2}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="vyosVersion">VyOS Version</Label>
+                  <FormField label="VyOS Version" htmlFor="vyosVersion">
                     <Select
                       value={instanceData.vyosVersion}
                       onValueChange={(value) => setInstanceData({ ...instanceData, vyosVersion: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="vyosVersion">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -503,12 +579,11 @@ export default function OnboardingPage() {
                         <SelectItem value="1.5">VyOS 1.5</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </TabsContent>
 
                 <TabsContent value="connection" className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="host">Host / IP Address</Label>
+                  <FormField label="Host / IP Address" htmlFor="host">
                     <Input
                       id="host"
                       value={instanceData.host}
@@ -516,16 +591,15 @@ export default function OnboardingPage() {
                       placeholder="192.168.1.1"
                       required
                     />
-                  </div>
+                  </FormField>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="protocol">Protocol</Label>
+                    <FormField label="Protocol" htmlFor="protocol">
                       <Select
                         value={instanceData.protocol}
                         onValueChange={(value) => setInstanceData({ ...instanceData, protocol: value })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="protocol">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -533,10 +607,9 @@ export default function OnboardingPage() {
                           <SelectItem value="http">HTTP</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="port">Port</Label>
+                    <FormField label="Port" htmlFor="port">
                       <Input
                         id="port"
                         type="number"
@@ -544,11 +617,10 @@ export default function OnboardingPage() {
                         onChange={(e) => setInstanceData({ ...instanceData, port: parseInt(e.target.value) })}
                         placeholder="443"
                       />
-                    </div>
+                    </FormField>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey">API Key</Label>
+                  <FormField label="API Key" htmlFor="apiKey" description="Set in VyOS with: set service https api keys id KEY key VALUE">
                     <Input
                       id="apiKey"
                       type="password"
@@ -557,10 +629,7 @@ export default function OnboardingPage() {
                       placeholder="Your VyOS API key"
                       required
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Set in VyOS with: set service https api keys id KEY key VALUE
-                    </p>
-                  </div>
+                  </FormField>
                 </TabsContent>
               </Tabs>
 
@@ -585,6 +654,17 @@ export default function OnboardingPage() {
                   )}
                 </Button>
               </div>
+              {step > 1 && (
+                <div className="flex justify-center mt-3">
+                  <button
+                    type="button"
+                    onClick={handleSkip}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                  >
+                    I&apos;ll set this up later
+                  </button>
+                </div>
+              )}
             </form>
           )}
         </CardContent>

@@ -55,7 +55,7 @@ export default function SystemSettingsPage() {
             <Server className="h-8 w-8" />
             System Settings
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-1">
             Manage VyOS system configuration — hostname, users, syslog, conntrack, and more.
           </p>
           {isReadOnly && (

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -335,20 +335,24 @@ export function VrrpGroupModal({
 
             {/* Basic Settings */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Group Name <span className="text-destructive">*</span></Label>
+              <FormField
+                label="Group Name"
+                htmlFor="vrrp-name"
+                required
+                description={isEdit ? "Name cannot be changed" : undefined}
+              >
                 <Input
+                  id="vrrp-name"
                   value={form.name}
                   onChange={(e) => set("name")(e.target.value)}
                   disabled={isEdit}
                   placeholder="e.g. WAN-GROUP"
                   className={isEdit ? "opacity-60" : ""}
                 />
-                {isEdit && <p className="text-xs text-muted-foreground">Name cannot be changed</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label>VRID <span className="text-destructive">*</span></Label>
+              </FormField>
+              <FormField label="VRID" htmlFor="vrrp-vrid" required>
                 <Input
+                  id="vrrp-vrid"
                   type="number"
                   min={1}
                   max={255}
@@ -356,22 +360,21 @@ export function VrrpGroupModal({
                   onChange={(e) => set("vrid")(e.target.value)}
                   placeholder="1–255"
                 />
-              </div>
+              </FormField>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Interface <span className="text-destructive">*</span></Label>
+              <FormField label="Interface" htmlFor="vrrp-iface" required>
                 <InterfaceSelect
                   value={form.interface}
                   onChange={(v) => set("interface")(v)}
                   interfaces={interfaces}
                   placeholder="Select interface"
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Priority</Label>
+              </FormField>
+              <FormField label="Priority" htmlFor="vrrp-priority">
                 <Input
+                  id="vrrp-priority"
                   type="number"
                   min={1}
                   max={255}
@@ -379,28 +382,28 @@ export function VrrpGroupModal({
                   onChange={(e) => set("priority")(e.target.value)}
                   placeholder="100 (default)"
                 />
-              </div>
+              </FormField>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Advertise Interval (s)</Label>
+              <FormField label="Advertise Interval (s)" htmlFor="vrrp-adv-interval">
                 <Input
+                  id="vrrp-adv-interval"
                   type="number"
                   min={1}
                   value={form.advertise_interval}
                   onChange={(e) => set("advertise_interval")(e.target.value)}
                   placeholder="1 (default)"
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Description</Label>
+              </FormField>
+              <FormField label="Description" htmlFor="vrrp-description">
                 <Input
+                  id="vrrp-description"
                   value={form.description}
                   onChange={(e) => set("description")(e.target.value)}
                   placeholder="Optional description"
                 />
-              </div>
+              </FormField>
             </div>
 
             {/* Virtual IP Addresses */}
@@ -408,7 +411,7 @@ export function VrrpGroupModal({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Virtual IP Addresses <span className="text-destructive">*</span></Label>
+                  <p className="text-sm font-medium">Virtual IP Addresses <span className="text-destructive">*</span></p>
                   <p className="text-xs text-muted-foreground mt-0.5">IP/prefix assigned to the virtual router</p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={addAddress}>
@@ -459,13 +462,11 @@ export function VrrpGroupModal({
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-5 pt-3">
                 {/* Authentication */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Authentication</Label>
+                <Fieldset label="Authentication">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Type</Label>
+                    <FormField label="Type" htmlFor="vrrp-auth-type">
                       <Select value={form.auth_type} onValueChange={(v) => set("auth_type")(v === "none" ? "" : v)}>
-                        <SelectTrigger>
+                        <SelectTrigger id="vrrp-auth-type">
                           <SelectValue placeholder="None" />
                         </SelectTrigger>
                         <SelectContent>
@@ -474,24 +475,23 @@ export function VrrpGroupModal({
                           <SelectItem value="ah">AH (IPAuth)</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </FormField>
                     {form.auth_type && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Password</Label>
+                      <FormField label="Password" htmlFor="vrrp-auth-password">
                         <Input
+                          id="vrrp-auth-password"
                           type="password"
                           value={form.auth_password}
                           onChange={(e) => set("auth_password")(e.target.value)}
                           placeholder="Password"
                         />
-                      </div>
+                      </FormField>
                     )}
                   </div>
-                </div>
+                </Fieldset>
 
                 {/* Preempt */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Preemption</Label>
+                <Fieldset label="Preemption">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex items-center gap-3 rounded-lg border p-3">
                       <Checkbox
@@ -504,9 +504,9 @@ export function VrrpGroupModal({
                         <p className="text-xs text-muted-foreground">Prevent higher-priority router from preempting</p>
                       </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Preempt Delay (s)</Label>
+                    <FormField label="Preempt Delay (s)" htmlFor="vrrp-preempt-delay">
                       <Input
+                        id="vrrp-preempt-delay"
                         type="number"
                         min={0}
                         value={form.preempt_delay}
@@ -514,14 +514,12 @@ export function VrrpGroupModal({
                         placeholder="0"
                         disabled={form.no_preempt}
                       />
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
 
                 {/* Peer Addresses */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Peer Addresses</Label>
-                  <p className="text-xs text-muted-foreground">Unicast peer addresses for VRRP communication</p>
+                <FormField label="Peer Addresses" description="Unicast peer addresses for VRRP communication">
                   <div className="flex gap-2">
                     <Input
                       value={newPeer}
@@ -546,12 +544,10 @@ export function VrrpGroupModal({
                       ))}
                     </div>
                   )}
-                </div>
+                </FormField>
 
                 {/* Track Interfaces */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Track Interfaces</Label>
-                  <p className="text-xs text-muted-foreground">Decrease priority if these interfaces go down</p>
+                <FormField label="Track Interfaces" description="Decrease priority if these interfaces go down">
                   <div className="flex gap-2">
                     <InterfaceSelect
                       value={trackIfaceSelection}
@@ -576,66 +572,64 @@ export function VrrpGroupModal({
                       ))}
                     </div>
                   )}
-                </div>
+                </FormField>
 
                 {/* Health Check */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Health Check</Label>
+                <Fieldset label="Health Check">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Ping Target</Label>
+                    <FormField label="Ping Target" htmlFor="vrrp-hc-ping">
                       <Input
+                        id="vrrp-hc-ping"
                         value={form.hc_ping}
                         onChange={(e) => set("hc_ping")(e.target.value)}
                         placeholder="IP to ping"
                         className="font-mono"
                       />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Interval (s)</Label>
+                    </FormField>
+                    <FormField label="Interval (s)" htmlFor="vrrp-hc-interval">
                       <Input
+                        id="vrrp-hc-interval"
                         type="number"
                         min={1}
                         value={form.hc_interval}
                         onChange={(e) => set("hc_interval")(e.target.value)}
                         placeholder="10"
                       />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Failure Count</Label>
+                    </FormField>
+                    <FormField label="Failure Count" htmlFor="vrrp-hc-fail">
                       <Input
+                        id="vrrp-hc-fail"
                         type="number"
                         min={1}
                         value={form.hc_failure_count}
                         onChange={(e) => set("hc_failure_count")(e.target.value)}
                         placeholder="3"
                       />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Script Path</Label>
+                    </FormField>
+                    <FormField label="Script Path" htmlFor="vrrp-hc-script">
                       <Input
+                        id="vrrp-hc-script"
                         value={form.hc_script}
                         onChange={(e) => set("hc_script")(e.target.value)}
                         placeholder="/path/to/script.sh"
                         className="font-mono"
                       />
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
 
                 {/* Misc */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Other Options</Label>
+                <Fieldset label="Other Options">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Hello Source Address</Label>
+                    <FormField label="Hello Source Address" htmlFor="vrrp-hello-src">
                       <Input
+                        id="vrrp-hello-src"
                         value={form.hello_source_address}
                         onChange={(e) => set("hello_source_address")(e.target.value)}
                         placeholder="Source IP for hellos"
                         className="font-mono"
                       />
-                    </div>
+                    </FormField>
                     <div className="flex items-center gap-3 rounded-lg border p-3">
                       <Checkbox
                         id="rfc3768"
@@ -648,7 +642,7 @@ export function VrrpGroupModal({
                       </div>
                     </div>
                   </div>
-                </div>
+                </Fieldset>
               </CollapsibleContent>
             </Collapsible>
           </div>

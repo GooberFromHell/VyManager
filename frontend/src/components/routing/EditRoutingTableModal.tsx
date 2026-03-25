@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { staticRoutesService, type RoutingTable } from "@/lib/api/static-routes";
 
 interface EditRoutingTableModalProps {
@@ -76,24 +76,24 @@ export function EditRoutingTableModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Table ID</Label>
-            <Input
-              value={table.table_id.toString()}
-              disabled
-              className="bg-muted"
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Table ID">
+              <Input
+                value={table.table_id.toString()}
+                disabled
+                className="bg-muted"
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              placeholder="Description for this routing table"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Description for this routing table"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormField>
+          </Fieldset>
 
           <div className="bg-muted/50 rounded-lg p-3 space-y-1">
             <div className="flex justify-between text-sm">

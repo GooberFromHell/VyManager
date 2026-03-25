@@ -1,0 +1,39 @@
+id: "task-010"
+title: "End-to-end validation"
+archetype: validation
+phase: produce
+execution_phase: 4
+agent: "general-purpose"
+status: not_started
+depends_on: ["task-008", "task-009"]
+blocks: []
+parallel_with: []
+files:
+  create: []
+  modify: []
+context_files: []
+instructions: |
+  1. Run TypeScript type checking: `cd frontend && npx tsc --noEmit`
+  2. Run linting: `cd frontend && npm run lint`
+  3. Verify the backend can start without import errors by checking the session router imports
+  4. Verify all new files exist:
+     - frontend/src/components/sites/SiteToolsSection.tsx
+  5. Verify key code patterns:
+     - Grep for 'InstanceStatusResponse' in backend/routers/session/session.py
+     - Grep for 'proxy_host_id' in backend/routers/session/session.py
+     - Grep for 'checkSiteStatus' in frontend/src/lib/api/session.ts
+     - Grep for 'reachabilityStatus' in frontend/src/components/sites/InstanceCard.tsx
+     - Grep for 'SiteToolsSection' in frontend/src/app/(default)/sites/page.tsx
+     - Grep for 'proxyHostId' in frontend/src/components/sites/EditSiteModal.tsx
+  6. Report any TypeScript errors, lint warnings, or missing implementations
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+  - "Command passes: cd frontend && npm run lint"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

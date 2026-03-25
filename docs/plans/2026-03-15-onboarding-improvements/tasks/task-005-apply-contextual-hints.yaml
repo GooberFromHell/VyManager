@@ -1,0 +1,81 @@
+id: "task-005"
+title: "Add contextual first-visit hints to key pages"
+phase: produce
+execution_phase: 2
+agent: react-specialist
+status: not_started
+depends_on: ["task-003", "task-004"]
+blocks: ["task-008"]
+parallel_with: ["task-002", "task-006", "task-007"]
+
+files:
+  create: []
+  modify:
+    - "frontend/src/app/(default)/(app)/system/services/layout.tsx"
+    - "frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+    - "frontend/src/app/(default)/(app)/page.tsx"
+
+context_files:
+  - "frontend/src/hooks/useFirstVisit.ts"
+  - "frontend/src/components/ui/contextual-hint.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  - "frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+  - "frontend/src/app/(default)/(app)/page.tsx"
+
+instructions: |
+  Add contextual first-visit hints to 3 key pages using useFirstVisit + ContextualHint.
+
+  Read each file first, then add the hint below the page header (after the h1/subtitle, before content).
+
+  ## 1. Services layout (layout.tsx)
+  Add hint in the right content area, above {children}:
+  - Key: "services-sidebar"
+  - Message: "Browse and configure VyOS network services here. Select a service from the list on the left to view and edit its settings."
+  - Place after the header area, before the {children} render
+
+  Usage pattern:
+  ```tsx
+  import { useFirstVisit } from "@/hooks/useFirstVisit";
+  import { ContextualHint } from "@/components/ui/contextual-hint";
+
+  // Inside the component:
+  const { isFirstVisit: isFirstServiceVisit, dismiss: dismissServiceHint } = useFirstVisit("services-sidebar");
+
+  // In JSX, above {children}:
+  {isFirstServiceVisit && (
+    <ContextualHint onDismiss={dismissServiceHint}>
+      Browse and configure VyOS network services here. Select a service from the
+      list on the left to view and edit its settings.
+    </ContextualHint>
+  )}
+  ```
+
+  ## 2. Firewall Groups page
+  Add hint after the page header, before the stats cards:
+  - Key: "firewall-groups"
+  - Message: "Firewall groups let you reuse sets of addresses, networks, and ports across multiple firewall rules. Create groups here, then reference them in your firewall policies."
+
+  ## 3. Dashboard page
+  Add hint after the header, before the cards grid:
+  - Key: "dashboard"
+  - Message: "This is your VyOS monitoring dashboard. Click 'Edit Dashboard' to add monitoring cards and customize your layout."
+  - Only show if user has dashboard write permission (the hint about editing is useless if they can't edit)
+
+  IMPORTANT: Each hint renders only on first visit and disappears permanently after dismiss.
+  IMPORTANT: The layout.tsx is a client component ("use client") so hooks work directly.
+  IMPORTANT: For the dashboard page, check if it's already a client component. If not, the hint needs to be in a wrapper.
+
+acceptance_criteria:
+  - "Grep match: 'useFirstVisit' in frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  - "Grep match: 'ContextualHint' in frontend/src/app/(default)/(app)/system/services/layout.tsx"
+  - "Grep match: 'useFirstVisit' in frontend/src/app/(default)/(app)/firewall/groups/page.tsx"
+  - "Grep match: 'useFirstVisit' in frontend/src/app/(default)/(app)/page.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

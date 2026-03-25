@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -81,7 +81,7 @@ export function ConntrackPanel({ config, capabilities, isReadOnly, onRefresh }: 
         onRefresh();
       }
     } catch {
-      toast.error("Error", "An unexpected error occurred");
+      toast.error("Error", "Something went wrong. Please try again.");
     } finally {
       setTogglingModule(null);
     }
@@ -104,7 +104,7 @@ export function ConntrackPanel({ config, capabilities, isReadOnly, onRefresh }: 
         onRefresh();
       }
     } catch {
-      setSizesError("An unexpected error occurred");
+      setSizesError("Something went wrong. Please try again.");
     } finally {
       setSizesSaving(false);
     }
@@ -127,7 +127,7 @@ export function ConntrackPanel({ config, capabilities, isReadOnly, onRefresh }: 
         onRefresh();
       }
     } catch {
-      setTcpError("An unexpected error occurred");
+      setTcpError("Something went wrong. Please try again.");
     } finally {
       setTcpSaving(false);
     }
@@ -216,36 +216,33 @@ export function ConntrackPanel({ config, capabilities, isReadOnly, onRefresh }: 
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Table Size</Label>
+            <FormField label="Table Size" htmlFor="ct-table-size">
               {editingSizes ? (
-                <Input type="number" min="0" value={tableSize} onChange={(e) => setTableSize(e.target.value)} placeholder="262144" />
+                <Input id="ct-table-size" type="number" min="0" value={tableSize} onChange={(e) => setTableSize(e.target.value)} placeholder="262144" />
               ) : (
                 <p className="text-sm font-medium">
                   {config.conntrack.table_size?.toLocaleString() ?? <span className="text-muted-foreground">Default</span>}
                 </p>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label>Hash Size</Label>
+            </FormField>
+            <FormField label="Hash Size" htmlFor="ct-hash-size">
               {editingSizes ? (
-                <Input type="number" min="0" value={hashSize} onChange={(e) => setHashSize(e.target.value)} placeholder="32768" />
+                <Input id="ct-hash-size" type="number" min="0" value={hashSize} onChange={(e) => setHashSize(e.target.value)} placeholder="32768" />
               ) : (
                 <p className="text-sm font-medium">
                   {config.conntrack.hash_size?.toLocaleString() ?? <span className="text-muted-foreground">Default</span>}
                 </p>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label>Expect Table Size</Label>
+            </FormField>
+            <FormField label="Expect Table Size" htmlFor="ct-expect-size">
               {editingSizes ? (
-                <Input type="number" min="0" value={expectSize} onChange={(e) => setExpectSize(e.target.value)} placeholder="2048" />
+                <Input id="ct-expect-size" type="number" min="0" value={expectSize} onChange={(e) => setExpectSize(e.target.value)} placeholder="2048" />
               ) : (
                 <p className="text-sm font-medium">
                   {config.conntrack.expect_table_size?.toLocaleString() ?? <span className="text-muted-foreground">Default</span>}
                 </p>
               )}
-            </div>
+            </FormField>
           </div>
         </CardContent>
       </Card>
@@ -294,11 +291,10 @@ export function ConntrackPanel({ config, capabilities, isReadOnly, onRefresh }: 
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Loose Mode</Label>
+            <FormField label="Loose Mode" htmlFor="tcp-loose">
               {editingTcp ? (
                 <Select value={tcpLoose || "unset"} onValueChange={(v) => setTcpLoose(v === "unset" ? "" : v)}>
-                  <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
+                  <SelectTrigger id="tcp-loose"><SelectValue placeholder="Not set" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unset">Not set</SelectItem>
                     <SelectItem value="enable">Enable</SelectItem>
@@ -310,27 +306,25 @@ export function ConntrackPanel({ config, capabilities, isReadOnly, onRefresh }: 
                   {config.conntrack.tcp_loose ?? <span className="text-muted-foreground">Default</span>}
                 </p>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label>Half-Open Connections</Label>
+            </FormField>
+            <FormField label="Half-Open Connections" htmlFor="tcp-half-open">
               {editingTcp ? (
-                <Input type="number" min="0" value={tcpHalfOpen} onChange={(e) => setTcpHalfOpen(e.target.value)} placeholder="512" />
+                <Input id="tcp-half-open" type="number" min="0" value={tcpHalfOpen} onChange={(e) => setTcpHalfOpen(e.target.value)} placeholder="512" />
               ) : (
                 <p className="text-sm font-medium">
                   {config.conntrack.tcp_half_open_connections ?? <span className="text-muted-foreground">Default</span>}
                 </p>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label>Max Retransmits</Label>
+            </FormField>
+            <FormField label="Max Retransmits" htmlFor="tcp-max-retrans">
               {editingTcp ? (
-                <Input type="number" min="0" value={tcpMaxRetrans} onChange={(e) => setTcpMaxRetrans(e.target.value)} placeholder="3" />
+                <Input id="tcp-max-retrans" type="number" min="0" value={tcpMaxRetrans} onChange={(e) => setTcpMaxRetrans(e.target.value)} placeholder="3" />
               ) : (
                 <p className="text-sm font-medium">
                   {config.conntrack.tcp_max_retrans ?? <span className="text-muted-foreground">Default</span>}
                 </p>
               )}
-            </div>
+            </FormField>
           </div>
         </CardContent>
       </Card>
