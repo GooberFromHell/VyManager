@@ -1,0 +1,38 @@
+id: "task-002"
+title: "Update session middleware to include Prometheus fields"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-003"]
+parallel_with: []
+
+files:
+  modify:
+    - "backend/middleware/session.py"
+
+context_files:
+  - "backend/middleware/session.py"
+
+instructions: |
+  Update the session middleware to include Prometheus fields when fetching instance data.
+
+  1. Find the SQL query that fetches instance data (the SELECT statement that populates `request.state.instance`).
+  2. Add these columns to the SELECT: "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername", "prometheusPassword"
+  3. These fields will be available at `request.state.instance["prometheusEnabled"]` etc.
+
+  Do NOT decrypt the prometheusPassword here — that will be handled by the Prometheus router when making requests.
+
+acceptance_criteria:
+  - "Grep match: 'prometheusEnabled' in backend/middleware/session.py"
+  - "Grep match: 'prometheusPort' in backend/middleware/session.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

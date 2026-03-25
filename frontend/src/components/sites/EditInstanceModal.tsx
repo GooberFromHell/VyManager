@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -21,9 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertCircle, Loader2, Server } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
+import { AlertCircle, ChevronDown, Loader2, Server } from "lucide-react";
 import { sessionService, Instance, Site } from "@/lib/api/session";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SSHKeySetup } from "@/components/monitoring/SSHKeySetup";
 
 interface EditInstanceModalProps {
@@ -55,6 +56,11 @@ export function EditInstanceModal({
   const [sshUsername, setSshUsername] = useState("");
   const [commitConfirmEnabled, setCommitConfirmEnabled] = useState(false);
   const [commitConfirmMinutes, setCommitConfirmMinutes] = useState("5");
+  const [prometheusEnabled, setPrometheusEnabled] = useState(false);
+  const [prometheusPort, setPrometheusPort] = useState("9273");
+  const [prometheusAuth, setPrometheusAuth] = useState(false);
+  const [prometheusUsername, setPrometheusUsername] = useState("");
+  const [prometheusPassword, setPrometheusPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +77,11 @@ export function EditInstanceModal({
       setSshUsername(instance.ssh_username || "");
       setCommitConfirmEnabled(instance.commit_confirm_enabled ?? false);
       setCommitConfirmMinutes((instance.commit_confirm_minutes ?? 5).toString());
+      setPrometheusEnabled(instance.prometheus_enabled ?? false);
+      setPrometheusPort((instance.prometheus_port ?? 9273).toString());
+      setPrometheusAuth(instance.prometheus_auth ?? false);
+      setPrometheusUsername(instance.prometheus_username || "");
+      setPrometheusPassword("");
       // Don't populate API key for security
       setApiKey("");
       setProtocol(instance.protocol || "https");
@@ -93,6 +104,11 @@ export function EditInstanceModal({
     setSshUsername("");
     setCommitConfirmEnabled(false);
     setCommitConfirmMinutes("5");
+    setPrometheusEnabled(false);
+    setPrometheusPort("9273");
+    setPrometheusAuth(false);
+    setPrometheusUsername("");
+    setPrometheusPassword("");
     setError(null);
     onOpenChange(false);
   };
@@ -140,6 +156,11 @@ export function EditInstanceModal({
         verify_ssl: verifySsl,
         commit_confirm_enabled: commitConfirmEnabled,
         commit_confirm_minutes: parseInt(commitConfirmMinutes) || 5,
+        prometheus_enabled: prometheusEnabled,
+        prometheus_port: parseInt(prometheusPort) || 9273,
+        prometheus_auth: prometheusAuth,
+        prometheus_username: prometheusAuth ? prometheusUsername.trim() || undefined : undefined,
+        ...(prometheusAuth && prometheusPassword ? { prometheus_password: prometheusPassword } : {}),
       };
 
       if (apiKey.trim()) {
@@ -202,128 +223,124 @@ export function EditInstanceModal({
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="name">Instance Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., vyos-router-01"
-                  disabled={loading}
-                  required
-                />
-              </div>
+              <Fieldset>
+                <FormField label="Instance Name" htmlFor="name" required>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g., vyos-router-01"
+                    disabled={loading}
+                    required
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Additional information..."
-                  rows={2}
-                  disabled={loading}
-                />
-              </div>
+                <FormField label="Description (Optional)" htmlFor="description">
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Additional information..."
+                    rows={2}
+                    disabled={loading}
+                  />
+                </FormField>
 
-              {canMoveSite && (
-                <div className="space-y-2">
-                  <Label htmlFor="siteId">Site</Label>
+                {canMoveSite && (
+                  <FormField label="Site" htmlFor="siteId">
+                    <Select
+                      value={siteId}
+                      onValueChange={setSiteId}
+                      disabled={loading}
+                    >
+                      <SelectTrigger id="siteId">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sites
+                          .filter((s) => s.role === "ADMIN")
+                          .map((site) => (
+                            <SelectItem key={site.id} value={site.id}>
+                              {site.name}
+                              {site.id === instance.site_id ? " (Current)" : ""}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    {siteId !== instance.site_id && (
+                      <p className="text-xs text-warning">
+                        Moving to a different site
+                      </p>
+                    )}
+                  </FormField>
+                )}
+
+                <FormField label="VyOS Version" htmlFor="vyosVersion">
                   <Select
-                    value={siteId}
-                    onValueChange={setSiteId}
+                    value={vyosVersion}
+                    onValueChange={setVyosVersion}
                     disabled={loading}
                   >
-                    <SelectTrigger id="siteId">
+                    <SelectTrigger id="vyosVersion">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {sites
-                        .filter((s) => s.role === "ADMIN")
-                        .map((site) => (
-                          <SelectItem key={site.id} value={site.id}>
-                            {site.name}
-                            {site.id === instance.site_id ? " (Current)" : ""}
-                          </SelectItem>
-                        ))}
+                      <SelectItem value="1.4">VyOS 1.4</SelectItem>
+                      <SelectItem value="1.5">VyOS 1.5</SelectItem>
                     </SelectContent>
                   </Select>
-                  {siteId !== instance.site_id && (
-                    <p className="text-xs text-warning">
-                      ⚠️ Moving to a different site
-                    </p>
-                  )}
-                </div>
-              )}
+                </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="vyosVersion">VyOS Version</Label>
-                <Select
-                  value={vyosVersion}
-                  onValueChange={setVyosVersion}
-                  disabled={loading}
+                <FormField label="Instance is active" htmlFor="isActive" horizontal>
+                  <Checkbox
+                    id="isActive"
+                    checked={isActive}
+                    onCheckedChange={(checked) => setIsActive(checked as boolean)}
+                    disabled={loading}
+                  />
+                </FormField>
+              </Fieldset>
+
+              <FieldsetDivider />
+
+              <Fieldset label="Commit-Confirm">
+                <FormField
+                  label="Enable Commit-Confirm"
+                  htmlFor="editCommitConfirmEnabled"
+                  description={
+                    vyosVersion === "1.4"
+                      ? "Not supported on VyOS 1.4"
+                      : "All changes will require confirmation or VyOS will auto-revert"
+                  }
+                  horizontal
                 >
-                  <SelectTrigger id="vyosVersion">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1.4">VyOS 1.4</SelectItem>
-                    <SelectItem value="1.5">VyOS 1.5</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isActive"
-                  checked={isActive}
-                  onCheckedChange={(checked) => setIsActive(checked as boolean)}
-                  disabled={loading}
-                />
-                <Label htmlFor="isActive" className="cursor-pointer">
-                  Instance is active
-                </Label>
-              </div>
-
-              {/* Commit-Confirm */}
-              <div className="space-y-3 rounded-lg border p-3">
-                <div className="flex items-center space-x-2">
                   <Checkbox
                     id="editCommitConfirmEnabled"
                     checked={commitConfirmEnabled}
                     onCheckedChange={(checked) => setCommitConfirmEnabled(checked as boolean)}
                     disabled={loading || vyosVersion === "1.4"}
                   />
-                  <div>
-                    <Label htmlFor="editCommitConfirmEnabled" className="cursor-pointer">
-                      Enable Commit-Confirm
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {vyosVersion === "1.4"
-                        ? "Not supported on VyOS 1.4"
-                        : "All changes will require confirmation or VyOS will auto-revert"}
-                    </p>
-                  </div>
-                </div>
+                </FormField>
                 {commitConfirmEnabled && (
-                  <div className="flex items-center gap-3 pl-6">
-                    <Label htmlFor="editCommitConfirmMinutes" className="whitespace-nowrap text-sm">
-                      Confirm window
-                    </Label>
-                    <Input
-                      id="editCommitConfirmMinutes"
-                      type="number"
-                      min={1}
-                      max={60}
-                      value={commitConfirmMinutes}
-                      onChange={(e) => setCommitConfirmMinutes(e.target.value)}
-                      disabled={loading}
-                      className="w-20"
-                    />
-                    <span className="text-sm text-muted-foreground">minutes</span>
+                  <div className="flex items-center gap-3 pl-8">
+                    <FormField label="Confirm window" htmlFor="editCommitConfirmMinutes">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="editCommitConfirmMinutes"
+                          type="number"
+                          min={1}
+                          max={60}
+                          value={commitConfirmMinutes}
+                          onChange={(e) => setCommitConfirmMinutes(e.target.value)}
+                          disabled={loading}
+                          className="w-20"
+                        />
+                        <span className="text-sm text-muted-foreground">minutes</span>
+                      </div>
+                    </FormField>
                   </div>
                 )}
-              </div>
+              </Fieldset>
 
               <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
@@ -352,40 +369,39 @@ export function EditInstanceModal({
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="host">Host</Label>
-                <Input
-                  id="host"
-                  value={host}
-                  onChange={(e) => setHost(e.target.value)}
-                  placeholder="192.168.1.1 or vyos.example.com"
-                  disabled={loading}
-                  required
-                />
-              </div>
+              <Fieldset>
+                <FormField label="Host" htmlFor="host" required>
+                  <Input
+                    id="host"
+                    value={host}
+                    onChange={(e) => setHost(e.target.value)}
+                    placeholder="192.168.1.1 or vyos.example.com"
+                    disabled={loading}
+                    required
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="port">API Port</Label>
-                <Input
-                  id="port"
-                  type="number"
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
-                  placeholder="443"
-                  min="1"
-                  max="65535"
-                  disabled={loading}
-                />
-              </div>
+                <FormField label="API Port" htmlFor="port">
+                  <Input
+                    id="port"
+                    type="number"
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
+                    placeholder="443"
+                    min="1"
+                    max="65535"
+                    disabled={loading}
+                  />
+                </FormField>
+              </Fieldset>
 
-              <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
-                <p className="text-sm font-medium">Update API Credentials (Optional)</p>
-                <p className="text-xs text-muted-foreground">
-                  Leave blank to keep existing credentials
-                </p>
+              <FieldsetDivider />
 
-                <div className="space-y-2">
-                  <Label htmlFor="protocol">Protocol</Label>
+              <Fieldset
+                label="Update API Credentials (Optional)"
+                description="Leave blank to keep existing credentials"
+              >
+                <FormField label="Protocol" htmlFor="protocol">
                   <Select
                     value={protocol}
                     onValueChange={setProtocol}
@@ -399,10 +415,9 @@ export function EditInstanceModal({
                       <SelectItem value="http">HTTP</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">New API Key</Label>
+                <FormField label="New API Key" htmlFor="apiKey">
                   <Input
                     id="apiKey"
                     type="password"
@@ -411,9 +426,9 @@ export function EditInstanceModal({
                     placeholder="Leave blank to keep existing"
                     disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="flex items-center space-x-2">
+                <FormField label="Verify SSL certificate" htmlFor="verifySsl" horizontal>
                   <Checkbox
                     id="verifySsl"
                     checked={verifySsl}
@@ -422,11 +437,8 @@ export function EditInstanceModal({
                     }
                     disabled={loading}
                   />
-                  <Label htmlFor="verifySsl" className="cursor-pointer">
-                    Verify SSL certificate
-                  </Label>
-                </div>
-              </div>
+                </FormField>
+              </Fieldset>
 
               <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
@@ -447,31 +459,89 @@ export function EditInstanceModal({
 
             <TabsContent value="ssh" className="space-y-4 mt-4">
               {/* SSH connection fields — saved with the form */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sshUsername">SSH Username</Label>
-                  <Input
-                    id="sshUsername"
-                    value={sshUsername}
-                    onChange={(e) => setSshUsername(e.target.value)}
-                    placeholder="vyos"
-                    disabled={loading}
-                  />
+              <Fieldset>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="SSH Username" htmlFor="sshUsername">
+                    <Input
+                      id="sshUsername"
+                      value={sshUsername}
+                      onChange={(e) => setSshUsername(e.target.value)}
+                      placeholder="vyos"
+                      disabled={loading}
+                    />
+                  </FormField>
+                  <FormField label="SSH Port" htmlFor="sshPort">
+                    <Input
+                      id="sshPort"
+                      type="number"
+                      value={sshPort}
+                      onChange={(e) => setSshPort(e.target.value)}
+                      placeholder="22"
+                      min="1"
+                      max="65535"
+                      disabled={loading}
+                    />
+                  </FormField>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sshPort">SSH Port</Label>
-                  <Input
-                    id="sshPort"
-                    type="number"
-                    value={sshPort}
-                    onChange={(e) => setSshPort(e.target.value)}
-                    placeholder="22"
-                    min="1"
-                    max="65535"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+              </Fieldset>
+
+              <Collapsible open={prometheusEnabled} onOpenChange={setPrometheusEnabled}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between px-0 font-normal text-muted-foreground hover:text-foreground">
+                    <span className="text-sm">Prometheus Monitoring</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${prometheusEnabled ? "rotate-180" : ""}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 pt-2">
+                  <p className="text-xs text-muted-foreground">
+                    Connect to a Prometheus node_exporter running on the VyOS device for hardware and system metrics.
+                  </p>
+                  <Fieldset label="Prometheus Port">
+                    <Input
+                      type="number"
+                      value={prometheusPort}
+                      onChange={(e) => setPrometheusPort(e.target.value)}
+                      placeholder="9273"
+                      min="1"
+                      max="65535"
+                      disabled={loading}
+                    />
+                  </Fieldset>
+                  <Fieldset>
+                    <FormField label="Require authentication" htmlFor="editPrometheusAuth" horizontal>
+                      <Checkbox
+                        id="editPrometheusAuth"
+                        checked={prometheusAuth}
+                        onCheckedChange={(checked) => setPrometheusAuth(checked as boolean)}
+                        disabled={loading}
+                      />
+                    </FormField>
+                  </Fieldset>
+                  {prometheusAuth && (
+                    <Fieldset>
+                      <FormField label="Username" htmlFor="editPrometheusUsername">
+                        <Input
+                          id="editPrometheusUsername"
+                          value={prometheusUsername}
+                          onChange={(e) => setPrometheusUsername(e.target.value)}
+                          placeholder="prometheus"
+                          disabled={loading}
+                        />
+                      </FormField>
+                      <FormField label="Password" htmlFor="editPrometheusPassword">
+                        <Input
+                          id="editPrometheusPassword"
+                          type="password"
+                          value={prometheusPassword}
+                          onChange={(e) => setPrometheusPassword(e.target.value)}
+                          placeholder="Leave blank to keep existing"
+                          disabled={loading}
+                        />
+                      </FormField>
+                    </Fieldset>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
 
               <div className="flex justify-end gap-2 pb-2">
                 <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>

@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { staticRoutesService } from "@/lib/api/static-routes";
 
 interface CreateRoutingTableModalProps {
@@ -91,28 +91,32 @@ export function CreateRoutingTableModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="table-id">Table ID (1-200)</Label>
-            <Input
-              id="table-id"
-              type="number"
-              min="1"
-              max="200"
-              placeholder="100"
-              value={tableId}
-              onChange={(e) => setTableId(e.target.value)}
-            />
-          </div>
+          <Fieldset>
+            <FormField
+              label="Table ID (1-200)"
+              htmlFor="table-id"
+              required
+            >
+              <Input
+                id="table-id"
+                type="number"
+                min="1"
+                max="200"
+                placeholder="100"
+                value={tableId}
+                onChange={(e) => setTableId(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Input
-              id="description"
-              placeholder="Description for this routing table"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Description for this routing table (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

@@ -1,0 +1,34 @@
+goal: "Implement 6 onboarding UX improvements: reusable EmptyState component, contextual loading screens, post-setup WelcomeCard, useFirstVisit hook with contextual hints, onboarding wizard skip option, and sidebar tooltip help icons."
+
+scope:
+  include:
+    - "frontend/src/components/**"
+    - "frontend/src/hooks/**"
+    - "frontend/src/app/**"
+  exclude:
+    - "backend/**"
+    - "**/node_modules/**"
+
+constraints:
+  - "Frontend-only changes — no backend modifications"
+  - "Must work with existing dark-mode-only theme"
+  - "Use shadcn/ui components and Tailwind classes"
+  - "localStorage for first-visit tracking — no database changes"
+  - "All hints/tooltips must be dismissable"
+  - "Permission-aware CTAs on empty states"
+
+acceptance_criteria:
+  - "EmptyState component exists and is used on 8+ pages"
+  - "Loading screens show contextual messages"
+  - "WelcomeCard renders on dashboard for first-time users"
+  - "useFirstVisit hook exists and works with localStorage"
+  - "Onboarding wizard has skip option on steps 2 and 3"
+  - "Sidebar shows ? icons with tooltips"
+  - "TypeScript compiles with zero errors"
+  - "Lint passes with no new errors"
+
+human_checkpoints:
+  - after: resolve
+
+max_iterations: 3
+context: "Based on design critique findings. All file locations and patterns are already known from the critique agents."

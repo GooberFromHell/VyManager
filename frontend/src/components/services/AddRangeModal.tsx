@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -179,10 +179,13 @@ export function AddRangeModal({
           </div>
 
           {/* Subnet Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="subnet">Subnet</Label>
+          <FormField
+            label="Subnet"
+            htmlFor="subnet"
+            description="Select the subnet where this range will be created"
+          >
             <Select value={selectedSubnet} onValueChange={setSelectedSubnet}>
-              <SelectTrigger>
+              <SelectTrigger id="subnet">
                 <SelectValue placeholder="Select a subnet" />
               </SelectTrigger>
               <SelectContent>
@@ -193,14 +196,14 @@ export function AddRangeModal({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Select the subnet where this range will be created
-            </p>
-          </div>
+          </FormField>
 
           {/* Start IP */}
-          <div className="space-y-2">
-            <Label htmlFor="start-ip">Start IP Address</Label>
+          <FormField
+            label="Start IP Address"
+            htmlFor="start-ip"
+            description="The first IP address in the range"
+          >
             <Input
               id="start-ip"
               placeholder="e.g., 192.168.1.100"
@@ -208,14 +211,14 @@ export function AddRangeModal({
               onChange={(e) => setStartIp(e.target.value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              The first IP address in the range
-            </p>
-          </div>
+          </FormField>
 
           {/* Stop IP */}
-          <div className="space-y-2">
-            <Label htmlFor="stop-ip">Stop IP Address</Label>
+          <FormField
+            label="Stop IP Address"
+            htmlFor="stop-ip"
+            description="The last IP address in the range"
+          >
             <Input
               id="stop-ip"
               placeholder="e.g., 192.168.1.200"
@@ -223,10 +226,7 @@ export function AddRangeModal({
               onChange={(e) => setStopIp(e.target.value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              The last IP address in the range
-            </p>
-          </div>
+          </FormField>
 
           {/* Error Display */}
           {error && (

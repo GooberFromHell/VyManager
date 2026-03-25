@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -309,215 +309,201 @@ export function ComprehensiveVLANModal({
 
             {/* Basic Tab */}
             <TabsContent value="basic" className="space-y-4">
-              {mode === "create" && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="parent-interface">
-                      Parent Interface <span className="text-destructive">*</span>
-                    </Label>
-                    <Select value={parentInterface || undefined} onValueChange={setParentInterface}>
-                      <SelectTrigger id="parent-interface">
-                        <SelectValue placeholder="Select parent interface" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {interfaces.map((iface) => (
-                          <SelectItem key={iface.name} value={iface.name}>
-                            {iface.name}
-                            {iface.description && ` - ${iface.description}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <Fieldset label="VLAN Identity">
+                {mode === "create" && (
+                  <>
+                    <FormField label="Parent Interface" htmlFor="parent-interface" required>
+                      <Select value={parentInterface || undefined} onValueChange={setParentInterface}>
+                        <SelectTrigger id="parent-interface">
+                          <SelectValue placeholder="Select parent interface" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {interfaces.map((iface) => (
+                            <SelectItem key={iface.name} value={iface.name}>
+                              {iface.name}
+                              {iface.description && ` - ${iface.description}`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="vlan-id">
-                      VLAN ID <span className="text-destructive">*</span>
-                    </Label>
+                    <FormField label="VLAN ID" htmlFor="vlan-id" description="Valid range: 1-4094" required>
+                      <Input
+                        id="vlan-id"
+                        type="number"
+                        min="1"
+                        max="4094"
+                        placeholder="100"
+                        value={vlanId}
+                        onChange={(e) => setVlanId(e.target.value)}
+                        required
+                      />
+                    </FormField>
+                  </>
+                )}
+
+                {mode === "edit" && (
+                  <FormField label="VLAN Interface" description={`Parent: ${vlan?.parentInterface} • VLAN ID: ${vlan?.vlan_id}`}>
+                    <Input value={vlan?.fullName} disabled className="font-mono bg-muted/50" />
+                  </FormField>
+                )}
+
+                {capabilities?.features.vlan.vif_description && (
+                  <FormField label="Description" htmlFor="description">
                     <Input
-                      id="vlan-id"
-                      type="number"
-                      min="1"
-                      max="4094"
-                      placeholder="100"
-                      value={vlanId}
-                      onChange={(e) => setVlanId(e.target.value)}
-                      required
+                      id="description"
+                      placeholder="Guest Network VLAN"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Valid range: 1-4094
-                    </p>
-                  </div>
-                </>
-              )}
-
-              {mode === "edit" && (
-                <div className="space-y-2">
-                  <Label>VLAN Interface</Label>
-                  <Input value={vlan?.fullName} disabled className="font-mono" />
-                  <p className="text-xs text-muted-foreground">
-                    Parent: {vlan?.parentInterface} • VLAN ID: {vlan?.vlan_id}
-                  </p>
-                </div>
-              )}
-
-              {capabilities?.features.vlan.vif_description && (
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    placeholder="Guest Network VLAN"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-              )}
+                  </FormField>
+                )}
+              </Fieldset>
 
               {capabilities?.features.vlan.vif_address && (
-                <div className="space-y-2">
-                  <Label>IP Addresses</Label>
-                  {addresses.map((address, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        placeholder="10.0.0.1/24 or 2001:db8::1/64"
-                        value={address}
-                        onChange={(e) => handleAddressChange(index, e.target.value)}
-                      />
-                      {addresses.length > 0 && (
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="IP Addresses">
+                    <FormField label="Addresses">
+                      <div className="space-y-2">
+                        {addresses.map((address, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              placeholder="10.0.0.1/24 or 2001:db8::1/64"
+                              value={address}
+                              onChange={(e) => handleAddressChange(index, e.target.value)}
+                            />
+                            {addresses.length > 0 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveAddress(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleRemoveAddress(index)}
+                          onClick={handleAddAddress}
                         >
-                          <X className="h-4 w-4" />
+                          Add Address
                         </Button>
-                      )}
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddAddress}
-                  >
-                    Add Address
-                  </Button>
-                </div>
+                      </div>
+                    </FormField>
+                  </Fieldset>
+                </>
               )}
 
               {capabilities?.features.vlan.vif_disable && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="disable"
-                    checked={disabled}
-                    onCheckedChange={(checked) => setDisabled(checked as boolean)}
-                  />
-                  <Label htmlFor="disable" className="cursor-pointer">
-                    Administratively disable VLAN
-                  </Label>
-                </div>
+                <>
+                  <FieldsetDivider />
+                  <Fieldset>
+                    <FormField label="Administratively Disable VLAN" htmlFor="disable" horizontal>
+                      <Checkbox
+                        id="disable"
+                        checked={disabled}
+                        onCheckedChange={(checked) => setDisabled(checked as boolean)}
+                      />
+                    </FormField>
+                  </Fieldset>
+                </>
               )}
             </TabsContent>
 
             {/* Advanced Tab */}
             <TabsContent value="advanced" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {capabilities?.features.vlan.vif_mtu && (
-                  <div className="space-y-2">
-                    <Label htmlFor="mtu">MTU</Label>
-                    <Input
-                      id="mtu"
-                      type="number"
-                      placeholder="1500"
-                      value={mtu}
-                      onChange={(e) => setMtu(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Must be ≤ parent interface MTU
-                    </p>
-                  </div>
-                )}
+              <Fieldset label="Interface Settings">
+                <div className="grid grid-cols-2 gap-4">
+                  {capabilities?.features.vlan.vif_mtu && (
+                    <FormField label="MTU" htmlFor="mtu" description="Must be ≤ parent interface MTU">
+                      <Input
+                        id="mtu"
+                        type="number"
+                        placeholder="1500"
+                        value={mtu}
+                        onChange={(e) => setMtu(e.target.value)}
+                      />
+                    </FormField>
+                  )}
 
-                {capabilities?.features.vlan.vif_mac && (
-                  <div className="space-y-2">
-                    <Label htmlFor="mac">MAC Address</Label>
-                    <Input
-                      id="mac"
-                      placeholder="00:11:22:33:44:55"
-                      value={mac}
-                      onChange={(e) => setMac(e.target.value)}
-                    />
-                  </div>
-                )}
+                  {capabilities?.features.vlan.vif_mac && (
+                    <FormField label="MAC Address" htmlFor="mac">
+                      <Input
+                        id="mac"
+                        placeholder="00:11:22:33:44:55"
+                        value={mac}
+                        onChange={(e) => setMac(e.target.value)}
+                      />
+                    </FormField>
+                  )}
 
-                {capabilities?.features.vlan.vif_vrf && (
-                  <div className="space-y-2">
-                    <Label htmlFor="vrf">VRF</Label>
-                    <Input
-                      id="vrf"
-                      placeholder="MGMT"
-                      value={vrf}
-                      onChange={(e) => setVrf(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
+                  {capabilities?.features.vlan.vif_vrf && (
+                    <FormField label="VRF" htmlFor="vrf">
+                      <Input
+                        id="vrf"
+                        placeholder="MGMT"
+                        value={vrf}
+                        onChange={(e) => setVrf(e.target.value)}
+                      />
+                    </FormField>
+                  )}
+                </div>
+              </Fieldset>
             </TabsContent>
 
             {/* DHCP/IPv6 Tab */}
             <TabsContent value="dhcp" className="space-y-4">
               {capabilities?.features.vlan.vif_dhcp_options && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">DHCP Options</h3>
+                <Fieldset label="DHCP Options">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcp-client-id">Client ID</Label>
+                    <FormField label="Client ID" htmlFor="dhcp-client-id">
                       <Input
                         id="dhcp-client-id"
                         placeholder="client-identifier"
                         value={dhcpClientId}
                         onChange={(e) => setDhcpClientId(e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dhcp-hostname">Host Name</Label>
+                    </FormField>
+                    <FormField label="Host Name" htmlFor="dhcp-hostname">
                       <Input
                         id="dhcp-hostname"
                         placeholder="my-host"
                         value={dhcpHostName}
                         onChange={(e) => setDhcpHostName(e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
-                </div>
+                </Fieldset>
+              )}
+
+              {capabilities?.features.vlan.vif_dhcp_options && capabilities?.features.vlan.vif_ipv6 && (
+                <FieldsetDivider />
               )}
 
               {capabilities?.features.vlan.vif_ipv6 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">IPv6 Settings</h3>
-                  <div className="space-y-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="ipv6-eui64">EUI-64 Prefix</Label>
-                      <Input
-                        id="ipv6-eui64"
-                        placeholder="2001:db8::/64"
-                        value={ipv6Eui64}
-                        onChange={(e) => setIpv6Eui64(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="ipv6-autoconf"
-                        checked={ipv6Autoconf}
-                        onCheckedChange={(checked) => setIpv6Autoconf(checked as boolean)}
-                      />
-                      <Label htmlFor="ipv6-autoconf" className="cursor-pointer text-sm">
-                        Enable IPv6 Autoconfig
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                <Fieldset label="IPv6 Settings">
+                  <FormField label="EUI-64 Prefix" htmlFor="ipv6-eui64">
+                    <Input
+                      id="ipv6-eui64"
+                      placeholder="2001:db8::/64"
+                      value={ipv6Eui64}
+                      onChange={(e) => setIpv6Eui64(e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="Enable IPv6 Autoconfig" htmlFor="ipv6-autoconf" horizontal>
+                    <Checkbox
+                      id="ipv6-autoconf"
+                      checked={ipv6Autoconf}
+                      onCheckedChange={(checked) => setIpv6Autoconf(checked as boolean)}
+                    />
+                  </FormField>
+                </Fieldset>
               )}
             </TabsContent>
           </Tabs>

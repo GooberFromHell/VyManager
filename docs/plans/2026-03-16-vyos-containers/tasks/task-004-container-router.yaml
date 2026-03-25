@@ -1,0 +1,199 @@
+id: "task-004"
+title: "Create container router with endpoints"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-001", "task-003"]
+blocks: ["task-005"]
+parallel_with: []
+
+files:
+  create:
+    - "backend/routers/container/__init__.py"
+    - "backend/routers/container/container.py"
+  modify:
+    - "backend/app.py"
+
+context_files:
+  - "backend/routers/ntp/ntp.py"
+  - "backend/routers/snmp/snmp.py"
+  - "backend/app.py"
+  - "backend/vyos_builders/container/container.py"
+
+instructions: |
+  Create container router with 3 standard endpoints following the NTP/SNMP router pattern.
+
+  ## 1. backend/routers/container/__init__.py
+  ```python
+  from . import container
+  ```
+
+  ## 2. backend/routers/container/container.py
+
+  Create FastAPI router with prefix="/vyos/container", tags=["container"].
+
+  ### Pydantic Models:
+
+  ```python
+  # --- Container Name Models ---
+  class ContainerPort(BaseModel):
+      name: str
+      source: Optional[str] = None
+      destination: Optional[str] = None
+      protocol: str = "tcp"
+
+  class ContainerVolume(BaseModel):
+      name: str
+      source: Optional[str] = None
+      destination: Optional[str] = None
+      mode: str = "rw"
+
+  class ContainerEnvironment(BaseModel):
+      key: str
+      value: str
+
+  class ContainerLabel(BaseModel):
+      key: str
+      value: str
+
+  class ContainerDevice(BaseModel):
+      name: str
+      source: Optional[str] = None
+      destination: Optional[str] = None
+
+  class ContainerSysctl(BaseModel):
+      parameter: str
+      value: str
+
+  class ContainerTmpfs(BaseModel):
+      name: str
+      destination: Optional[str] = None
+      size: Optional[int] = None
+
+  class ContainerEntry(BaseModel):
+      name: str
+      image: Optional[str] = None
+      networks: List[str] = Field(default_factory=list)
+      network_addresses: Dict[str, str] = Field(default_factory=dict)  # network_name -> address
+      ports: List[ContainerPort] = Field(default_factory=list)
+      volumes: List[ContainerVolume] = Field(default_factory=list)
+      environment: List[ContainerEnvironment] = Field(default_factory=list)
+      labels: List[ContainerLabel] = Field(default_factory=list)
+      devices: List[ContainerDevice] = Field(default_factory=list)
+      capabilities: List[str] = Field(default_factory=list)
+      restart: Optional[str] = None
+      memory: Optional[int] = None
+      cpu_quota: Optional[str] = None
+      description: Optional[str] = None
+      host_name: Optional[str] = None
+      entrypoint: Optional[str] = None
+      command: Optional[str] = None
+      arguments: Optional[str] = None
+      uid: Optional[int] = None
+      gid: Optional[int] = None
+      allow_host_networks: bool = False
+      allow_host_pid: bool = False
+      disabled: bool = False
+      name_servers: List[str] = Field(default_factory=list)
+      log_driver: Optional[str] = None
+      sysctls: List[ContainerSysctl] = Field(default_factory=list)
+      tmpfs_mounts: List[ContainerTmpfs] = Field(default_factory=list)
+
+  # --- Network Models ---
+  class ContainerNetwork(BaseModel):
+      name: str
+      prefixes: List[str] = Field(default_factory=list)
+      description: Optional[str] = None
+      mtu: Optional[int] = None
+      vrf: Optional[str] = None
+      no_name_server: bool = False
+
+  # --- Registry Models ---
+  class ContainerRegistry(BaseModel):
+      url: str
+      username: Optional[str] = None
+      password: Optional[str] = None
+      disabled: bool = False
+      insecure: bool = False
+
+  # --- Response Models ---
+  class ContainerConfigResponse(BaseModel):
+      containers: List[ContainerEntry] = Field(default_factory=list)
+      networks: List[ContainerNetwork] = Field(default_factory=list)
+      registries: List[ContainerRegistry] = Field(default_factory=list)
+
+  # --- Batch Models ---
+  class ContainerBatchOperation(BaseModel):
+      op: str = Field(..., description="Builder method name")
+      value: Optional[str] = Field(None, description="Value for operation")
+
+  class ContainerBatchRequest(BaseModel):
+      item_name: str = Field(..., description="Container name, network name, or registry URL")
+      operations: List[ContainerBatchOperation]
+
+  class VyOSResponse(BaseModel):
+      success: bool
+      data: Optional[Dict[str, Any]] = None
+      error: Optional[str] = None
+  ```
+
+  ### Endpoints:
+
+  #### GET /capabilities
+  - Permission: `require_read_permission(request, FeatureGroup.CONTAINER)`
+  - Get service via `get_session_vyos_service(request)`
+  - Get version, create builder, return `builder.get_capabilities()`
+  - Add instance_name/instance_id from request.state.instance
+
+  #### GET /config
+  - Permission: `require_read_permission(request, FeatureGroup.CONTAINER)`
+  - Get full_config via service
+  - Parse `full_config.get("container", {})` into ContainerConfigResponse
+  - Config parsing logic:
+    - `container_config.get("name", {})` → iterate dict, parse each container
+    - For each container: parse ports (dict of port entries), volumes (dict), environment (dict of {key: {value: val}}), labels (dict), devices (dict), capabilities/cap-add (list or dict), networks (dict with optional address), etc.
+    - `container_config.get("network", {})` → iterate dict, parse each network
+    - For each network: parse prefixes (can be string or dict), description, mtu, vrf
+    - `container_config.get("registry", {})` → iterate dict, parse each registry
+    - For each registry: parse authentication (username/password), disable flag, insecure flag
+  - Return ContainerConfigResponse with all three lists
+
+  #### POST /batch
+  - Permission: `require_write_permission(request, FeatureGroup.CONTAINER)`
+  - Snapshot before change: `ensure_snapshot_before_change(instance_id, current_config)`
+  - Create ContainerBatchBuilder
+  - Block internal methods: `add_set`, `add_delete`, `clear`, `get_operations`, `operation_count`, `is_empty`, `get_capabilities`
+  - Process operations using inspect.signature pattern (same as NTP)
+  - Execute batch via `service.execute_batch(builder)`
+  - Return VyOSResponse
+
+  ## 3. Register in backend/app.py
+
+  Add import (after conntrack_sync import):
+  ```python
+  from routers.container import container as container_router
+  ```
+
+  Add router inclusion (after conntrack_sync):
+  ```python
+  app.include_router(container_router.router)
+  ```
+
+acceptance_criteria:
+  - "File exists: backend/routers/container/__init__.py"
+  - "File exists: backend/routers/container/container.py"
+  - "Grep match: 'router = APIRouter.*container' in backend/routers/container/container.py"
+  - "Grep match: 'container_router' in backend/app.py"
+  - "Grep match: 'get_container_capabilities' or '/capabilities' in backend/routers/container/container.py"
+  - "Grep match: 'ContainerConfigResponse' in backend/routers/container/container.py"
+  - "Grep match: '/batch' in backend/routers/container/container.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

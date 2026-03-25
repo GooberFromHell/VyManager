@@ -1,0 +1,134 @@
+id: "task-005"
+title: "Broadcast Relay — Frontend types, service, modals, page"
+phase: produce
+agent: react-specialist
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-002", "task-003", "task-004"]
+
+files:
+  create:
+    - "frontend/src/lib/api/types/broadcast-relay.ts"
+    - "frontend/src/lib/api/broadcast-relay.ts"
+    - "frontend/src/components/services/broadcast-relay/CreateBroadcastRelayModal.tsx"
+    - "frontend/src/components/services/broadcast-relay/EditBroadcastRelayModal.tsx"
+    - "frontend/src/components/services/broadcast-relay/DeleteBroadcastRelayModal.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/broadcast-relay/page.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/types/ntp.ts"
+  - "frontend/src/lib/api/ntp.ts"
+  - "frontend/src/components/services/ntp/CreateNTPServerModal.tsx"
+  - "frontend/src/components/services/ntp/EditNTPSettingsModal.tsx"
+  - "frontend/src/components/services/ntp/DeleteNTPServerModal.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "frontend/src/components/services/dns-forwarding/CreateDNSForwardingDomainModal.tsx"
+  - "frontend/src/components/services/dns-forwarding/DeleteDNSForwardingDomainModal.tsx"
+  - "frontend/src/lib/api/client.ts"
+
+instructions: |
+  Create Broadcast Relay frontend. This is collection-based (relay instances with numeric IDs).
+  Use NTP as reference for page/service patterns, DNS Forwarding for create/delete modal patterns.
+
+  ## Step 1: Types (frontend/src/lib/api/types/broadcast-relay.ts)
+
+  ```typescript
+  export interface BroadcastRelayInstance {
+    id: string;
+    description: string | null;
+    interfaces: string[];
+    address: string | null;
+    port: string | null;
+    disabled: boolean;
+  }
+
+  export interface BroadcastRelayConfig {
+    relays: BroadcastRelayInstance[];
+  }
+
+  export interface BroadcastRelayCapabilities {
+    version: string;
+    instance_name: string;
+    instance_id: string;
+    fields: {
+      description: { supported: boolean; description: string };
+      interface: { supported: boolean; description: string };
+      address: { supported: boolean; description: string };
+      port: { supported: boolean; description: string };
+      disable: { supported: boolean; description: string };
+    };
+  }
+
+  export interface BroadcastRelayBatchOperation {
+    op: string;
+    value?: string;
+  }
+
+  export interface BroadcastRelayBatchRequest {
+    item_name?: string;
+    operations: BroadcastRelayBatchOperation[];
+  }
+  ```
+
+  ## Step 2: API Service (frontend/src/lib/api/broadcast-relay.ts)
+
+  Standard service class with CRUD methods:
+  - getCapabilities(), getConfig(), batchConfigure(), refreshConfig()
+  - createRelay(id, operations[]) — create new relay instance
+  - updateRelay(id, operations[]) — update existing relay
+  - deleteRelay(id) — delete relay instance via batch with delete_id operation
+
+  ## Step 3: Create Modal (CreateBroadcastRelayModal.tsx)
+
+  Follow CreateDNSForwardingDomainModal pattern:
+  - Props: open, onOpenChange, onSuccess, existingIds (string[] for duplicate check)
+  - Form: ID (number 1-99), Description (text), Interfaces (multi-value), Address (IP), Port (number 1-65535)
+  - Validation: ID in range 1-99, not duplicate, valid IP for address, port in range
+  - Submit: build operations list, call createRelay()
+
+  ## Step 4: Edit Modal (EditBroadcastRelayModal.tsx)
+
+  Follow EditNTPSettingsModal pattern:
+  - Props: open, onOpenChange, onSuccess, relay (BroadcastRelayInstance | null), capabilities
+  - Form: Description, Interfaces (multi-value add/remove), Address, Port, Disabled (checkbox)
+  - Delta computation: compare old vs new values, generate set/delete operations
+  - Submit: call updateRelay(relay.id, operations)
+
+  ## Step 5: Delete Modal (DeleteBroadcastRelayModal.tsx)
+
+  Follow DeleteNTPServerModal pattern:
+  - Props: open, onOpenChange, onSuccess, relay (BroadcastRelayInstance | null)
+  - Confirmation with relay ID display
+  - Submit: call deleteRelay(relay.id)
+
+  ## Step 6: Page (broadcast-relay/page.tsx)
+
+  Follow NTP page pattern but with Table display for relay instances:
+  - Columns: ID, Description, Interfaces (Badges), Address, Port, Status (enabled/disabled), Actions
+  - Action column: Edit (pencil) and Delete (trash) buttons (if canWrite)
+  - Header: "Broadcast Relay" title + Create button + Refresh button
+  - Empty state: "No broadcast relay instances configured"
+  - Standard loading/error states
+  - Modal coordination: createOpen, editOpen, deleteOpen, selectedRelay state
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/types/broadcast-relay.ts"
+  - "File exists: frontend/src/lib/api/broadcast-relay.ts"
+  - "File exists: frontend/src/components/services/broadcast-relay/CreateBroadcastRelayModal.tsx"
+  - "File exists: frontend/src/components/services/broadcast-relay/EditBroadcastRelayModal.tsx"
+  - "File exists: frontend/src/components/services/broadcast-relay/DeleteBroadcastRelayModal.tsx"
+  - "File exists: frontend/src/app/(default)/(app)/system/services/broadcast-relay/page.tsx"
+  - "Grep match: 'BroadcastRelayConfig' in frontend/src/lib/api/types/broadcast-relay.ts"
+  - "Grep match: 'getCapabilities' in frontend/src/lib/api/broadcast-relay.ts"
+  - "Grep match: 'FeatureGroup.BROADCAST_RELAY' in frontend/src/app/(default)/(app)/system/services/broadcast-relay/page.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

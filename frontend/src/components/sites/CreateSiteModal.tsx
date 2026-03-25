@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertCircle, Loader2, Building2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
+import { AlertCircle, Loader2, Building2, Network } from "lucide-react";
 import { sessionService } from "@/lib/api/session";
 import { ApiError } from "@/lib/types/api";
 
@@ -95,35 +95,43 @@ export function CreateSiteModal({
               </div>
             )}
 
-            {/* Site Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="required">
-                Site Name
-              </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Main Office, Data Center 1"
-                disabled={loading}
+            <Fieldset>
+              <FormField
+                label="Site Name"
+                htmlFor="name"
+                description="A descriptive name for this site"
                 required
-              />
-              <p className="text-xs text-muted-foreground">
-                A descriptive name for this site
-              </p>
-            </div>
+              >
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Main Office, Data Center 1"
+                  disabled={loading}
+                  required
+                />
+              </FormField>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Additional information about this site..."
-                rows={3}
-                disabled={loading}
-              />
+              <FormField
+                label="Description (Optional)"
+                htmlFor="description"
+              >
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Additional information about this site..."
+                  rows={3}
+                  disabled={loading}
+                />
+              </FormField>
+            </Fieldset>
+
+            <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+              <Network className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">
+                You can configure a proxy host after adding instances via Edit Site.
+              </p>
             </div>
           </div>
 

@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { vrfService } from "@/lib/api/vrf";
 
 interface CreateVrfModalProps {
@@ -120,63 +120,64 @@ export function CreateVrfModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="vrf-name">Name *</Label>
-            <Input
-              id="vrf-name"
-              placeholder="e.g., MGMT, CUSTOMER"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Name" htmlFor="vrf-name" required>
+              <Input
+                id="vrf-name"
+                placeholder="e.g., MGMT, CUSTOMER"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="vrf-table">Table ID *</Label>
-            <Input
-              id="vrf-table"
-              placeholder="e.g., 100"
-              type="number"
-              min={1}
-              value={table}
-              onChange={(e) => setTable(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Unique routing table ID for this VRF (1-4294967295)
-            </p>
-          </div>
+            <FormField
+              label="Table ID"
+              htmlFor="vrf-table"
+              description="Unique routing table ID for this VRF (1-4294967295)"
+              required
+            >
+              <Input
+                id="vrf-table"
+                placeholder="e.g., 100"
+                type="number"
+                min={1}
+                value={table}
+                onChange={(e) => setTable(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="vrf-desc">Description</Label>
-            <Input
-              id="vrf-desc"
-              placeholder="Optional description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+            <FormField label="Description" htmlFor="vrf-desc">
+              <Input
+                id="vrf-desc"
+                placeholder="Optional description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="vrf-vni">VNI</Label>
-            <Input
-              id="vrf-vni"
-              placeholder="VXLAN Network Identifier"
-              type="number"
-              min={0}
-              value={vni}
-              onChange={(e) => setVni(e.target.value)}
-            />
-          </div>
+            <FormField label="VNI" htmlFor="vrf-vni">
+              <Input
+                id="vrf-vni"
+                placeholder="VXLAN Network Identifier"
+                type="number"
+                min={0}
+                value={vni}
+                onChange={(e) => setVni(e.target.value)}
+              />
+            </FormField>
 
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="vrf-disabled"
-              checked={disabled}
-              onCheckedChange={(checked) => setDisabled(checked === true)}
-            />
-            <Label htmlFor="vrf-disabled" className="text-sm font-normal">
-              Create in disabled state
-            </Label>
-          </div>
+            <FormField
+              label="Create in disabled state"
+              htmlFor="vrf-disabled"
+              horizontal
+            >
+              <Checkbox
+                id="vrf-disabled"
+                checked={disabled}
+                onCheckedChange={(checked) => setDisabled(checked === true)}
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

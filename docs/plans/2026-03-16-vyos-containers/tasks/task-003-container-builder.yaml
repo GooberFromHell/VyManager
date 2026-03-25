@@ -1,0 +1,151 @@
+id: "task-003"
+title: "Create container batch builder"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-002"]
+blocks: ["task-004"]
+parallel_with: []
+
+files:
+  create:
+    - "backend/vyos_builders/container/__init__.py"
+    - "backend/vyos_builders/container/container.py"
+  modify:
+    - "backend/vyos_builders/__init__.py"
+
+context_files:
+  - "backend/vyos_builders/ntp/ntp.py"
+  - "backend/vyos_builders/__init__.py"
+  - "backend/vyos_mappers/container/container.py"
+
+instructions: |
+  Create ContainerBatchBuilder following the NTP builder pattern. This builder handles all three container entity types (names, networks, registries).
+
+  ## 1. backend/vyos_builders/container/__init__.py
+  ```python
+  from .container import ContainerBatchBuilder
+  ```
+
+  ## 2. backend/vyos_builders/container/container.py
+
+  Create ContainerBatchBuilder class with:
+
+  ### Core infrastructure methods (same as NTP):
+  - `__init__(self, version: str)` — store version, init `_operations = []`, get mappers via `CommandMapperRegistry.get_all_mappers(version)`, set `self.mapper_key = "container"`
+  - `add_set(self, path)` → append {"op": "set", "path": path}, return self
+  - `add_delete(self, path)` → append {"op": "delete", "path": path}, return self
+  - `clear(self)` → reset _operations
+  - `get_operations(self)` → return copy of _operations
+  - `operation_count(self)` → len
+  - `is_empty(self)` → bool
+
+  ### Container Name methods (all return self for chaining):
+
+  **Set operations:**
+  - `set_container_image(name, image)` — set container image
+  - `set_container_network(name, network)` — attach to network
+  - `set_container_network_address(name, network, address)` — set network address
+  - `set_container_port(name, port_name, source, destination, protocol="tcp")` — add port mapping (calls 3 mapper methods: source, destination, protocol)
+  - `set_container_volume(name, vol_name, source, destination, mode="rw")` — add volume (calls 3 mapper methods)
+  - `set_container_environment(name, key, value)` — set env var
+  - `set_container_capability(name, cap)` — add capability
+  - `set_container_restart(name, policy)` — set restart policy
+  - `set_container_memory(name, mb)` — set memory limit
+  - `set_container_cpu_quota(name, pct)` — set CPU quota
+  - `set_container_description(name, desc)` — set description
+  - `set_container_host_name(name, hostname)` — set hostname
+  - `set_container_entrypoint(name, ep)` — set entrypoint
+  - `set_container_command(name, cmd)` — set command
+  - `set_container_arguments(name, args)` — set arguments
+  - `set_container_uid(name, uid)` — set UID
+  - `set_container_gid(name, gid)` — set GID
+  - `set_container_label(name, key, value)` — set label
+  - `set_container_device(name, dev_name, source, destination)` — add device (calls 2 mapper methods)
+  - `set_container_allow_host_networks(name)` — enable host networking
+  - `set_container_allow_host_pid(name)` — enable host PID
+  - `set_container_disable(name)` — disable container
+  - `set_container_name_server(name, addr)` — add name server
+  - `set_container_log_driver(name, driver)` — v1.5 only (check mapper path not empty)
+  - `set_container_sysctl(name, param, value)` — v1.5 only
+  - `set_container_tmpfs(name, tmpfs_name, destination, size=None)` — v1.5 only
+
+  **Delete operations:**
+  - `delete_container(name)` — delete entire container
+  - `delete_container_port(name, port_name)` — remove port mapping
+  - `delete_container_volume(name, vol_name)` — remove volume
+  - `delete_container_environment(name, key)` — remove env var
+  - `delete_container_capability(name, cap)` — remove capability
+  - `delete_container_label(name, key)` — remove label
+  - `delete_container_device(name, dev_name)` — remove device
+  - `delete_container_network(name, network)` — detach from network
+  - `delete_container_name_server(name, addr)` — remove name server
+  - `delete_container_sysctl(name, param)` — v1.5 only
+  - `delete_container_tmpfs(name, tmpfs_name)` — v1.5 only
+
+  ### Container Network methods:
+  - `set_network_prefix(net_name, prefix)` — set network prefix
+  - `set_network_description(net_name, desc)` — set network description
+  - `set_network_mtu(net_name, mtu)` — set network MTU
+  - `set_network_vrf(net_name, vrf)` — set network VRF
+  - `set_network_no_name_server(net_name)` — v1.5 only
+  - `delete_network(net_name)` — delete entire network
+  - `delete_network_prefix(net_name, prefix)` — remove a prefix
+
+  ### Container Registry methods:
+  - `set_registry_auth(url, username, password)` — set registry auth (calls 2 mapper methods)
+  - `set_registry_disable(url)` — disable registry
+  - `set_registry_insecure(url)` — allow insecure
+  - `delete_registry(url)` — delete entire registry
+
+  ### Capabilities method:
+  ```python
+  def get_capabilities(self) -> Dict[str, Any]:
+      mapper = self.mappers[self.mapper_key]
+      is_v15 = "1.5" in self.version or "latest" in self.version
+      return {
+          "version": self.version,
+          "has_log_driver": is_v15,
+          "has_sysctl": is_v15,
+          "has_tmpfs": is_v15,
+          "has_network_no_name_server": is_v15,
+          "capability_keyword": "capability" if is_v15 else "cap-add",
+          "fields": {
+              "container": {"supported": True},
+              "network": {"supported": True},
+              "registry": {"supported": True},
+              "log_driver": {"supported": is_v15, "description": "Container log driver (k8s-file, journald, none)"},
+              "sysctl": {"supported": is_v15, "description": "Sysctl parameters"},
+              "tmpfs": {"supported": is_v15, "description": "Temporary filesystem mounts"},
+              "network_no_name_server": {"supported": is_v15, "description": "Disable DNS for network"},
+          },
+      }
+  ```
+
+  ## 3. Register in backend/vyos_builders/__init__.py
+
+  Add import:
+  ```python
+  from .container import ContainerBatchBuilder
+  ```
+
+  Add to __all__:
+  ```python
+  "ContainerBatchBuilder",
+  ```
+
+acceptance_criteria:
+  - "File exists: backend/vyos_builders/container/__init__.py"
+  - "File exists: backend/vyos_builders/container/container.py"
+  - "Grep match: 'class ContainerBatchBuilder' in backend/vyos_builders/container/container.py"
+  - "Grep match: 'ContainerBatchBuilder' in backend/vyos_builders/__init__.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

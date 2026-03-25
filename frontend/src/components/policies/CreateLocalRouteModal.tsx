@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { localRouteService, type LocalRouteCapabilitiesResponse } from "@/lib/api/local-route";
 import { apiClient } from "@/lib/api/client";
 
@@ -255,75 +255,79 @@ export function CreateLocalRouteModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Rule Number */}
-          <div className="space-y-2">
-            <Label htmlFor="rule-number">Rule Number</Label>
-            <Input
-              id="rule-number"
-              type="number"
-              value={ruleNumber}
-              disabled
-              className="bg-muted"
-            />
-            <p className="text-xs text-muted-foreground">
-              Auto-calculated based on existing rules
-            </p>
-          </div>
+          <Fieldset label="Rule Info">
+            <FormField
+              label="Rule Number"
+              htmlFor="rule-number"
+              description="Auto-calculated based on existing rules"
+            >
+              <Input
+                id="rule-number"
+                type="number"
+                value={ruleNumber}
+                disabled
+                className="bg-muted"
+              />
+            </FormField>
+          </Fieldset>
 
-          {/* Source */}
-          <div className="space-y-2">
-            <Label htmlFor="source">Source Address/Prefix</Label>
-            <Input
-              id="source"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              placeholder={ruleType === "ipv4" ? "e.g., 192.168.1.0/24 or 10.0.0.1" : "e.g., 2001:db8::/32"}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Match traffic from this source (optional)
-            </p>
-          </div>
+          <FieldsetDivider />
 
-          {/* Destination */}
-          <div className="space-y-2">
-            <Label htmlFor="destination">Destination Address/Prefix</Label>
-            <Input
-              id="destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder={ruleType === "ipv4" ? "e.g., 172.16.0.0/16 or 8.8.8.8" : "e.g., 2001:4860::/32"}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Match traffic to this destination (optional)
-            </p>
-          </div>
+          <Fieldset label="Match Conditions">
+            <FormField
+              label="Source Address/Prefix"
+              htmlFor="source"
+              description="Match traffic from this source (optional)"
+            >
+              <Input
+                id="source"
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                placeholder={ruleType === "ipv4" ? "e.g., 192.168.1.0/24 or 10.0.0.1" : "e.g., 2001:db8::/32"}
+                disabled={loading}
+              />
+            </FormField>
 
-          {/* Inbound Interface */}
-          <div className="space-y-2">
-            <Label htmlFor="inbound-interface">Inbound Interface</Label>
-            <Select value={inboundInterface} onValueChange={setInboundInterface} disabled={loading}>
-              <SelectTrigger id="inbound-interface">
-                <SelectValue placeholder="Select interface (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {interfaces.map((iface) => (
-                  <SelectItem key={iface} value={iface}>
-                    {iface}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Match traffic arriving on this interface (optional)
-            </p>
-          </div>
+            <FormField
+              label="Destination Address/Prefix"
+              htmlFor="destination"
+              description="Match traffic to this destination (optional)"
+            >
+              <Input
+                id="destination"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder={ruleType === "ipv4" ? "e.g., 172.16.0.0/16 or 8.8.8.8" : "e.g., 2001:4860::/32"}
+                disabled={loading}
+              />
+            </FormField>
+
+            <FormField
+              label="Inbound Interface"
+              htmlFor="inbound-interface"
+              description="Match traffic arriving on this interface (optional)"
+            >
+              <Select value={inboundInterface} onValueChange={setInboundInterface} disabled={loading}>
+                <SelectTrigger id="inbound-interface">
+                  <SelectValue placeholder="Select interface (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {interfaces.map((iface) => (
+                    <SelectItem key={iface} value={iface}>
+                      {iface}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Routing Selection - Table or VRF */}
           <div className="space-y-3 border border-border rounded-lg p-4">
-            <Label>Routing Destination *</Label>
+            <p className="text-sm font-semibold text-foreground">Routing Destination *</p>
 
             {/* Radio buttons for selection */}
             <div className="flex items-center gap-6">
@@ -336,9 +340,9 @@ export function CreateLocalRouteModal({
                   disabled={loading}
                   className="h-4 w-4"
                 />
-                <Label htmlFor="routing-table" className="font-normal cursor-pointer">
+                <label htmlFor="routing-table" className="font-normal cursor-pointer">
                   Routing Table
-                </Label>
+                </label>
               </div>
 
               {capabilities?.features.vrf_support.supported && (
@@ -351,16 +355,20 @@ export function CreateLocalRouteModal({
                     disabled={loading}
                     className="h-4 w-4"
                   />
-                  <Label htmlFor="routing-vrf" className="font-normal cursor-pointer">
+                  <label htmlFor="routing-vrf" className="font-normal cursor-pointer">
                     VRF Instance
-                  </Label>
+                  </label>
                 </div>
               )}
             </div>
 
             {/* Conditionally show table or VRF input */}
             {routingType === "table" ? (
-              <div className="space-y-2">
+              <FormField
+                label="Routing Table"
+                htmlFor="table"
+                description="Routing table to use for matched traffic"
+              >
                 <Input
                   id="table"
                   value={table}
@@ -368,12 +376,13 @@ export function CreateLocalRouteModal({
                   placeholder="Enter 'main' or table number (1-200)"
                   disabled={loading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Routing table to use for matched traffic
-                </p>
-              </div>
+              </FormField>
             ) : (
-              <div className="space-y-2">
+              <FormField
+                label="VRF Instance"
+                htmlFor="vrf"
+                description="VRF instance to use for matched traffic (VyOS 1.5+)"
+              >
                 <Input
                   id="vrf"
                   value={vrf}
@@ -381,10 +390,7 @@ export function CreateLocalRouteModal({
                   placeholder="Enter VRF name or 'default'"
                   disabled={loading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  VRF instance to use for matched traffic (VyOS 1.5+)
-                </p>
-              </div>
+              </FormField>
             )}
           </div>
 

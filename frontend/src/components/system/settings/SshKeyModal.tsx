@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Key } from "lucide-react";
 import { systemSettingsService } from "@/lib/api/system-settings";
 
@@ -82,7 +82,7 @@ export function SshKeyModal({ open, onOpenChange, username, onSuccess }: Props) 
       handleClose();
       onSuccess();
     } catch {
-      setError("An unexpected error occurred");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -113,46 +113,47 @@ export function SshKeyModal({ open, onOpenChange, username, onSuccess }: Props) 
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="keyname">Key Name</Label>
-            <Input
-              id="keyname"
-              value={keyName}
-              onChange={(e) => setKeyName(e.target.value)}
-              placeholder="my-laptop"
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Key Name" htmlFor="keyname" required>
+              <Input
+                id="keyname"
+                value={keyName}
+                onChange={(e) => setKeyName(e.target.value)}
+                placeholder="my-laptop"
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="keytype">Key Type</Label>
-            <Select value={keyType} onValueChange={setKeyType}>
-              <SelectTrigger id="keytype">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {KEY_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <FormField label="Key Type" htmlFor="keytype">
+              <Select value={keyType} onValueChange={setKeyType}>
+                <SelectTrigger id="keytype">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KEY_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="keydata">Public Key Data</Label>
-            <Textarea
-              id="keydata"
-              value={keyData}
-              onChange={(e) => setKeyData(e.target.value)}
-              placeholder="AAAA..."
-              rows={4}
-              className="font-mono text-xs"
-            />
-            <p className="text-xs text-muted-foreground">
-              Paste the key data only (without the key type prefix or comment).
-            </p>
-          </div>
+            <FormField
+              label="Public Key Data"
+              htmlFor="keydata"
+              description="Paste the key data only (without the key type prefix or comment)."
+              required
+            >
+              <Textarea
+                id="keydata"
+                value={keyData}
+                onChange={(e) => setKeyData(e.target.value)}
+                placeholder="AAAA..."
+                rows={4}
+                className="font-mono text-xs"
+              />
+            </FormField>
+          </Fieldset>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>

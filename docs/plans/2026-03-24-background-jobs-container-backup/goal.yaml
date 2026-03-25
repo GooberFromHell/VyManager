@@ -1,0 +1,58 @@
+# DERPO Goal Contract
+# Two major features: Background Job System + Container Backup Enhancement
+
+goal: >
+  Implement two features from new_features.md:
+  (1) Background Instance Backup with Job Monitoring UI — move backup execution to background tasks
+  with per-instance job tracking, job persistence, and a Management section in the /sites page.
+  (2) Container Backup with Full Redeploy State — extend backups to capture container volumes,
+  image digests, runtime status via SSH, and add a restore endpoint with frontend UI.
+
+scope:
+  include:
+    - "backend/routers/site_tools/"
+    - "backend/background_jobs.py"
+    - "backend/app.py"
+    - "backend/middleware/"
+    - "frontend/src/app/(default)/sites/"
+    - "frontend/src/components/management/"
+    - "frontend/src/components/sites/"
+    - "frontend/src/lib/api/"
+    - "frontend/prisma/schema.prisma"
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must follow existing architecture patterns (see CLAUDE.md)"
+  - "No new dependencies without user approval"
+  - "Background jobs: in-memory first iteration with clear upgrade path to PostgreSQL"
+  - "SSH passwords must be encrypted at rest (Fernet + env var key)"
+  - "Volume backup must enforce configurable max size limit"
+  - "Job routes at /session/jobs (not scoped under site)"
+  - "Management section lives inside /sites page sidebar, not in (app) shell"
+  - "Feature 2 (container backup) requires SSH credentials on Instance model"
+
+acceptance_criteria:
+  - "Background job endpoints work: GET /session/jobs, GET /session/jobs/{id}, DELETE /session/jobs/{id}"
+  - "POST /session/sites/{site_id}/backup returns 202 with trigger_id and job_ids"
+  - "Management section appears in /sites page with Jobs tab"
+  - "BackgroundJobsView shows jobs grouped by trigger_id with polling"
+  - "Container backup models (VolumeBackupData, ContainerFullBackup, etc.) exist"
+  - "SSH credential fields added to Instance model in Prisma schema"
+  - "Container restore endpoint exists: POST /session/sites/{site_id}/instances/{id}/container-restore"
+  - "SSH test endpoint exists: GET /session/sites/{site_id}/instances/{id}/test-ssh"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Download endpoint for completed backups: GET /session/jobs/{id}/download"
+
+human_checkpoints:
+  - after: evaluate  # approve approach + task plan before execution
+
+max_iterations: 3
+
+context: >
+  The existing backup endpoint in backend/routers/site_tools/backup.py is synchronous.
+  The site_tools module already handles backup/restore for sites. This goal extends it
+  with background processing and container-specific backup enrichment.

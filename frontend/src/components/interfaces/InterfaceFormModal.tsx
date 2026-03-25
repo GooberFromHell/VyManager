@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -154,8 +154,7 @@ export function InterfaceFormModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Interface Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Interface Name *</Label>
+            <FormField label="Interface Name" htmlFor="name" required>
               <Input
                 id="name"
                 value={formData.name}
@@ -164,11 +163,10 @@ export function InterfaceFormModal({
                 required
                 disabled={mode === "edit"}
               />
-            </div>
+            </FormField>
 
             {/* Interface Type */}
-            <div className="space-y-2">
-              <Label htmlFor="type">Type *</Label>
+            <FormField label="Type" htmlFor="type" required>
               <Select
                 value={formData.type}
                 onValueChange={(value) =>
@@ -187,23 +185,21 @@ export function InterfaceFormModal({
                   <SelectItem value="pppoe">PPPoE</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <FormField label="Description" htmlFor="description">
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="e.g., LAN Interface"
             />
-          </div>
+          </FormField>
 
           {/* IP Addresses */}
-          <div className="space-y-2">
-            <Label>IP Addresses</Label>
+          <FormField label="IP Addresses">
             <div className="flex gap-2">
               <Input
                 value={addressInput}
@@ -239,11 +235,10 @@ export function InterfaceFormModal({
                 ))}
               </div>
             )}
-          </div>
+          </FormField>
 
           {/* VRF */}
-          <div className="space-y-2">
-            <Label htmlFor="vrf">VRF</Label>
+          <FormField label="VRF" htmlFor="vrf">
             <Select
               value={formData.vrf || "none"}
               onValueChange={(value) =>
@@ -264,32 +259,30 @@ export function InterfaceFormModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
           {/* Hardware ID (for Ethernet) */}
           {formData.type === "ethernet" && (
-            <div className="space-y-2">
-              <Label htmlFor="hw-id">Hardware ID (MAC Address)</Label>
+            <FormField label="Hardware ID (MAC Address)" htmlFor="hw-id">
               <Input
                 id="hw-id"
                 value={formData["hw-id"]}
                 onChange={(e) => setFormData({ ...formData, "hw-id": e.target.value })}
                 placeholder="e.g., 00:11:22:33:44:55"
               />
-            </div>
+            </FormField>
           )}
 
           {/* Source Interface (for PPPoE) */}
           {formData.type === "pppoe" && (
-            <div className="space-y-2">
-              <Label htmlFor="source-interface">Source Interface</Label>
+            <FormField label="Source Interface" htmlFor="source-interface">
               <Input
                 id="source-interface"
                 value={formData["source-interface"]}
                 onChange={(e) => setFormData({ ...formData, "source-interface": e.target.value })}
                 placeholder="e.g., eth0"
               />
-            </div>
+            </FormField>
           )}
 
           <DialogFooter>

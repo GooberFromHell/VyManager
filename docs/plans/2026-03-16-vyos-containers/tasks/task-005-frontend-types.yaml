@@ -1,0 +1,184 @@
+id: "task-005"
+title: "Create frontend TypeScript types for containers"
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-004"]
+blocks: ["task-006"]
+parallel_with: []
+
+files:
+  create:
+    - "frontend/src/lib/api/types/container.ts"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/types/snmp.ts"
+  - "frontend/src/lib/api/types/ntp.ts"
+  - "backend/routers/container/container.py"
+
+instructions: |
+  Create TypeScript type definitions for the container feature, mirroring the backend Pydantic models.
+
+  ## frontend/src/lib/api/types/container.ts
+
+  ```typescript
+  // ============================================================================
+  // Container Configuration Types
+  // ============================================================================
+
+  export interface ContainerPort {
+    name: string;
+    source: string | null;
+    destination: string | null;
+    protocol: string;
+  }
+
+  export interface ContainerVolume {
+    name: string;
+    source: string | null;
+    destination: string | null;
+    mode: string;
+  }
+
+  export interface ContainerEnvironment {
+    key: string;
+    value: string;
+  }
+
+  export interface ContainerLabel {
+    key: string;
+    value: string;
+  }
+
+  export interface ContainerDevice {
+    name: string;
+    source: string | null;
+    destination: string | null;
+  }
+
+  export interface ContainerSysctl {
+    parameter: string;
+    value: string;
+  }
+
+  export interface ContainerTmpfs {
+    name: string;
+    destination: string | null;
+    size: number | null;
+  }
+
+  export interface ContainerEntry {
+    name: string;
+    image: string | null;
+    networks: string[];
+    network_addresses: Record<string, string>;
+    ports: ContainerPort[];
+    volumes: ContainerVolume[];
+    environment: ContainerEnvironment[];
+    labels: ContainerLabel[];
+    devices: ContainerDevice[];
+    capabilities: string[];
+    restart: string | null;
+    memory: number | null;
+    cpu_quota: string | null;
+    description: string | null;
+    host_name: string | null;
+    entrypoint: string | null;
+    command: string | null;
+    arguments: string | null;
+    uid: number | null;
+    gid: number | null;
+    allow_host_networks: boolean;
+    allow_host_pid: boolean;
+    disabled: boolean;
+    name_servers: string[];
+    log_driver: string | null;
+    sysctls: ContainerSysctl[];
+    tmpfs_mounts: ContainerTmpfs[];
+  }
+
+  export interface ContainerNetwork {
+    name: string;
+    prefixes: string[];
+    description: string | null;
+    mtu: number | null;
+    vrf: string | null;
+    no_name_server: boolean;
+  }
+
+  export interface ContainerRegistry {
+    url: string;
+    username: string | null;
+    password: string | null;
+    disabled: boolean;
+    insecure: boolean;
+  }
+
+  // ============================================================================
+  // API Response Types
+  // ============================================================================
+
+  export interface ContainerConfig {
+    containers: ContainerEntry[];
+    networks: ContainerNetwork[];
+    registries: ContainerRegistry[];
+  }
+
+  export interface ContainerCapabilities {
+    version: string;
+    instance_name?: string;
+    instance_id?: string;
+    has_log_driver: boolean;
+    has_sysctl: boolean;
+    has_tmpfs: boolean;
+    has_network_no_name_server: boolean;
+    capability_keyword: string;
+    fields: {
+      container: { supported: boolean };
+      network: { supported: boolean };
+      registry: { supported: boolean };
+      log_driver: { supported: boolean; description: string };
+      sysctl: { supported: boolean; description: string };
+      tmpfs: { supported: boolean; description: string };
+      network_no_name_server: { supported: boolean; description: string };
+    };
+  }
+
+  // ============================================================================
+  // Batch Operation Types
+  // ============================================================================
+
+  export interface ContainerBatchOperation {
+    op: string;
+    value?: string;
+  }
+
+  export interface ContainerBatchRequest {
+    item_name: string;
+    operations: ContainerBatchOperation[];
+  }
+
+  export interface VyOSResponse {
+    success: boolean;
+    data?: Record<string, unknown>;
+    error?: string;
+  }
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/types/container.ts"
+  - "Grep match: 'ContainerEntry' in frontend/src/lib/api/types/container.ts"
+  - "Grep match: 'ContainerConfig' in frontend/src/lib/api/types/container.ts"
+  - "Grep match: 'ContainerCapabilities' in frontend/src/lib/api/types/container.ts"
+  - "Grep match: 'ContainerBatchRequest' in frontend/src/lib/api/types/container.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

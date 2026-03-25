@@ -1,0 +1,61 @@
+id: "task-006"
+title: "Add status indicators to InstanceCard and InstanceTableView"
+archetype: frontend-service
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005"]
+blocks: ["task-008"]
+parallel_with: []
+files:
+  create: []
+  modify:
+    - frontend/src/components/sites/InstanceCard.tsx
+context_files:
+  - frontend/src/components/sites/InstanceCard.tsx
+instructions: |
+  1. Read `frontend/src/components/sites/InstanceCard.tsx` fully
+  2. Also check if `frontend/src/components/sites/InstanceTableView.tsx` exists — if so, read it too
+
+  **Modify InstanceCard:**
+
+  a) Add a new prop to the interface:
+  ```typescript
+  reachabilityStatus?: "online" | "offline" | "error" | "checking" | undefined;
+  latencyMs?: number;
+  ```
+
+  b) Create a small status indicator component or inline JSX that renders:
+  - **"online"**: Small green dot (pulsing via animate-pulse) + "Online" text in green + latency in muted text (e.g., "32ms")
+  - **"offline"**: Small red dot + "Unreachable" text in red
+  - **"error"**: Small yellow/amber dot + "Error" text in amber
+  - **"checking"**: Small gray dot with animate-spin or animate-pulse + "Checking..." text in muted
+  - **undefined**: Nothing shown (before status check starts)
+
+  c) Place the status indicator in the card header area, next to or below the existing host:port display. It should be visually prominent but not override the existing Connected/Inactive badges.
+
+  d) Use Tailwind classes for the dots:
+  - Green: `bg-emerald-500` with `animate-pulse`
+  - Red: `bg-red-500`
+  - Amber: `bg-amber-500`
+  - Gray: `bg-zinc-500` with `animate-pulse`
+  - All dots: `h-2 w-2 rounded-full inline-block`
+
+  **Modify InstanceTableView** (if it exists):
+
+  a) Add a `statusMap` prop: `statusMap?: Record<string, { status: string; latency_ms?: number }>`
+  b) Add or modify a "Status" column to show the same dot indicator inline
+  c) Keep it compact for the table view — just the dot + short label
+acceptance_criteria:
+  - "Grep match: 'reachabilityStatus' in frontend/src/components/sites/InstanceCard.tsx"
+  - "Grep match: 'online' in frontend/src/components/sites/InstanceCard.tsx"
+  - "Grep match: 'animate-pulse' in frontend/src/components/sites/InstanceCard.tsx"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

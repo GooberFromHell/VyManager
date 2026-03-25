@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +65,10 @@ import {
   Radio,
   Power,
   Scale,
+  Clock,
+  Terminal,
+  ArrowLeftRight,
+  FolderOpen,
 } from "lucide-react";
 import {
   userManagementService,
@@ -149,6 +153,19 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.USER_MANAGEMENT]: UserCircle,
   [FeatureGroup.POWER]: Power,
   [FeatureGroup.HIGH_AVAILABILITY]: Shield,
+  [FeatureGroup.DNS_FORWARDING]: Globe,
+  [FeatureGroup.NTP]: Clock,
+  [FeatureGroup.SSH]: Terminal,
+  [FeatureGroup.DHCP_RELAY]: ArrowLeftRight,
+  [FeatureGroup.DHCPV6_SERVER]: Network,
+  [FeatureGroup.LLDP]: Eye,
+  [FeatureGroup.SNMP]: Radio,
+  [FeatureGroup.ROUTER_ADVERT]: Wifi,
+  [FeatureGroup.TFTP_SERVER]: Server,
+  [FeatureGroup.BROADCAST_RELAY]: Network,
+  [FeatureGroup.CONNTRACK_SYNC]: Activity,
+  [FeatureGroup.CONTAINER]: Box,
+  [FeatureGroup.FILE_BROWSER]: FolderOpen,
 };
 
 // Feature display names
@@ -209,6 +226,19 @@ const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.USER_MANAGEMENT]: "User Management",
   [FeatureGroup.POWER]: "Power",
   [FeatureGroup.HIGH_AVAILABILITY]: "High Availability",
+  [FeatureGroup.DNS_FORWARDING]: "DNS Forwarding",
+  [FeatureGroup.NTP]: "NTP",
+  [FeatureGroup.SSH]: "SSH",
+  [FeatureGroup.DHCP_RELAY]: "DHCP Relay",
+  [FeatureGroup.DHCPV6_SERVER]: "DHCPv6 Server",
+  [FeatureGroup.LLDP]: "LLDP",
+  [FeatureGroup.SNMP]: "SNMP",
+  [FeatureGroup.ROUTER_ADVERT]: "Router Advertisement",
+  [FeatureGroup.TFTP_SERVER]: "TFTP Server",
+  [FeatureGroup.BROADCAST_RELAY]: "Broadcast Relay",
+  [FeatureGroup.CONNTRACK_SYNC]: "Conntrack Sync",
+  [FeatureGroup.CONTAINER]: "Containers",
+  [FeatureGroup.FILE_BROWSER]: "File Browser",
 };
 
 // Role badge styles
@@ -944,10 +974,9 @@ export function ManageUserAccessPanel({
               )}
 
               {/* Site Selection */}
-              <div className="space-y-2">
-                <Label>Select Site</Label>
+              <FormField label="Select Site" htmlFor="grant-site-select">
                 <Select value={selectedSiteId} onValueChange={handleSiteChange}>
-                  <SelectTrigger>
+                  <SelectTrigger id="grant-site-select">
                     <SelectValue placeholder="Choose a site..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -961,13 +990,13 @@ export function ManageUserAccessPanel({
                     })}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
               {/* Instance Selection */}
               {selectedSiteId && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>Select Instances</Label>
+                    <p className="text-sm font-medium">Select Instances</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -1011,13 +1040,12 @@ export function ManageUserAccessPanel({
 
               {/* Role Selection */}
               {selectedInstanceIds.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Instance Role</Label>
+                <FormField label="Instance Role" htmlFor="grant-instance-role">
                   <Select
                     value={selectedRole}
                     onValueChange={(value) => setSelectedRole(value as InstanceRole)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="grant-instance-role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1026,14 +1054,14 @@ export function ManageUserAccessPanel({
                       <SelectItem value={InstanceRole.VIEWER}>Instance VIEWER - View selected features</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               )}
 
               {/* Feature Permissions */}
               {selectedRole !== InstanceRole.ADMIN && selectedInstanceIds.length > 0 && (
                 <div className="space-y-3">
                   <div>
-                    <Label>Feature Permissions</Label>
+                    <p className="text-sm font-medium">Feature Permissions</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Check a parent feature to grant all sub-features, or select specific sub-features individually.
                     </p>
@@ -1308,13 +1336,12 @@ export function ManageUserAccessPanel({
               )}
 
               {/* Role Selection */}
-              <div className="space-y-2">
-                <Label>Instance Role</Label>
+              <FormField label="Instance Role" htmlFor="edit-instance-role">
                 <Select
                   value={selectedRole}
                   onValueChange={(value) => setSelectedRole(value as InstanceRole)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="edit-instance-role">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1323,13 +1350,13 @@ export function ManageUserAccessPanel({
                     <SelectItem value={InstanceRole.VIEWER}>Instance VIEWER - View selected features</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
               {/* Feature Permissions */}
               {selectedRole !== InstanceRole.ADMIN && (
                 <div className="space-y-3">
                   <div>
-                    <Label>Feature Permissions</Label>
+                    <p className="text-sm font-medium">Feature Permissions</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Check a parent feature to grant all sub-features, or select specific sub-features individually.
                     </p>

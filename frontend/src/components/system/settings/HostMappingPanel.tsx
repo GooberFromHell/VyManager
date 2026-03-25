@@ -60,7 +60,7 @@ export function HostMappingPanel({ config, isReadOnly, onRefresh }: Props) {
         onRefresh();
       }
     } catch {
-      toast.error("Delete failed", "An unexpected error occurred");
+      toast.error("Delete failed", "Something went wrong. Please try again.");
     } finally {
       setDeleting(false);
       setDeleteTarget(null);

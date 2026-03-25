@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { staticRoutesService, type MrouteNextHop, type MrouteInterface } from "@/lib/api/static-routes";
 import { showService } from "@/lib/api/show";
 
@@ -178,20 +178,22 @@ export function CreateMrouteModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="prefix">Prefix (CIDR)</Label>
-            <Input
-              id="prefix"
-              placeholder="224.0.0.0/4"
-              value={prefix}
-              onChange={(e) => setPrefix(e.target.value)}
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Prefix (CIDR)" htmlFor="prefix">
+              <Input
+                id="prefix"
+                placeholder="224.0.0.0/4"
+                value={prefix}
+                onChange={(e) => setPrefix(e.target.value)}
+              />
+            </FormField>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Next Hops */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Next Hops</Label>
+          <Fieldset label="Next Hops">
+            <div className="flex justify-end -mt-2">
               <Button type="button" variant="outline" size="sm" onClick={addNextHop}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -224,22 +226,26 @@ export function CreateMrouteModal({
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <FormField
+                  label="Disable"
+                  htmlFor={`nh-disable-${index}`}
+                  horizontal
+                >
                   <Checkbox
                     id={`nh-disable-${index}`}
                     checked={nh.disable}
                     onCheckedChange={(checked) => updateNextHop(index, "disable", !!checked)}
                   />
-                  <Label htmlFor={`nh-disable-${index}`} className="text-sm">Disable</Label>
-                </div>
+                </FormField>
               </div>
             ))}
-          </div>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Interfaces */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Interfaces</Label>
+          <Fieldset label="Interfaces">
+            <div className="flex justify-end -mt-2">
               <Button type="button" variant="outline" size="sm" onClick={addInterface}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -281,17 +287,20 @@ export function CreateMrouteModal({
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <FormField
+                  label="Disable"
+                  htmlFor={`iface-disable-${index}`}
+                  horizontal
+                >
                   <Checkbox
                     id={`iface-disable-${index}`}
                     checked={iface.disable}
                     onCheckedChange={(checked) => updateInterface(index, "disable", !!checked)}
                   />
-                  <Label htmlFor={`iface-disable-${index}`} className="text-sm">Disable</Label>
-                </div>
+                </FormField>
               </div>
             ))}
-          </div>
+          </Fieldset>
         </div>
 
         <DialogFooter>

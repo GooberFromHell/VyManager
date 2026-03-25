@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -200,41 +200,39 @@ export function HAProxyQuickSetupModal({ open, onOpenChange, onSuccess }: Props)
 
             <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-4">
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Backend Name <span className="text-destructive">*</span></Label>
+                <FormField label="Backend Name" htmlFor="qs-backend-name" required>
                   <Input
+                    id="qs-backend-name"
                     value={form.backendName}
                     onChange={(e) => set("backendName", e.target.value)}
                     placeholder="backend1"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Mode</Label>
+                </FormField>
+                <FormField label="Mode" htmlFor="qs-backend-mode">
                   <Select value={form.backendMode} onValueChange={(v) => set("backendMode", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="qs-backend-mode"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="http">HTTP</SelectItem>
                       <SelectItem value="tcp">TCP</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Balance</Label>
+                </FormField>
+                <FormField label="Balance" htmlFor="qs-backend-balance">
                   <Select value={form.backendBalance} onValueChange={(v) => set("backendBalance", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="qs-backend-balance"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="round-robin">Round Robin</SelectItem>
                       <SelectItem value="least-conn">Least Connections</SelectItem>
                       <SelectItem value="source-hash">Source Hash</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               </div>
 
               {/* Servers */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground uppercase tracking-wide">Servers</Label>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Servers</span>
                   <Button type="button" variant="ghost" size="sm" className="h-6 text-xs" onClick={addServer}>
                     <Plus className="h-3 w-3 mr-1" /> Add Server
                   </Button>
@@ -242,7 +240,7 @@ export function HAProxyQuickSetupModal({ open, onOpenChange, onSuccess }: Props)
                 {form.servers.map((srv, idx) => (
                   <div key={idx} className="grid grid-cols-[1fr_1fr_80px_auto_auto] gap-2 items-end">
                     <div className="space-y-1">
-                      {idx === 0 && <Label className="text-xs">Name</Label>}
+                      {idx === 0 && <span className="text-xs text-muted-foreground">Name</span>}
                       <Input
                         className="h-8 text-sm"
                         value={srv.name}
@@ -251,7 +249,7 @@ export function HAProxyQuickSetupModal({ open, onOpenChange, onSuccess }: Props)
                       />
                     </div>
                     <div className="space-y-1">
-                      {idx === 0 && <Label className="text-xs">Address</Label>}
+                      {idx === 0 && <span className="text-xs text-muted-foreground">Address</span>}
                       <Input
                         className="h-8 text-sm"
                         value={srv.address}
@@ -260,7 +258,7 @@ export function HAProxyQuickSetupModal({ open, onOpenChange, onSuccess }: Props)
                       />
                     </div>
                     <div className="space-y-1">
-                      {idx === 0 && <Label className="text-xs">Port</Label>}
+                      {idx === 0 && <span className="text-xs text-muted-foreground">Port</span>}
                       <Input
                         className="h-8 text-sm"
                         value={srv.port}
@@ -269,7 +267,7 @@ export function HAProxyQuickSetupModal({ open, onOpenChange, onSuccess }: Props)
                       />
                     </div>
                     <div className="space-y-1">
-                      {idx === 0 && <Label className="text-xs">Check</Label>}
+                      {idx === 0 && <span className="text-xs text-muted-foreground">Check</span>}
                       <div className="h-8 flex items-center">
                         <Checkbox
                           checked={srv.check}
@@ -309,58 +307,55 @@ export function HAProxyQuickSetupModal({ open, onOpenChange, onSuccess }: Props)
 
             <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-4">
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Service Name <span className="text-destructive">*</span></Label>
+                <FormField label="Service Name" htmlFor="qs-svc-name" required>
                   <Input
+                    id="qs-svc-name"
                     value={form.serviceName}
                     onChange={(e) => set("serviceName", e.target.value)}
                     placeholder="frontend1"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Mode</Label>
+                </FormField>
+                <FormField label="Mode" htmlFor="qs-svc-mode">
                   <Select value={form.serviceMode} onValueChange={(v) => set("serviceMode", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="qs-svc-mode"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="http">HTTP</SelectItem>
                       <SelectItem value="tcp">TCP</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Port <span className="text-destructive">*</span></Label>
+                </FormField>
+                <FormField label="Port" htmlFor="qs-svc-port" required>
                   <Input
+                    id="qs-svc-port"
                     value={form.servicePort}
                     onChange={(e) => set("servicePort", e.target.value)}
                     placeholder="80"
                     type="number"
                   />
-                </div>
+                </FormField>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>
-                    Listen Address
-                    <span className="ml-1 text-xs text-muted-foreground">(optional, defaults to all)</span>
-                  </Label>
+                <FormField
+                  label="Listen Address (optional)"
+                  htmlFor="qs-listen-addr"
+                  description="Defaults to all interfaces"
+                >
                   <Input
+                    id="qs-listen-addr"
                     value={form.listenAddress}
                     onChange={(e) => set("listenAddress", e.target.value)}
                     placeholder="0.0.0.0"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>
-                    SSL Certificate
-                    <span className="ml-1 text-xs text-muted-foreground">(optional)</span>
-                  </Label>
+                </FormField>
+                <FormField label="SSL Certificate (optional)" htmlFor="qs-ssl-cert">
                   <Input
+                    id="qs-ssl-cert"
                     value={form.sslCert}
                     onChange={(e) => set("sslCert", e.target.value)}
                     placeholder="my-cert (from PKI)"
                   />
-                </div>
+                </FormField>
               </div>
 
               <div className="rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground flex items-center gap-2">

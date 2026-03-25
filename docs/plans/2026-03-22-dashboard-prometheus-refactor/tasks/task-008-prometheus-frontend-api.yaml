@@ -1,0 +1,116 @@
+id: "task-008"
+title: "Create Prometheus frontend API service + data hook"
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+depends_on: ["task-003"]
+blocks: ["task-009", "task-010", "task-011", "task-012", "task-013", "task-014"]
+parallel_with: []
+
+files:
+  create:
+    - "frontend/src/lib/api/prometheus.ts"
+    - "frontend/src/hooks/usePrometheusData.ts"
+  modify:
+    - "frontend/src/contexts/DashboardDataContext.tsx"
+
+context_files:
+  - "frontend/src/lib/api/client.ts"
+  - "frontend/src/hooks/useDashboardSSE.ts"
+  - "frontend/src/contexts/DashboardDataContext.tsx"
+  - ".derpo/pattern-snippets/frontend-service.ts"
+
+instructions: |
+  ## 1. Create `frontend/src/lib/api/prometheus.ts`
+
+  API service following the existing pattern:
+
+  ```typescript
+  interface PrometheusStatus {
+    available: boolean;
+    reason?: string;
+    endpoint?: string;
+  }
+
+  interface PrometheusMetric {
+    name: string;
+    labels: Record<string, string>;
+    value: number;
+  }
+
+  interface PrometheusMetricsResponse {
+    metrics: Record<string, PrometheusMetric[]>;
+    timestamp: number;
+  }
+
+  interface PrometheusCapabilities {
+    available_families: string[];
+    prometheus_enabled: boolean;
+  }
+
+  class PrometheusService {
+    async getStatus(): Promise<PrometheusStatus>
+    async getMetrics(families?: string[]): Promise<PrometheusMetricsResponse>
+    async getCapabilities(): Promise<PrometheusCapabilities>
+  }
+
+  export const prometheusService = new PrometheusService();
+  ```
+
+  Use `apiClient` from `client.ts` for all requests (paths: `/vyos/prometheus/status`, `/vyos/prometheus/metrics`, `/vyos/prometheus/capabilities`).
+
+  ## 2. Create `frontend/src/hooks/usePrometheusData.ts`
+
+  Hook that manages Prometheus metric polling with subscription-based batching.
+
+  ```typescript
+  interface MetricTimeSeries {
+    family: string;
+    points: Array<{ timestamp: number; metrics: PrometheusMetric[] }>;
+  }
+
+  interface PrometheusDataState {
+    status: "unavailable" | "checking" | "available" | "error";
+    data: Map<string, MetricTimeSeries>;
+    subscribe: (families: string[], intervalMs?: number) => () => void;  // returns unsubscribe fn
+    lastUpdated: number | null;
+  }
+  ```
+
+  Implementation:
+  - On mount, check Prometheus status via `prometheusService.getStatus()`
+  - Widgets call `subscribe(["cpu_usage_idle", "mem_used"], 5000)` to register interest
+  - Hook unions all subscribed families and polls at the shortest interval
+  - Maintains a rolling buffer of timestamped results per family (max 1000 points, ~5min at 5s interval)
+  - When all subscriptions removed, polling stops
+  - Returns unsubscribe function from `subscribe()` for cleanup in useEffect
+
+  ## 3. Expand `DashboardDataContext.tsx`
+
+  Add `usePrometheusData()` alongside existing `useDashboardSSE()`:
+
+  ```typescript
+  interface DashboardDataState {
+    sse: DashboardSSEState;
+    prometheus: PrometheusDataState;
+  }
+  ```
+
+  Export `useDashboardData()` to return both. Keep existing SSE consumers working unchanged.
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/prometheus.ts"
+  - "File exists: frontend/src/hooks/usePrometheusData.ts"
+  - "Grep match: 'PrometheusService' in frontend/src/lib/api/prometheus.ts"
+  - "Grep match: 'usePrometheusData' in frontend/src/hooks/usePrometheusData.ts"
+  - "Grep match: 'prometheus' in frontend/src/contexts/DashboardDataContext.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

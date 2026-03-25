@@ -1,0 +1,86 @@
+id: "task-006"
+title: "Refactor dashboard page to 12-column grid + widget registry"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005"]
+blocks: ["task-010", "task-011", "task-012", "task-013", "task-014"]
+parallel_with: []
+
+files:
+  modify:
+    - "frontend/src/app/(default)/(app)/page.tsx"
+    - "frontend/src/components/dashboard/AddCardModal.tsx"
+  create:
+    - "frontend/src/components/dashboard/layout-migration.ts"
+
+context_files:
+  - "frontend/src/app/(default)/(app)/page.tsx"
+  - "frontend/src/components/dashboard/AddCardModal.tsx"
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/dashboard/WidgetShell.tsx"
+  - "frontend/src/lib/api/dashboard.ts"
+
+instructions: |
+  ## 1. Create `layout-migration.ts`
+
+  Utility to convert old 3-column layouts to 12-column format.
+
+  ```typescript
+  export function migrateLayout(layout: DashboardLayout): DashboardLayout {
+    // Check if already migrated (any card has span > 3 or column > 2)
+    const needsMigration = layout.cards.every(c => c.span <= 3 && c.column <= 2);
+    if (!needsMigration) return layout;
+
+    return {
+      cards: layout.cards.map(card => ({
+        ...card,
+        column: card.column * 4,     // 0→0, 1→4, 2→8
+        span: card.span * 4,         // 1→4, 2→8, 3→12
+        height: card.height ?? 2,    // default to standard height
+      }))
+    };
+  }
+  ```
+
+  ## 2. Refactor `page.tsx`
+
+  Major changes:
+  - Replace `grid-cols-3` with `grid-cols-12`
+  - Use widget registry's `getWidget(card.type)` instead of `renderCard()` switch statement
+  - Update `getGridClasses()` to use 12-column spans (col-span-3, col-span-4, col-span-6, col-span-8, col-span-12)
+  - Update `getGridStyle()` for height units (height = rowUnits * 260px + gap)
+  - Apply layout migration on `loadDashboard()` response
+  - Update DnD drop zones: 4 drop zones (columns 0, 3, 6, 9) instead of 3
+  - Update `handleDragEnd()` for 12-column grid math
+  - Update card placement validation for 12-column spans
+  - Import from widget registry instead of individual card imports
+  - Add `height` to the DashboardCard interface (extend existing)
+
+  Keep the overall structure: DndContext > SortableContext > grid > SortableCards.
+  Keep the existing save/load/edit mode pattern unchanged.
+
+  ## 3. Update `AddCardModal.tsx`
+
+  - Import `getAllWidgets()` from widget registry instead of hardcoded card list
+  - Group widgets by `dataSource` ("SSE Data" vs "Prometheus Data")
+  - Show "Requires Prometheus" badge on prometheus widgets
+  - Accept `prometheusAvailable` prop to disable prometheus widgets when unavailable
+  - Each widget entry shows: icon, name, description, data source badge
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/layout-migration.ts"
+  - "Grep match: 'grid-cols-12' in frontend/src/app/(default)/(app)/page.tsx"
+  - "Grep match: 'getWidget' in frontend/src/app/(default)/(app)/page.tsx"
+  - "Grep match: 'migrateLayout' in frontend/src/app/(default)/(app)/page.tsx"
+  - "Grep match: 'getAllWidgets' in frontend/src/components/dashboard/AddCardModal.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

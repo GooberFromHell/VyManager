@@ -1,0 +1,211 @@
+id: "005"
+title: "Rewrite CreateInstanceModal with simplified form + provisioning progress"
+phase: 2
+status: not_started
+agent_type: general-purpose
+depends_on: []
+parallel_with: ["003", "004"]
+
+description: |
+  Replace the current 3-tab, 16-field CreateInstanceModal with a simple single-view form
+  and a step-by-step provisioning progress UI. Two phases: form entry → live progress.
+
+files:
+  modify:
+    - frontend/src/components/sites/CreateInstanceModal.tsx
+
+context_files:
+  - frontend/src/components/sites/CreateInstanceModal.tsx (current)
+  - frontend/src/lib/api/session.ts (task-004 output)
+  - frontend/src/components/ui/fieldset.tsx
+  - frontend/src/components/ui/dialog.tsx
+
+instructions: |
+  Completely rewrite CreateInstanceModal.tsx. The component has two states:
+  "form" (filling in details) and "provisioning" (showing live progress).
+
+  **Props** remain the same: open, onOpenChange, onSuccess, site
+
+  **State:**
+  ```typescript
+  // Form fields (minimal)
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [host, setHost] = useState("");
+  const [sshPort, setSshPort] = useState("22");
+  const [sshUsername, setSshUsername] = useState("vyos");
+  const [sshPassword, setSshPassword] = useState("");
+
+  // UI state
+  const [phase, setPhase] = useState<"form" | "provisioning">("form");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [provisioningSteps, setProvisioningSteps] = useState<ProvisioningStep[]>([]);
+  const [provisioningDone, setProvisioningDone] = useState(false);
+  const [provisioningSuccess, setProvisioningSuccess] = useState(false);
+  const [instanceId, setInstanceId] = useState<string | null>(null);
+  ```
+
+  **ProvisioningStep type:**
+  ```typescript
+  interface ProvisioningStep {
+    step: string;
+    status: "pending" | "running" | "complete" | "failed";
+    message: string;
+    detail?: string;
+  }
+  ```
+
+  **Initial steps list** (shown as pending before provisioning starts):
+  ```typescript
+  const INITIAL_STEPS: ProvisioningStep[] = [
+    { step: "connecting", status: "pending", message: "Connecting to router via SSH" },
+    { step: "detecting_version", status: "pending", message: "Detecting VyOS version" },
+    { step: "generating_credentials", status: "pending", message: "Generating API key and SSH keypair" },
+    { step: "configuring", status: "pending", message: "Entering configuration mode" },
+    { step: "enabling_https", status: "pending", message: "Enabling HTTPS API" },
+    { step: "configuring_api_key", status: "pending", message: "Configuring API key" },
+    { step: "enabling_rest_api", status: "pending", message: "Enabling REST API" },
+    { step: "enabling_graphql", status: "pending", message: "Enabling GraphQL" },
+    { step: "configuring_ssh_key", status: "pending", message: "Configuring SSH key authentication" },
+    { step: "committing", status: "pending", message: "Committing configuration" },
+    { step: "saving", status: "pending", message: "Saving configuration" },
+  ];
+  ```
+
+  **handleSubmit flow:**
+  1. Validate: name, host, sshUsername, sshPassword required
+  2. setLoading(true), setPhase("provisioning"), setProvisioningSteps([...INITIAL_STEPS])
+  3. Create instance: `const instance = await sessionService.createInstance({ site_id: site.id, name, description, host, ssh_port: sshPortNum })`
+  4. setInstanceId(instance.id)
+  5. Start provisioning SSE:
+     ```typescript
+     const cleanup = sessionService.provisionInstance(
+       instance.id,
+       sshUsername,
+       sshPassword,
+       (event) => {
+         // Update the matching step's status
+         setProvisioningSteps(prev => prev.map(s =>
+           s.step === event.step
+             ? { ...s, status: event.status as ProvisioningStep["status"], message: event.message, detail: event.detail }
+             : s
+         ));
+         if (event.step === "complete" && event.status === "complete") {
+           setProvisioningSuccess(true);
+           setProvisioningDone(true);
+         }
+         if (event.status === "failed") {
+           setProvisioningDone(true);
+           setProvisioningSuccess(false);
+           setError(event.message);
+         }
+       },
+       (errorMsg) => {
+         setError(errorMsg);
+         setProvisioningDone(true);
+       },
+       () => {
+         setProvisioningDone(true);
+         setLoading(false);
+       },
+     );
+     ```
+  6. Store cleanup ref for abort on modal close
+
+  **Form phase UI** (single view, no tabs):
+  ```
+  DialogHeader: "Add Router" / "Add a VyOS router to {site.name}"
+
+  [Error alert if error]
+
+  Fieldset:
+    FormField "Router Name" (required) - Input placeholder "e.g., vyos-edge-01"
+    FormField "Description" (optional) - Input placeholder "Optional description"
+
+  FieldsetDivider
+
+  Fieldset label="Connection":
+    FormField "Host" (required) - Input placeholder "192.168.1.1"
+    FormField "SSH Port" - Input type=number, default 22
+    FormField "SSH Username" (required) - Input default "vyos"
+    FormField "SSH Password" (required) - Input type=password
+
+  Small muted text: "SSH credentials are used only during setup and are never stored."
+
+  DialogFooter:
+    Cancel button
+    "Add Router" submit button (with Loader2 spinner when loading)
+  ```
+
+  **Provisioning phase UI:**
+  ```
+  DialogHeader: "Setting up router" / name
+
+  Scrollable step list:
+    For each step in provisioningSteps:
+      <div className="flex items-start gap-3 py-2">
+        {status icon}
+        <div>
+          <p className="text-sm font-medium">{message}</p>
+          {detail && <p className="text-xs text-muted-foreground">{detail}</p>}
+        </div>
+      </div>
+
+  Status icons:
+    pending → Circle (gray, muted) from lucide-react
+    running → Loader2 (animate-spin, text-primary)
+    complete → CheckCircle2 (text-green-500)
+    failed → XCircle (text-destructive)
+
+  [If provisioningDone && provisioningSuccess]:
+    Success alert: "Router configured successfully. You can now connect to it."
+    DialogFooter: "Done" button → handleClose + onSuccess
+
+  [If provisioningDone && !provisioningSuccess]:
+    Error alert with error message
+    DialogFooter:
+      "Close" button → handleClose + onSuccess (instance still exists)
+  ```
+
+  **handleClose:**
+  - Reset all state to defaults
+  - If cleanup ref exists, call it (abort SSE)
+  - setPhase("form")
+  - onOpenChange(false)
+
+  **Imports needed:**
+  - Keep existing: Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+    Button, Input, Fieldset, FieldsetDivider, FormField, Loader2, Server, AlertCircle
+  - Add: CheckCircle2, XCircle, Circle from lucide-react
+  - Add: ProvisioningEvent from session API
+  - Remove: Tabs, TabsContent, TabsList, TabsTrigger, Collapsible, CollapsibleContent, CollapsibleTrigger
+  - Remove: Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Checkbox, Textarea, ChevronDown
+
+  **Design notes:**
+  - Dialog max width: sm:max-w-[500px] (narrower than current 600px since form is simpler)
+  - The provisioning steps list should have max-h with overflow-y-auto
+  - Use the same error alert pattern as current (border-destructive/20 bg-destructive/10)
+  - The success state should use a green-themed alert (border-green-500/20 bg-green-500/10)
+
+acceptance_criteria:
+  - Form has only 6 fields: name, description, host, sshPort, sshUsername, sshPassword
+  - No tabs — single view form
+  - No VyOS version selector (auto-detected)
+  - No API key field (auto-generated)
+  - No protocol/SSL/commit-confirm/prometheus fields
+  - After submit, shows provisioning progress with step-by-step status
+  - Each step shows appropriate icon (pending/running/complete/failed)
+  - Success state shows green alert with "Done" button
+  - Failure state shows error with "Close" button
+  - SSH credentials text is displayed
+  - Modal properly resets on close
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

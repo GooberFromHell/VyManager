@@ -1,0 +1,146 @@
+id: "task-003"
+title: "TFTP Server — Frontend types, service, modal, page"
+phase: produce
+agent: react-specialist
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-002", "task-004", "task-005"]
+
+files:
+  create:
+    - "frontend/src/lib/api/types/tftp-server.ts"
+    - "frontend/src/lib/api/tftp-server.ts"
+    - "frontend/src/components/services/tftp-server/EditTFTPServerModal.tsx"
+    - "frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/lib/api/types/ntp.ts"
+  - "frontend/src/lib/api/ntp.ts"
+  - "frontend/src/components/services/ntp/EditNTPSettingsModal.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "frontend/src/lib/api/client.ts"
+  - "frontend/src/hooks/usePermissions.ts"
+
+instructions: |
+  Create TFTP Server frontend following the NTP service pattern exactly.
+  TFTP is a simple flat-config service with no collection items — just global settings.
+
+  ## Step 1: Types (frontend/src/lib/api/types/tftp-server.ts)
+
+  ```typescript
+  export interface TFTPServerConfig {
+    directory: string | null;
+    listen_addresses: string[];
+    port: string | null;
+    allow_upload: boolean | null;
+  }
+
+  export interface TFTPServerCapabilities {
+    version: string;
+    instance_name: string;
+    instance_id: string;
+    has_allow_upload: boolean;
+    fields: {
+      directory: { supported: boolean; description: string };
+      listen_address: { supported: boolean; description: string };
+      port: { supported: boolean; description: string };
+      allow_upload: { supported: boolean; description: string };
+    };
+  }
+
+  export interface TFTPServerBatchOperation {
+    op: string;
+    value?: string;
+  }
+
+  export interface TFTPServerBatchRequest {
+    item_name?: string;
+    operations: TFTPServerBatchOperation[];
+  }
+  ```
+
+  ## Step 2: API Service (frontend/src/lib/api/tftp-server.ts)
+
+  Follow the NTP service class pattern:
+  ```typescript
+  import { apiClient } from "./client";
+  import type { VyOSResponse } from "@/lib/types/api";
+  import type { TFTPServerConfig, TFTPServerCapabilities, TFTPServerBatchRequest } from "./types/tftp-server";
+
+  class TFTPServerService {
+    async getCapabilities(): Promise<TFTPServerCapabilities> {
+      return apiClient.get<TFTPServerCapabilities>("/vyos/tftp-server/capabilities");
+    }
+    async getConfig(): Promise<TFTPServerConfig> {
+      const response = await apiClient.get<{ data: TFTPServerConfig }>("/vyos/tftp-server/config");
+      return response.data;
+    }
+    async batchConfigure(request: TFTPServerBatchRequest): Promise<VyOSResponse> {
+      return apiClient.post<VyOSResponse>("/vyos/tftp-server/batch", request);
+    }
+    async updateSettings(operations: TFTPServerBatchRequest["operations"]): Promise<VyOSResponse> {
+      return this.batchConfigure({ operations });
+    }
+    async refreshConfig(): Promise<{ success: boolean }> {
+      return apiClient.get("/vyos/tftp-server/config", { refresh: "true" });
+    }
+  }
+  export const tftpServerService = new TFTPServerService();
+  ```
+
+  ## Step 3: Edit Modal (frontend/src/components/services/tftp-server/EditTFTPServerModal.tsx)
+
+  Follow the EditNTPSettingsModal pattern. Single modal for all TFTP settings:
+  - Props: open, onOpenChange, onSuccess, config (TFTPServerConfig | null), capabilities (TFTPServerCapabilities | null)
+  - Form fields:
+    - Directory (Input, text)
+    - Port (Input, number, 1-65535)
+    - Listen Addresses (multi-value list with add/remove, same pattern as NTP)
+    - Allow Upload (Checkbox, only shown if capabilities.has_allow_upload)
+  - Submit: compute delta operations (compare old vs new), call tftpServerService.updateSettings(), then refreshConfig()
+  - Use shadcn Dialog, Input, Label, Checkbox, Button, ScrollArea
+  - Error display with AlertCircle in destructive styling
+  - Loading state on submit button
+
+  ## Step 4: Page (frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx)
+
+  Follow the NTP page pattern:
+  - "use client" directive
+  - State: config, capabilities, loading, error, editOpen
+  - loadData with Promise.all([getConfig, getCapabilities])
+  - useEffect → loadData on mount
+  - Permissions: usePermissions() hook, canWrite(FeatureGroup.TFTP_SERVER)
+  - Loading state: centered Loader2 spinner
+  - Error state: Card with AlertCircle + retry button
+  - Empty state: "TFTP Server is not configured" with Edit button if canWrite
+  - Populated state: Card(s) showing:
+    - Directory path
+    - Port (with Badge)
+    - Listen Addresses (list of Badges)
+    - Allow Upload status (if capability supported)
+  - Edit button in header (if canWrite) opens EditTFTPServerModal
+  - Refresh button in header
+  - handleSuccess callback reloads data
+
+  Import FeatureGroup from user-management.ts.
+
+acceptance_criteria:
+  - "File exists: frontend/src/lib/api/types/tftp-server.ts"
+  - "File exists: frontend/src/lib/api/tftp-server.ts"
+  - "File exists: frontend/src/components/services/tftp-server/EditTFTPServerModal.tsx"
+  - "File exists: frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+  - "Grep match: 'TFTPServerConfig' in frontend/src/lib/api/types/tftp-server.ts"
+  - "Grep match: 'getCapabilities' in frontend/src/lib/api/tftp-server.ts"
+  - "Grep match: 'refreshConfig' in frontend/src/lib/api/tftp-server.ts"
+  - "Grep match: 'FeatureGroup.TFTP_SERVER' in frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

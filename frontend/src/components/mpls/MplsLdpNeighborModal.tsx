@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { MplsLdpNeighbor } from "@/lib/api/mpls";
 
@@ -94,10 +94,8 @@ export function MplsLdpNeighborModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {/* Peer Address */}
-          <div className="space-y-2">
-            <Label htmlFor="ldp-neighbor-addr">Peer IPv4 Address</Label>
+        <Fieldset className="py-2">
+          <FormField label="Peer IPv4 Address" htmlFor="ldp-neighbor-addr" required={!isEditMode}>
             {isEditMode ? (
               <p className="text-sm font-mono font-medium px-3 py-2 bg-muted rounded-md">
                 {existingNeighbor?.address}
@@ -110,11 +108,13 @@ export function MplsLdpNeighborModal({
                 placeholder="e.g. 10.0.0.1"
               />
             )}
-          </div>
+          </FormField>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <Label htmlFor="ldp-neighbor-pw">Password</Label>
+          <FormField
+            label="Password"
+            htmlFor="ldp-neighbor-pw"
+            description="MD5 authentication password for this LDP neighbor session"
+          >
             <Input
               id="ldp-neighbor-pw"
               type="password"
@@ -122,14 +122,13 @@ export function MplsLdpNeighborModal({
               onChange={(e) => setPassword(e.target.value)}
               placeholder="MD5 authentication password (optional)"
             />
-            <p className="text-xs text-muted-foreground">
-              MD5 authentication password for this LDP neighbor session
-            </p>
-          </div>
+          </FormField>
 
-          {/* Session Holdtime */}
-          <div className="space-y-2">
-            <Label htmlFor="ldp-neighbor-holdtime">Session Holdtime (seconds)</Label>
+          <FormField
+            label="Session Holdtime (seconds)"
+            htmlFor="ldp-neighbor-holdtime"
+            description="Override the LDP session holdtime for this peer"
+          >
             <Input
               id="ldp-neighbor-holdtime"
               type="number"
@@ -138,25 +137,21 @@ export function MplsLdpNeighborModal({
               onChange={(e) => setSessionHoldtime(e.target.value)}
               placeholder="Default (optional)"
             />
-            <p className="text-xs text-muted-foreground">
-              Override the LDP session holdtime for this peer
-            </p>
-          </div>
+          </FormField>
 
-          {/* TTL Security */}
-          <div className="space-y-2">
-            <Label htmlFor="ldp-neighbor-ttl">TTL Security</Label>
+          <FormField
+            label="TTL Security"
+            htmlFor="ldp-neighbor-ttl"
+            description={`GTSM TTL security hops (1–254) or "disable" to turn off`}
+          >
             <Input
               id="ldp-neighbor-ttl"
               value={ttlSecurity}
               onChange={(e) => setTtlSecurity(e.target.value)}
               placeholder="1–254 or 'disable' (optional)"
             />
-            <p className="text-xs text-muted-foreground">
-              GTSM TTL security hops (1–254) or &quot;disable&quot; to turn off
-            </p>
-          </div>
-        </div>
+          </FormField>
+        </Fieldset>
 
         {error && (
           <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3">

@@ -43,6 +43,10 @@ import {
   UserCircle,
   Route,
   Power,
+  Clock,
+  Terminal,
+  ArrowLeftRight,
+  FolderOpen,
 } from "lucide-react";
 import { userManagementService, FeatureGroup, InstanceUserListItem } from "@/lib/api/user-management";
 import { ApiError } from "@/lib/types/api";
@@ -122,6 +126,19 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.USER_MANAGEMENT]: UserCircle,
   [FeatureGroup.POWER]: Power,
   [FeatureGroup.HIGH_AVAILABILITY]: Shield,
+  [FeatureGroup.DNS_FORWARDING]: Globe,
+  [FeatureGroup.NTP]: Clock,
+  [FeatureGroup.SSH]: Terminal,
+  [FeatureGroup.DHCP_RELAY]: ArrowLeftRight,
+  [FeatureGroup.DHCPV6_SERVER]: Network,
+  [FeatureGroup.LLDP]: Eye,
+  [FeatureGroup.SNMP]: Radio,
+  [FeatureGroup.ROUTER_ADVERT]: Wifi,
+  [FeatureGroup.TFTP_SERVER]: Server,
+  [FeatureGroup.BROADCAST_RELAY]: Network,
+  [FeatureGroup.CONNTRACK_SYNC]: Activity,
+  [FeatureGroup.CONTAINER]: Box,
+  [FeatureGroup.FILE_BROWSER]: FolderOpen,
 };
 
 // Feature display names
@@ -182,6 +199,19 @@ const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.USER_MANAGEMENT]: "User Management",
   [FeatureGroup.POWER]: "Power",
   [FeatureGroup.HIGH_AVAILABILITY]: "High Availability",
+  [FeatureGroup.DNS_FORWARDING]: "DNS Forwarding",
+  [FeatureGroup.NTP]: "NTP",
+  [FeatureGroup.SSH]: "SSH",
+  [FeatureGroup.DHCP_RELAY]: "DHCP Relay",
+  [FeatureGroup.DHCPV6_SERVER]: "DHCPv6 Server",
+  [FeatureGroup.LLDP]: "LLDP",
+  [FeatureGroup.SNMP]: "SNMP",
+  [FeatureGroup.ROUTER_ADVERT]: "Router Advertisement",
+  [FeatureGroup.TFTP_SERVER]: "TFTP Server",
+  [FeatureGroup.BROADCAST_RELAY]: "Broadcast Relay",
+  [FeatureGroup.CONNTRACK_SYNC]: "Conntrack Sync",
+  [FeatureGroup.CONTAINER]: "Containers",
+  [FeatureGroup.FILE_BROWSER]: "File Browser",
 };
 
 export function ViewInstanceAccessModal({

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -111,34 +111,39 @@ export function CreateCustomBridgeChainModal({
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="chainName">Chain Name *</Label>
+        <Fieldset>
+          <FormField
+            label="Chain Name"
+            htmlFor="chainName"
+            description="Must start with a letter. Only letters, numbers, underscores, and hyphens allowed."
+            required
+          >
             <Input
               id="chainName"
               placeholder="e.g., my-custom-chain"
               value={chainName}
               onChange={(e) => setChainName(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              Must start with a letter. Only letters, numbers, underscores, and hyphens allowed.
-            </p>
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <FormField
+            label="Description"
+            htmlFor="description"
+          >
             <Input
               id="description"
               placeholder="Optional description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="defaultAction">Default Action</Label>
+          <FormField
+            label="Default Action"
+            htmlFor="defaultAction"
+          >
             <Select value={defaultAction} onValueChange={setDefaultAction}>
-              <SelectTrigger>
+              <SelectTrigger id="defaultAction">
                 <SelectValue placeholder="Not Set" />
               </SelectTrigger>
               <SelectContent>
@@ -147,8 +152,8 @@ export function CreateCustomBridgeChainModal({
                 <SelectItem value="drop">Drop</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </div>
+          </FormField>
+        </Fieldset>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>

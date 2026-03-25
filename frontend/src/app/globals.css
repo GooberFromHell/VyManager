@@ -45,6 +45,41 @@
 
 :root {
   --radius: 0.625rem;
+  /* Dark mode as default */
+  --background: oklch(0.145 0.007 190);
+  --foreground: oklch(0.985 0.005 190);
+  --card: oklch(0.205 0.007 190);
+  --card-foreground: oklch(0.985 0.005 190);
+  --popover: oklch(0.205 0.007 190);
+  --popover-foreground: oklch(0.985 0.005 190);
+  --primary: oklch(0.6 0.15 190);
+  --primary-foreground: oklch(0.985 0.005 190);
+  --secondary: oklch(0.269 0.007 190);
+  --secondary-foreground: oklch(0.985 0.005 190);
+  --muted: oklch(0.269 0.007 190);
+  --muted-foreground: oklch(0.708 0.01 190);
+  --accent: oklch(0.269 0.007 190);
+  --accent-foreground: oklch(0.985 0.005 190);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0.005 190 / 10%);
+  --input: oklch(1 0.005 190 / 15%);
+  --ring: oklch(0.6 0.15 190);
+  --chart-1: oklch(0.6 0.15 190);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0.007 190);
+  --sidebar-foreground: oklch(0.985 0.005 190);
+  --sidebar-primary: oklch(0.6 0.15 190);
+  --sidebar-primary-foreground: oklch(0.985 0.005 190);
+  --sidebar-accent: oklch(0.269 0.007 190);
+  --sidebar-accent-foreground: oklch(0.985 0.005 190);
+  --sidebar-border: oklch(1 0.005 190 / 10%);
+  --sidebar-ring: oklch(0.6 0.15 190);
+}
+
+.light {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -79,59 +114,304 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Same as root explicitly to ensure toggle parity */
+  --background: oklch(0.145 0.007 190);
+  --foreground: oklch(0.985 0.005 190);
+  --card: oklch(0.205 0.007 190);
+  --card-foreground: oklch(0.985 0.005 190);
+  --popover: oklch(0.205 0.007 190);
+  --popover-foreground: oklch(0.985 0.005 190);
+  --primary: oklch(0.6 0.15 190);
+  --primary-foreground: oklch(0.985 0.005 190);
+  --secondary: oklch(0.269 0.007 190);
+  --secondary-foreground: oklch(0.985 0.005 190);
+  --muted: oklch(0.269 0.007 190);
+  --muted-foreground: oklch(0.708 0.01 190);
+  --accent: oklch(0.269 0.007 190);
+  --accent-foreground: oklch(0.985 0.005 190);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
+  --border: oklch(1 0.005 190 / 10%);
+  --input: oklch(1 0.005 190 / 15%);
+  --ring: oklch(0.6 0.15 190);
+  --chart-1: oklch(0.6 0.15 190);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0.007 190);
+  --sidebar-foreground: oklch(0.985 0.005 190);
+  --sidebar-primary: oklch(0.6 0.15 190);
+  --sidebar-primary-foreground: oklch(0.985 0.005 190);
+  --sidebar-accent: oklch(0.269 0.007 190);
+  --sidebar-accent-foreground: oklch(0.985 0.005 190);
+  --sidebar-border: oklch(1 0.005 190 / 10%);
+  --sidebar-ring: oklch(0.6 0.15 190);
+}
+
+.interstellar {
+  /* Deep Space Navy and Emerald Theme */
+  --background: oklch(0.18 0.02 260); /* #0B0E14 */
+  --foreground: oklch(0.98 0 0); /* #F8FAFC */
+  --card: oklch(0.22 0.02 260); /* #111827 */
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.22 0.02 260);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.85 0.1 160); /* #6EE7B7 */
+  --primary-foreground: oklch(0.2 0.01 260); /* Dark text for contrast */
+  --secondary: oklch(0.6 0.2 280); /* #8B5CF6 */
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.28 0.02 260); /* #1E293B */
+  --muted-foreground: oklch(0.7 0.02 260); /* #94A3B8 */
+  --accent: oklch(0.28 0.02 260); /* #1E293B */
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.6 0.2 25); /* #EF4444 */
+  --border: oklch(0.28 0.02 260); /* #1E293B */
+  --input: oklch(0.28 0.02 260); /* #1E293B */
+  --ring: oklch(0.85 0.1 160); /* #6EE7B7 */
+  --chart-1: oklch(0.85 0.1 160);
+  --chart-2: oklch(0.6 0.2 280);
+  --chart-3: oklch(0.7 0.15 220);
+  --chart-4: oklch(0.7 0.2 300);
+  --chart-5: oklch(0.6 0.2 25);
+  --sidebar: oklch(0.15 0.02 260); /* #080A0F */
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.85 0.1 160);
+  --sidebar-primary-foreground: oklch(0.2 0.01 260);
+  --sidebar-accent: oklch(0.22 0.03 260); /* Teal interaction hover */
+  --sidebar-accent-foreground: oklch(0.85 0.1 160); /* Glowing emerald active text */
+  --sidebar-border: oklch(0.28 0.02 260);
+  --sidebar-ring: oklch(0.85 0.1 160);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
 @layer utilities {
+
   /* Custom animation delays */
   .delay-1000 {
     animation-delay: 1s;
   }
+
   .delay-2000 {
     animation-delay: 2s;
   }
+}
 
-  /* Backdrop blur utilities */
-  .backdrop-blur-xl {
-    backdrop-filter: blur(24px);
+/* ============================================================================
+   VyManager Motion System
+   Confident, decisive animations for infrastructure tools.
+   All animations respect prefers-reduced-motion via the global handler below.
+   ============================================================================ */
+
+/* --- Easing tokens --- */
+:root {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Keyframes --- */
+
+/* Fade up — primary entrance for page content, cards, modals */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade in — subtle opacity-only entrance */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fade out — toast/banner exit */
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Scale fade — for logo, icons, emphasis moments */
+@keyframes scale-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Slide down — banner entrances */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide up out — toast exit */
+@keyframes slide-up-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Gentle float — empty state icons */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Progress fill — onboarding step connector */
+@keyframes progress-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Pulse glow — connected status indicator */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+/* Collapsible expand — sidebar nav sections */
+@keyframes collapsible-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Utility classes --- */
+
+/* Page content entrance — apply to page wrappers */
+.animate-page-in {
+  animation: fade-up 400ms var(--ease-out-quart) both;
+}
+
+/* Fade-up entrance — general purpose */
+.animate-fade-up {
+  animation: fade-up 350ms var(--ease-out-quart) both;
+}
+
+/* Fade in — subtle */
+.animate-fade-in {
+  animation: fade-in 300ms var(--ease-out-quart) both;
+}
+
+/* Scale fade — emphasis elements (logos, hero icons) */
+.animate-scale-fade {
+  animation: scale-fade 500ms var(--ease-out-expo) both;
+}
+
+/* Banner slide-down entrance */
+.animate-slide-down {
+  animation: slide-down 350ms var(--ease-out-quart) both;
+}
+
+/* Toast exit */
+.animate-slide-up-out {
+  animation: slide-up-out 200ms var(--ease-out-quart) both;
+}
+
+/* Empty state floating icon */
+.animate-gentle-float {
+  animation: gentle-float 4s ease-in-out infinite;
+}
+
+/* Collapsible content expand */
+.animate-collapsible-expand {
+  animation: collapsible-expand 200ms var(--ease-out-quart) both;
+}
+
+/* Stagger delay utilities for card grids */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+.stagger-7 { animation-delay: 350ms; }
+.stagger-8 { animation-delay: 400ms; }
+.stagger-9 { animation-delay: 450ms; }
+
+/* --- Radix Collapsible smooth height animation --- */
+[data-slot="collapsible-content"] {
+  overflow: hidden;
+}
+
+[data-slot="collapsible-content"][data-state="open"] {
+  animation: collapsible-slide-down 200ms var(--ease-out-quart);
+}
+
+[data-slot="collapsible-content"][data-state="closed"] {
+  animation: collapsible-slide-up 150ms var(--ease-out-quart);
+}
+
+@keyframes collapsible-slide-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-slide-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

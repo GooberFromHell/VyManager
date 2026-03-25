@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, AlertCircle, Search } from "lucide-react";
@@ -375,7 +375,7 @@ export function EditGroupModal({ open, onOpenChange, group, onSuccess }: EditGro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-5 py-4">
           {/* Error Alert */}
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
@@ -386,57 +386,57 @@ export function EditGroupModal({ open, onOpenChange, group, onSuccess }: EditGro
             </div>
           )}
 
-          {/* Group Info (read-only) */}
-          <div className="space-y-2">
-            <Label>Group Name</Label>
-            <Input value={group.name} disabled className="font-mono" />
-          </div>
+          <Fieldset label="Group Details">
+            <FormField label="Group Name">
+              <Input value={group.name} disabled className="font-mono" />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label>Group Type</Label>
-            <Input value={getGroupTypeLabel()} disabled />
-          </div>
+            <FormField label="Group Type">
+              <Input value={getGroupTypeLabel()} disabled />
+            </FormField>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description for this group"
-              rows={2}
-            />
-          </div>
-
-          {/* Add Members */}
-          <div className="space-y-2">
-            <Label htmlFor="new-member">Add {getMemberLabel()}</Label>
-            <div className="flex gap-2">
-              <Input
-                id="new-member"
-                value={newMember}
-                onChange={(e) => setNewMember(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addMember();
-                  }
-                }}
-                placeholder={getMemberPlaceholder()}
-                className="font-mono"
+            <FormField
+              label="Description"
+              htmlFor="description"
+            >
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description for this group"
+                rows={2}
               />
-              <Button type="button" onClick={addMember} size="sm">
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
-            </div>
-          </div>
+            </FormField>
+          </Fieldset>
 
-          {/* Current Members */}
-          <div className="space-y-2">
+          <Fieldset label="Members">
+            <FormField
+              label={`Add ${getMemberLabel()}`}
+              htmlFor="new-member"
+            >
+              <div className="flex gap-2">
+                <Input
+                  id="new-member"
+                  value={newMember}
+                  onChange={(e) => setNewMember(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addMember();
+                    }
+                  }}
+                  placeholder={getMemberPlaceholder()}
+                  className="font-mono"
+                />
+                <Button type="button" onClick={addMember} size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </FormField>
+
             <div className="flex items-center justify-between">
-              <Label>Current Members</Label>
+              <span className="text-sm font-medium">Current Members</span>
               <span className="text-sm text-muted-foreground">
                 {currentMembers.length} member{currentMembers.length !== 1 ? "s" : ""}
               </span>
@@ -473,20 +473,19 @@ export function EditGroupModal({ open, onOpenChange, group, onSuccess }: EditGro
                 No members (all removed)
               </p>
             )}
-          </div>
+          </Fieldset>
 
           {/* Include Groups (only for supported types) */}
           {supportsInclude() && (
-            <div className="space-y-2">
+            <Fieldset label="Include Other Groups">
               <div className="flex items-center justify-between">
-                <Label>Include Other Groups</Label>
+                <span className="text-xs text-muted-foreground">
+                  Select other groups of the same type to include in this group
+                </span>
                 <span className="text-xs text-muted-foreground">
                   {currentIncludedGroups.length} of {availableGroups.length} selected
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Select other groups of the same type to include in this group
-              </p>
 
               {/* Search and Quick Actions */}
               <div className="flex gap-2">
@@ -603,7 +602,7 @@ export function EditGroupModal({ open, onOpenChange, group, onSuccess }: EditGro
                   </div>
                 )}
               </div>
-            </div>
+            </Fieldset>
           )}
 
         </div>

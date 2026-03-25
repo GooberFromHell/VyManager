@@ -1,0 +1,74 @@
+id: "task-004"
+title: "Add proxy host support to site CRUD endpoints"
+archetype: backend-service
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-007"]
+parallel_with: ["task-002"]
+files:
+  create: []
+  modify:
+    - backend/routers/session/session.py
+context_files:
+  - backend/routers/session/session.py
+instructions: |
+  1. Read `backend/routers/session/session.py` fully
+  2. Find the existing `SiteResponse`, `SiteCreateRequest`, and `SiteUpdateRequest` models
+  3. Find the `create_site`, `update_site`, `list_user_sites`, and `delete_site` endpoints
+
+  Make these changes:
+
+  **Modify SiteResponse** — add field:
+  ```python
+  proxy_host_id: Optional[str] = None
+  ```
+
+  **Modify SiteCreateRequest** — add optional field:
+  ```python
+  proxy_host_id: Optional[str] = None
+  ```
+
+  **Modify SiteUpdateRequest** — add optional field:
+  ```python
+  proxy_host_id: Optional[str] = None
+  ```
+
+  **Modify `list_user_sites` endpoint:**
+  - In the SQL SELECT for sites, add `s."proxyHostId"` to the selected columns
+  - In the SiteResponse construction, map `proxy_host_id=row["proxyHostId"]`
+  - Do this for BOTH the admin query and the non-admin query
+
+  **Modify `create_site` endpoint:**
+  - Accept `proxy_host_id` from the request body
+  - Include `"proxyHostId"` in the INSERT query if provided
+  - If proxy_host_id is provided, validate the instance exists and belongs to this site (though on create, the site likely has no instances yet, so this validation is mainly for future-proofing)
+
+  **Modify `update_site` endpoint:**
+  - Accept `proxy_host_id` from the request body
+  - If proxy_host_id is provided and not null, validate:
+    - The instance exists: `SELECT id, "siteId" FROM instances WHERE id = $1`
+    - The instance belongs to this site: `instance["siteId"] == site_id`
+    - If validation fails, raise `HTTPException(400, "Proxy host must be an instance belonging to this site")`
+  - If proxy_host_id is explicitly null (clearing proxy), allow it
+  - Include `"proxyHostId"` in the dynamic SQL UPDATE builder
+  - Return the updated SiteResponse with proxy_host_id
+
+  **Modify `update_instance` endpoint** (for the move-instance case):
+  - When an instance's `site_id` is being changed (moved to different site), check if the old site had this instance as its proxy host
+  - If so, clear the old site's proxyHostId: `UPDATE sites SET "proxyHostId" = NULL WHERE id = $1 AND "proxyHostId" = $2`
+  - This prevents orphaned proxy references after an instance move
+acceptance_criteria:
+  - "Grep match: 'proxy_host_id' in backend/routers/session/session.py"
+  - "Grep match: 'proxyHostId' in backend/routers/session/session.py"
+  - "Grep match: 'Proxy host must be' in backend/routers/session/session.py"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

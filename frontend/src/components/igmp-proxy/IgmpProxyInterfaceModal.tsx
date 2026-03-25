@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -212,8 +212,10 @@ export function IgmpProxyInterfaceModal({
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-6 pb-2">
             {/* Interface Name */}
-            <div className="space-y-2">
-              <Label>Interface</Label>
+            <FormField
+              label="Interface"
+              description="Network interface to participate in IGMP proxy."
+            >
               {isEditMode ? (
                 <Input
                   value={name}
@@ -235,14 +237,13 @@ export function IgmpProxyInterfaceModal({
                   </SelectContent>
                 </Select>
               )}
-              <p className="text-xs text-muted-foreground">
-                Network interface to participate in IGMP proxy.
-              </p>
-            </div>
+            </FormField>
 
             {/* Role */}
-            <div className="space-y-2">
-              <Label>Role</Label>
+            <FormField
+              label="Role"
+              description="Upstream receives multicast from the source network. Downstream forwards multicast to client networks."
+            >
               <Select value={role} onValueChange={setRole}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select interface role" />
@@ -253,14 +254,14 @@ export function IgmpProxyInterfaceModal({
                   <SelectItem value="disabled">Disabled</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Upstream receives multicast from the source network. Downstream forwards multicast to client networks.
-              </p>
-            </div>
+            </FormField>
 
             {/* Threshold */}
-            <div className="space-y-2">
-              <Label htmlFor="igmp-iface-threshold">TTL Threshold</Label>
+            <FormField
+              label="TTL Threshold"
+              htmlFor="igmp-iface-threshold"
+              description="Minimum TTL required for multicast packets to be forwarded (1-255)."
+            >
               <Input
                 id="igmp-iface-threshold"
                 type="number"
@@ -270,15 +271,12 @@ export function IgmpProxyInterfaceModal({
                 min={1}
                 max={255}
               />
-              <p className="text-xs text-muted-foreground">
-                Minimum TTL required for multicast packets to be forwarded (1-255).
-              </p>
-            </div>
+            </FormField>
 
             {/* Alt Subnets */}
             <div className="space-y-3">
               <div>
-                <Label>Alternate Subnets</Label>
+                <p className="text-sm font-medium">Alternate Subnets</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Allow multicast from sources outside the directly connected subnet. Typically used on the upstream interface.
                 </p>
@@ -330,7 +328,7 @@ export function IgmpProxyInterfaceModal({
             {/* Whitelists */}
             <div className="space-y-3">
               <div>
-                <Label>Multicast Group Whitelist</Label>
+                <p className="text-sm font-medium">Multicast Group Whitelist</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Only proxy multicast traffic for these group address ranges. Leave empty to allow all groups.
                 </p>

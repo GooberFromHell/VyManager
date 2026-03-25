@@ -1,0 +1,200 @@
+id: "task-002"
+title: "Create file browser backend router with SFTP operations"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:python-pro"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-005", "task-006"]
+parallel_with: ["task-003", "task-004"]
+
+files:
+  create:
+    - "backend/routers/file_browser/__init__.py"
+    - "backend/routers/file_browser/file_browser.py"
+  modify:
+    - "backend/app.py"
+
+context_files:
+  - "backend/routers/terminal/terminal.py"
+  - "backend/routers/ntp/ntp.py"
+  - "backend/rbac_permissions.py"
+  - "backend/ssh_key_manager.py"
+  - "backend/fastapi_permissions.py"
+  - "backend/middleware/session.py"
+  - "backend/app.py"
+
+instructions: |
+  Create a FastAPI router that provides file browser operations via SFTP using asyncssh.
+  This follows the terminal router's SSH pattern — NOT the mapper/builder pattern.
+
+  ## 1. Create backend/routers/file_browser/__init__.py
+  Empty file (package marker).
+
+  ## 2. Create backend/routers/file_browser/file_browser.py
+
+  Structure:
+  ```python
+  import os
+  import asyncio
+  import logging
+  import posixpath
+  from datetime import datetime, timezone
+  from typing import Optional
+
+  import asyncssh
+  from fastapi import APIRouter, Request, UploadFile, File, Form, HTTPException, Query
+  from fastapi.responses import StreamingResponse
+  from starlette.concurrency import run_in_threadpool
+
+  from ssh_key_manager import decrypt_private_key
+  from rbac_permissions import FeatureGroup, PermissionLevel, check_permission
+  from fastapi_permissions import require_read_permission, require_write_permission
+
+  logger = logging.getLogger(__name__)
+  router = APIRouter(prefix="/vyos/file-browser", tags=["file-browser"])
+  ```
+
+  ### SFTP Connection Helper
+  Create an async context manager `_get_sftp_client(request)` that:
+  1. Gets user_id and instance_id from `request.state.user["id"]` and `request.state.instance["id"]`
+  2. Fetches SSH config from database using `request.app.state.db_pool`:
+     ```sql
+     SELECT host, "sshPort", "sshUsername", "sshEncryptedPrivKey",
+            "sshKeyNonce", "sshKeyConfigured"
+     FROM instances WHERE id = $1
+     ```
+  3. Validates `sshKeyConfigured` is true, raises HTTPException(400) if not
+  4. Decrypts private key using `decrypt_private_key(encrypted, nonce)`
+  5. Imports key: `asyncssh.import_private_key(private_key_pem.decode("utf-8"))`
+  6. Opens SSH connection: `asyncssh.connect(host, port, username, client_keys=[key], known_hosts=None)`
+  7. Starts SFTP client: `ssh_conn.start_sftp_client()`
+  8. Yields the sftp client
+  9. On exit, closes sftp and ssh_conn
+
+  ### Path Validation Helper
+  Create `_validate_path(path: str) -> str` that:
+  1. Strips whitespace
+  2. Rejects paths with null bytes (raise HTTPException 400)
+  3. Normalizes with `posixpath.normpath()`
+  4. Ensures path starts with `/` (prepend if not)
+  5. Returns the clean path
+
+  ### Endpoints
+
+  **GET /list**
+  ```
+  Query param: path (str, default="/")
+  Permission: require_read_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate path
+  - Open SFTP, call `sftp.readdir(path)`
+  - For each entry, build a dict with: name, type ("file"|"directory"|"symlink"|"other"), size, permissions (octal string like "rwxr-xr-x"), modified (ISO datetime), owner (uid as string), group (gid as string)
+  - Convert `attrs.permissions` to rwx string using `stat.filemode()`
+  - Convert `attrs.mtime` to ISO datetime
+  - Sort: directories first, then alphabetically by name
+  - Filter out "." and ".."
+  - Return `{"path": path, "entries": [...]}`
+  - Catch `asyncssh.SFTPNoSuchFile` → 404
+  - Catch `asyncssh.SFTPPermissionDenied` → 403
+  - Catch `asyncssh.SFTPError` → 500 with message
+
+  **GET /read**
+  ```
+  Query params: path (str, required), max_size (int, default=1048576 = 1MB)
+  Permission: require_read_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate path
+  - Open SFTP, stat the file to get size
+  - If size > max_size, return `{"path": path, "content": null, "size": size, "truncated": true, "message": "File too large for preview"}`
+  - Read file content as bytes
+  - Try to decode as UTF-8. If fails, return `{"path": path, "content": null, "size": size, "binary": true, "message": "Binary file cannot be previewed"}`
+  - Return `{"path": path, "content": text, "size": size, "truncated": false}`
+
+  **GET /download**
+  ```
+  Query param: path (str, required)
+  Permission: require_read_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate path
+  - Open SFTP, stat file to verify it exists and get size
+  - Create async generator that reads file in 64KB chunks
+  - Return `StreamingResponse` with:
+    - `media_type="application/octet-stream"`
+    - `headers={"Content-Disposition": f'attachment; filename="{filename}"', "Content-Length": str(size)}`
+  - IMPORTANT: The SFTP connection must stay open for the duration of the stream. Use a try/finally in the generator to close SSH when done.
+
+  **POST /upload**
+  ```
+  Form params: path (str), file (UploadFile)
+  Permission: require_write_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate path (the directory to upload into)
+  - Construct full path: `posixpath.join(path, file.filename)`
+  - Open SFTP
+  - Read upload file content into memory (limit to 100MB, raise 413 if larger)
+  - Write via `sftp.open(full_path, "wb")` then `f.write(content)`
+  - Return `{"success": true, "path": full_path, "size": len(content)}`
+
+  **POST /mkdir**
+  ```
+  JSON body: {"path": str}
+  Permission: require_write_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate path
+  - Open SFTP, `sftp.mkdir(path)`
+  - Return `{"success": true, "path": path}`
+
+  **POST /rename**
+  ```
+  JSON body: {"old_path": str, "new_path": str}
+  Permission: require_write_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate both paths
+  - Open SFTP, `sftp.rename(old_path, new_path)`
+  - Return `{"success": true, "old_path": old_path, "new_path": new_path}`
+
+  **DELETE /delete**
+  ```
+  Query param: path (str, required)
+  Permission: require_write_permission(request, FeatureGroup.FILE_BROWSER)
+  ```
+  - Validate path
+  - Reject deletion of "/" (safety check)
+  - Open SFTP, stat to determine if file or directory
+  - If file: `sftp.remove(path)`
+  - If directory: `sftp.rmdir(path)` (only works on empty directories — this is intentional for safety)
+  - Return `{"success": true, "path": path}`
+
+  ## 3. Register in backend/app.py
+
+  Add import after the container_router import (line 68):
+  ```python
+  from routers.file_browser import file_browser as file_browser_router
+  ```
+
+  Add router registration after container_router (line 323):
+  ```python
+  app.include_router(file_browser_router.router)
+  ```
+
+acceptance_criteria:
+  - "File exists: backend/routers/file_browser/__init__.py"
+  - "File exists: backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'file_browser' in backend/app.py"
+  - "Grep match: '/vyos/file-browser' in backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'asyncssh' in backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'start_sftp_client' in backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'StreamingResponse' in backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'require_read_permission' in backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'require_write_permission' in backend/routers/file_browser/file_browser.py"
+  - "Grep match: 'FILE_BROWSER' in backend/routers/file_browser/file_browser.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

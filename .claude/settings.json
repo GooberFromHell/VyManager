@@ -1,0 +1,99 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if any files were modified in these pattern-sensitive directories: backend/routers/, backend/vyos_builders/, backend/vyos_mappers/, or frontend/src/lib/api/. If YES, report that the user should run /check-patterns. If NO files in those directories were touched, report that no check is needed.",
+            "statusMessage": "Checking for pattern-sensitive changes..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/orchestrator-checkpoint.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/session-init.py\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/pre-tool-intercept.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/enforce-write-boundaries.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/block-dangerous-commands.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/post-tool-capture.py\"",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/agent-completion-gate.py\""
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"D:/Code/Git Repos/VyManager/.claude/hooks/reassign-idle-agent.py\"",
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "voltagent-core-dev@voltagent-subagents": true,
+    "voltagent-dev-exp@voltagent-subagents": true
+  }
+}

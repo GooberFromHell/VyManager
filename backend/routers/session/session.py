@@ -8,12 +8,15 @@ Handles connect/disconnect operations and instance selection.
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from starlette.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 import asyncpg
+import asyncio
 import csv
 import io
+import time
+from pyvyos import VyDevice
 from vyos_service import VyOSService, VyOSDeviceConfig
 from session_vyos_service import clear_session_cache
 from session_cookie import verify_session_cookie
@@ -42,6 +45,7 @@ class SiteResponse(BaseModel):
     name: str
     description: Optional[str] = None
     role: str  # User's role in this site (OWNER, ADMIN, VIEWER)
+    proxy_host_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -51,6 +55,7 @@ class SiteCreateRequest(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255, description="Site name")
     description: Optional[str] = Field(None, description="Site description")
+    proxy_host_id: Optional[str] = Field(None, description="Instance ID to use as proxy/jump host")
 
 
 class SiteUpdateRequest(BaseModel):
@@ -58,6 +63,7 @@ class SiteUpdateRequest(BaseModel):
 
     name: Optional[str] = Field(None, min_length=1, max_length=255, description="Site name")
     description: Optional[str] = Field(None, description="Site description")
+    proxy_host_id: Optional[str] = Field(None, description="Instance ID to use as proxy/jump host (set to null to clear)")
 
 
 class InstanceResponse(BaseModel):
@@ -78,6 +84,10 @@ class InstanceResponse(BaseModel):
     ssh_key_configured: bool = False
     commit_confirm_enabled: bool = False
     commit_confirm_minutes: int = 5
+    prometheus_enabled: bool = False
+    prometheus_port: int = 9273
+    prometheus_auth: bool = False
+    prometheus_username: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -90,8 +100,8 @@ class InstanceCreateRequest(BaseModel):
     description: Optional[str] = Field(None, description="Instance description")
     host: str = Field(..., description="VyOS device IP or hostname")
     port: int = Field(default=443, ge=1, le=65535, description="VyOS API port")
-    api_key: str = Field(..., description="VyOS API key")
-    vyos_version: str = Field(..., description="VyOS version (1.4 or 1.5)")
+    api_key: Optional[str] = Field(None, description="VyOS API key")
+    vyos_version: str = Field(default="1.5", description="VyOS version (1.4 or 1.5)")
     protocol: str = Field(default="https", description="Protocol (http or https)")
     verify_ssl: bool = Field(default=False, description="Verify SSL certificate")
     is_active: bool = Field(default=True, description="Whether instance is active")
@@ -99,6 +109,11 @@ class InstanceCreateRequest(BaseModel):
     ssh_username: Optional[str] = Field(None, description="SSH username for monitoring")
     commit_confirm_enabled: bool = Field(default=False, description="Use commit-confirm for all changes (VyOS 1.5+ only)")
     commit_confirm_minutes: int = Field(default=5, ge=1, le=60, description="Minutes before auto-revert if not confirmed")
+    prometheus_enabled: bool = Field(default=False, description="Enable Prometheus monitoring")
+    prometheus_port: int = Field(default=9273, ge=1, le=65535, description="Prometheus metrics port")
+    prometheus_auth: bool = Field(default=False, description="Prometheus requires authentication")
+    prometheus_username: Optional[str] = Field(None, description="Prometheus username")
+    prometheus_password: Optional[str] = Field(None, description="Prometheus password")
 
 
 class InstanceUpdateRequest(BaseModel):
@@ -118,6 +133,31 @@ class InstanceUpdateRequest(BaseModel):
     ssh_username: Optional[str] = Field(None, description="SSH username for monitoring")
     commit_confirm_enabled: Optional[bool] = Field(None, description="Use commit-confirm for all changes (VyOS 1.5+ only)")
     commit_confirm_minutes: Optional[int] = Field(None, ge=1, le=60, description="Minutes before auto-revert if not confirmed")
+    prometheus_enabled: Optional[bool] = Field(None, description="Enable Prometheus monitoring")
+    prometheus_port: Optional[int] = Field(None, ge=1, le=65535, description="Prometheus metrics port")
+    prometheus_auth: Optional[bool] = Field(None, description="Prometheus requires authentication")
+    prometheus_username: Optional[str] = Field(None, description="Prometheus username")
+    prometheus_password: Optional[str] = Field(None, description="Prometheus password")
+
+
+class ProvisionRequest(BaseModel):
+    """Request model for provisioning an existing instance."""
+
+    ssh_username: str
+    ssh_password: str
+
+
+class ProvisioningResponse(BaseModel):
+    """Response model for a provisioning operation."""
+
+    success: bool
+    ssh_connected: bool
+    api_key_configured: bool
+    ssh_key_configured: bool
+    committed: bool
+    saved: bool
+    error: Optional[str] = None
+    step_errors: dict = {}
 
 
 class ActiveSessionResponse(BaseModel):
@@ -144,6 +184,22 @@ class ApiResponse(BaseModel):
     success: bool
     message: str
     data: Optional[Dict[str, Any]] = None
+
+
+class InstanceStatusResponse(BaseModel):
+    """Reachability status for a single VyOS instance."""
+
+    instance_id: str
+    status: str  # "online", "offline", "error"
+    latency_ms: Optional[int] = None
+    error: Optional[str] = None
+
+
+class SiteStatusResponse(BaseModel):
+    """Reachability status for all instances in a site."""
+
+    site_id: str
+    instances: List[InstanceStatusResponse]
 
 
 # ============================================================================
@@ -340,6 +396,15 @@ async def connect_to_instance(request: Request, body: ConnectRequest):
 
             except Exception as e:
                 error_msg = str(e)
+                logger.error(
+                    "VyOS connection test failed: host=%s port=%s protocol=%s apiKey=%s version=%s error=%s",
+                    instance["host"],
+                    instance["port"],
+                    instance["protocol"],
+                    instance["apiKey"][:8] + "..." if instance["apiKey"] else "(empty)",
+                    instance["vyosVersion"],
+                    error_msg,
+                )
                 raise HTTPException(
                     status_code=503,
                     detail=f"Failed to connect to VyOS instance: {error_msg}. Please verify the host, port, API key, and network connectivity.",
@@ -483,7 +548,7 @@ async def list_user_sites(request: Request):
                 # Site ADMINs see ALL sites with ADMIN role
                 sites = await conn.fetch(
                     """
-                    SELECT id, name, description, "createdAt", "updatedAt"
+                    SELECT id, name, description, "proxyHostId", "createdAt", "updatedAt"
                     FROM sites
                     ORDER BY name
                     """,
@@ -495,6 +560,7 @@ async def list_user_sites(request: Request):
                         name=site["name"],
                         description=site["description"],
                         role="ADMIN",  # Site ADMINs have ADMIN role on all sites
+                        proxy_host_id=site["proxyHostId"],
                         created_at=site["createdAt"],
                         updated_at=site["updatedAt"],
                     )
@@ -505,7 +571,7 @@ async def list_user_sites(request: Request):
                 # Role shown is the highest role the user has across all instances in that site
                 sites = await conn.fetch(
                     """
-                    SELECT DISTINCT s.id, s.name, s.description, s."createdAt", s."updatedAt",
+                    SELECT DISTINCT s.id, s.name, s.description, s."proxyHostId", s."createdAt", s."updatedAt",
                            MAX(
                                CASE uir.role
                                    WHEN 'ADMIN' THEN 3
@@ -524,7 +590,7 @@ async def list_user_sites(request: Request):
                     FROM sites s
                     JOIN instances i ON s.id = i."siteId"
                     JOIN user_instance_roles uir ON i.id = uir."instanceId" AND uir."userId" = $1
-                    GROUP BY s.id, s.name, s.description, s."createdAt", s."updatedAt"
+                    GROUP BY s.id, s.name, s.description, s."proxyHostId", s."createdAt", s."updatedAt"
                     ORDER BY s.name
                     """,
                     user_id,
@@ -536,6 +602,7 @@ async def list_user_sites(request: Request):
                         name=site["name"],
                         description=site["description"],
                         role=site["role"],
+                        proxy_host_id=site["proxyHostId"],
                         created_at=site["createdAt"],
                         updated_at=site["updatedAt"],
                     )
@@ -590,6 +657,7 @@ async def list_site_instances(request: Request, site_id: str):
                     SELECT id, "siteId", name, description, host, port, protocol, "verifySsl", "isActive",
                            "vyosVersion", "sshPort", "sshUsername", "sshKeyConfigured",
                            "commitConfirmEnabled", "commitConfirmMinutes",
+                           "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
                            "createdAt", "updatedAt"
                     FROM instances
                     WHERE "siteId" = $1
@@ -604,6 +672,7 @@ async def list_site_instances(request: Request, site_id: str):
                     SELECT DISTINCT i.id, i."siteId", i.name, i.description, i.host, i.port, i.protocol, i."verifySsl", i."isActive",
                            i."vyosVersion", i."sshPort", i."sshUsername", i."sshKeyConfigured",
                            i."commitConfirmEnabled", i."commitConfirmMinutes",
+                           i."prometheusEnabled", i."prometheusPort", i."prometheusAuth", i."prometheusUsername",
                            i."createdAt", i."updatedAt"
                     FROM instances i
                     JOIN user_instance_roles uir ON i.id = uir."instanceId"
@@ -634,11 +703,178 @@ async def list_site_instances(request: Request, site_id: str):
                     ssh_key_configured=inst["sshKeyConfigured"],
                     commit_confirm_enabled=inst.get("commitConfirmEnabled") or False,
                     commit_confirm_minutes=inst.get("commitConfirmMinutes") or 5,
+                    prometheus_enabled=inst.get("prometheusEnabled") or False,
+                    prometheus_port=inst.get("prometheusPort") or 9273,
+                    prometheus_auth=inst.get("prometheusAuth") or False,
+                    prometheus_username=inst.get("prometheusUsername"),
                     created_at=inst["createdAt"],
                     updated_at=inst["updatedAt"],
                 )
                 for inst in instances
             ]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Unhandled error")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ============================================================================
+# Helper: Instance Reachability Check
+# ============================================================================
+
+
+async def _check_instance_reachability(instance_row) -> InstanceStatusResponse:
+    """Check if a VyOS instance is reachable via a lightweight API call.
+
+    Connects directly to the VyOS device using its stored credentials and
+    issues a minimal retrieve_show_config request for the system host-name
+    path. Uses a 3-second timeout so slow/unreachable devices fail fast.
+
+    Args:
+        instance_row: asyncpg Record containing id, host, port, apiKey,
+                      protocol, and verifySsl fields.
+
+    Returns:
+        InstanceStatusResponse with status "online", "offline", or "error".
+    """
+    instance_id = instance_row["id"]
+    api_key = instance_row.get("apiKey")
+
+    if not api_key:
+        return InstanceStatusResponse(
+            instance_id=instance_id,
+            status="error",
+            error="No API key configured",
+        )
+
+    try:
+        device = VyDevice(
+            hostname=instance_row["host"],
+            apikey=api_key,
+            port=instance_row["port"],
+            protocol=instance_row.get("protocol") or "https",
+            verify=instance_row.get("verifySsl") or False,
+            timeout=3,
+        )
+
+        start = time.monotonic()
+        result = await run_in_threadpool(
+            device.retrieve_show_config,
+            path=["system", "host-name"],
+        )
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+
+        if result.status == 200:
+            return InstanceStatusResponse(
+                instance_id=instance_id,
+                status="online",
+                latency_ms=elapsed_ms,
+            )
+        else:
+            error_detail = str(result.error)[:200] if result.error else "Non-200 response"
+            return InstanceStatusResponse(
+                instance_id=instance_id,
+                status="offline",
+                error=error_detail,
+            )
+
+    except Exception as e:
+        return InstanceStatusResponse(
+            instance_id=instance_id,
+            status="offline",
+            error=str(e)[:200],
+        )
+
+
+# ============================================================================
+# Endpoint: Get Site Instances Status
+# ============================================================================
+
+
+@router.get("/sites/{site_id}/instances/status", response_model=SiteStatusResponse)
+async def get_site_instances_status(request: Request, site_id: str):
+    """Check reachability of all instances in a site concurrently.
+
+    Uses the same RBAC filtering as list_site_instances: platform ADMINs see
+    all instances in the site; regular users see only instances they have an
+    explicit user_instance_roles entry for.
+
+    Checks are run concurrently with a semaphore cap of 10 to avoid
+    overwhelming devices or the thread pool.
+    """
+    if not hasattr(request.state, "user") or not request.state.user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = request.state.user
+    user_id = user["id"]
+
+    db_pool: asyncpg.Pool = request.app.state.db_pool
+    if not db_pool:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    try:
+        async with db_pool.acquire() as conn:
+            # Resolve whether the user is a platform ADMIN
+            user_role = await conn.fetchval(
+                """
+                SELECT role FROM users WHERE id = $1
+                """,
+                user_id,
+            )
+
+            if user_role == "ADMIN":
+                # Platform ADMINs see ALL instances in the site
+                instances = await conn.fetch(
+                    """
+                    SELECT id, host, port, "apiKey", protocol, "verifySsl"
+                    FROM instances
+                    WHERE "siteId" = $1
+                    ORDER BY name
+                    """,
+                    site_id,
+                )
+            else:
+                # Regular users see only instances they have explicit access to
+                instances = await conn.fetch(
+                    """
+                    SELECT DISTINCT i.id, i.host, i.port, i."apiKey", i.protocol, i."verifySsl"
+                    FROM instances i
+                    JOIN user_instance_roles uir ON i.id = uir."instanceId"
+                    WHERE i."siteId" = $1 AND uir."userId" = $2
+                    ORDER BY i.id
+                    """,
+                    site_id,
+                    user_id,
+                )
+
+        # Release the DB connection before the network I/O phase
+        sem = asyncio.Semaphore(10)
+
+        async def check_with_semaphore(inst):
+            async with sem:
+                return await _check_instance_reachability(inst)
+
+        raw_results = await asyncio.gather(
+            *[check_with_semaphore(inst) for inst in instances],
+            return_exceptions=True,
+        )
+
+        statuses: List[InstanceStatusResponse] = []
+        for i, result in enumerate(raw_results):
+            if isinstance(result, Exception):
+                statuses.append(
+                    InstanceStatusResponse(
+                        instance_id=instances[i]["id"],
+                        status="error",
+                        error=str(result)[:200],
+                    )
+                )
+            else:
+                statuses.append(result)
+
+        return SiteStatusResponse(site_id=site_id, instances=statuses)
 
     except HTTPException:
         raise
@@ -697,13 +933,14 @@ async def create_site(request: Request, body: SiteCreateRequest):
             # Create site
             site = await conn.fetchrow(
                 """
-                INSERT INTO sites (id, name, description, "createdAt", "updatedAt")
-                VALUES ($1, $2, $3, NOW(), NOW())
-                RETURNING id, name, description, "createdAt", "updatedAt"
+                INSERT INTO sites (id, name, description, "proxyHostId", "createdAt", "updatedAt")
+                VALUES ($1, $2, $3, $4, NOW(), NOW())
+                RETURNING id, name, description, "proxyHostId", "createdAt", "updatedAt"
                 """,
                 site_id,
                 body.name,
                 body.description,
+                body.proxy_host_id,
             )
 
             return SiteResponse(
@@ -711,6 +948,7 @@ async def create_site(request: Request, body: SiteCreateRequest):
                 name=site["name"],
                 description=site["description"],
                 role="ADMIN",  # Site ADMINs have ADMIN role on all sites
+                proxy_host_id=site["proxyHostId"],
                 created_at=site["createdAt"],
                 updated_at=site["updatedAt"],
             )
@@ -762,6 +1000,18 @@ async def update_site(request: Request, site_id: str, body: SiteUpdateRequest):
             if not site_exists:
                 raise HTTPException(status_code=404, detail="Site not found")
 
+            # Validate proxy_host_id if it is being set to a non-null value
+            if "proxy_host_id" in body.model_fields_set and body.proxy_host_id is not None:
+                proxy_instance = await conn.fetchrow(
+                    'SELECT id, "siteId" FROM instances WHERE id = $1',
+                    body.proxy_host_id,
+                )
+                if not proxy_instance or proxy_instance["siteId"] != site_id:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Proxy host must be an instance belonging to this site",
+                    )
+
             # Build update query dynamically
             updates = []
             params = [site_id]
@@ -777,10 +1027,15 @@ async def update_site(request: Request, site_id: str, body: SiteUpdateRequest):
                 params.append(body.description)
                 param_num += 1
 
+            if "proxy_host_id" in body.model_fields_set:
+                updates.append(f'"proxyHostId" = ${param_num}')
+                params.append(body.proxy_host_id)
+                param_num += 1
+
             if not updates:
                 # No fields to update, return current site
                 site = await conn.fetchrow(
-                    'SELECT id, name, description, "createdAt", "updatedAt" FROM sites WHERE id = $1',
+                    'SELECT id, name, description, "proxyHostId", "createdAt", "updatedAt" FROM sites WHERE id = $1',
                     site_id
                 )
             else:
@@ -789,7 +1044,7 @@ async def update_site(request: Request, site_id: str, body: SiteUpdateRequest):
                     UPDATE sites
                     SET {', '.join(updates)}
                     WHERE id = $1
-                    RETURNING id, name, description, "createdAt", "updatedAt"
+                    RETURNING id, name, description, "proxyHostId", "createdAt", "updatedAt"
                 """
                 site = await conn.fetchrow(query, *params)
 
@@ -798,6 +1053,7 @@ async def update_site(request: Request, site_id: str, body: SiteUpdateRequest):
                 name=site["name"],
                 description=site["description"],
                 role="ADMIN",  # Site ADMINs have ADMIN role on all sites
+                proxy_host_id=site["proxyHostId"],
                 created_at=site["createdAt"],
                 updated_at=site["updatedAt"],
             )
@@ -879,7 +1135,7 @@ async def delete_site(request: Request, site_id: str):
 # ============================================================================
 
 
-@router.post("/instances", response_model=InstanceResponse, status_code=201)
+@router.post("/instances", status_code=201)
 async def create_instance(request: Request, body: InstanceCreateRequest):
     """
     Create a new instance.
@@ -934,12 +1190,15 @@ async def create_instance(request: Request, body: InstanceCreateRequest):
                     "apiKey", "vyosVersion", protocol, "verifySsl", "isActive",
                     "sshPort", "sshUsername",
                     "commitConfirmEnabled", "commitConfirmMinutes",
+                    "prometheusEnabled", "prometheusPort", "prometheusAuth",
+                    "prometheusUsername", "prometheusPassword",
                     "createdAt", "updatedAt"
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW())
                 RETURNING id, "siteId", name, description, host, port, protocol, "verifySsl", "vyosVersion",
                           "isActive", "sshPort", "sshUsername", "sshKeyConfigured",
                           "commitConfirmEnabled", "commitConfirmMinutes",
+                          "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
                           "createdAt", "updatedAt"
                 """,
                 instance_id,
@@ -950,7 +1209,7 @@ async def create_instance(request: Request, body: InstanceCreateRequest):
                 body.port,
                 "api",  # username (legacy field, not used with API key auth)
                 "",  # password (legacy field, not used with API key auth)
-                body.api_key,
+                body.api_key or "",
                 body.vyos_version,
                 body.protocol,
                 body.verify_ssl,
@@ -959,29 +1218,38 @@ async def create_instance(request: Request, body: InstanceCreateRequest):
                 body.ssh_username,
                 body.commit_confirm_enabled,
                 body.commit_confirm_minutes,
+                body.prometheus_enabled,
+                body.prometheus_port,
+                body.prometheus_auth,
+                body.prometheus_username,
+                body.prometheus_password,
             )
 
             clear_session_cache(instance_id)
 
-            return InstanceResponse(
-                id=instance["id"],
-                site_id=instance["siteId"],
-                name=instance["name"],
-                description=instance["description"],
-                host=instance["host"],
-                port=instance["port"],
-                protocol=instance["protocol"] or "https",
-                verify_ssl=instance["verifySsl"] or False,
-                vyos_version=instance["vyosVersion"],
-                is_active=instance["isActive"],
-                ssh_port=instance["sshPort"],
-                ssh_username=instance["sshUsername"],
-                ssh_key_configured=instance["sshKeyConfigured"],
-                commit_confirm_enabled=instance.get("commitConfirmEnabled") or False,
-                commit_confirm_minutes=instance.get("commitConfirmMinutes") or 5,
-                created_at=instance["createdAt"],
-                updated_at=instance["updatedAt"],
-            )
+            return {
+                "id": instance["id"],
+                "site_id": instance["siteId"],
+                "name": instance["name"],
+                "description": instance["description"],
+                "host": instance["host"],
+                "port": instance["port"],
+                "protocol": instance["protocol"] or "https",
+                "verify_ssl": instance["verifySsl"] or False,
+                "vyos_version": instance["vyosVersion"],
+                "is_active": instance["isActive"],
+                "ssh_port": instance["sshPort"],
+                "ssh_username": instance["sshUsername"],
+                "ssh_key_configured": instance["sshKeyConfigured"],
+                "commit_confirm_enabled": instance.get("commitConfirmEnabled") or False,
+                "commit_confirm_minutes": instance.get("commitConfirmMinutes") or 5,
+                "prometheus_enabled": instance.get("prometheusEnabled") or False,
+                "prometheus_port": instance.get("prometheusPort") or 9273,
+                "prometheus_auth": instance.get("prometheusAuth") or False,
+                "prometheus_username": instance.get("prometheusUsername"),
+                "created_at": instance["createdAt"],
+                "updated_at": instance["updatedAt"],
+            }
 
     except HTTPException:
         raise
@@ -1031,7 +1299,8 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
             if not instance_exists:
                 raise HTTPException(status_code=404, detail="Instance not found")
 
-            # If moving to a different site, verify target site exists
+            # If moving to a different site, verify target site exists and record current site
+            current_site_id: Optional[str] = None
             if body.site_id:
                 target_site_exists = await conn.fetchval(
                     "SELECT EXISTS(SELECT 1 FROM sites WHERE id = $1)",
@@ -1039,6 +1308,12 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                 )
                 if not target_site_exists:
                     raise HTTPException(status_code=404, detail="Target site not found")
+
+                # Capture the instance's current site before the move
+                current_site_id = await conn.fetchval(
+                    'SELECT "siteId" FROM instances WHERE id = $1',
+                    instance_id,
+                )
 
             # Build update query dynamically
             updates = []
@@ -1122,6 +1397,31 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                 params.append(body.commit_confirm_minutes)
                 param_num += 1
 
+            if body.prometheus_enabled is not None:
+                updates.append(f'"prometheusEnabled" = ${param_num}')
+                params.append(body.prometheus_enabled)
+                param_num += 1
+
+            if body.prometheus_port is not None:
+                updates.append(f'"prometheusPort" = ${param_num}')
+                params.append(body.prometheus_port)
+                param_num += 1
+
+            if body.prometheus_auth is not None:
+                updates.append(f'"prometheusAuth" = ${param_num}')
+                params.append(body.prometheus_auth)
+                param_num += 1
+
+            if body.prometheus_username is not None:
+                updates.append(f'"prometheusUsername" = ${param_num}')
+                params.append(body.prometheus_username)
+                param_num += 1
+
+            if body.prometheus_password is not None:
+                updates.append(f'"prometheusPassword" = ${param_num}')
+                params.append(body.prometheus_password)
+                param_num += 1
+
             if not updates:
                 # No fields to update, return current instance
                 instance = await conn.fetchrow(
@@ -1129,6 +1429,7 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                     SELECT id, "siteId", name, description, host, port, protocol, "verifySsl", "vyosVersion",
                            "isActive", "sshPort", "sshUsername", "sshKeyConfigured",
                            "commitConfirmEnabled", "commitConfirmMinutes",
+                           "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
                            "createdAt", "updatedAt"
                     FROM instances WHERE id = $1
                     """,
@@ -1143,12 +1444,22 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                     RETURNING id, "siteId", name, description, host, port, protocol, "verifySsl", "vyosVersion",
                               "isActive", "sshPort", "sshUsername", "sshKeyConfigured",
                               "commitConfirmEnabled", "commitConfirmMinutes",
+                              "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
                               "createdAt", "updatedAt"
                 """
                 instance = await conn.fetchrow(query, *params)
 
             if not instance:
                 raise HTTPException(status_code=404, detail="Instance not found")
+
+            # If the instance was moved to a different site, clear any orphaned proxy reference
+            # on the old site so it no longer points to an instance that no longer belongs to it
+            if body.site_id and current_site_id and current_site_id != body.site_id:
+                await conn.execute(
+                    'UPDATE sites SET "proxyHostId" = NULL WHERE id = $1 AND "proxyHostId" = $2',
+                    current_site_id,
+                    instance_id,
+                )
 
             # Invalidate cached VyOS service so changes take effect immediately
             clear_session_cache(instance_id)
@@ -1169,6 +1480,10 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                 ssh_key_configured=instance["sshKeyConfigured"],
                 commit_confirm_enabled=instance.get("commitConfirmEnabled") or False,
                 commit_confirm_minutes=instance.get("commitConfirmMinutes") or 5,
+                prometheus_enabled=instance.get("prometheusEnabled") or False,
+                prometheus_port=instance.get("prometheusPort") or 9273,
+                prometheus_auth=instance.get("prometheusAuth") or False,
+                prometheus_username=instance.get("prometheusUsername"),
                 created_at=instance["createdAt"],
                 updated_at=instance["updatedAt"],
             )
@@ -1244,6 +1559,157 @@ async def delete_instance(request: Request, instance_id: str):
     except Exception as e:
         logger.exception("Unhandled error")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/instances/{instance_id}/provision")
+async def provision_instance(
+    instance_id: str,
+    request_body: ProvisionRequest,
+    request: Request,
+):
+    """
+    Provision a VyOS instance via SSH with real-time progress streaming.
+
+    Returns an SSE stream with step-by-step status events. On completion
+    the instance record is updated with the generated credentials.
+
+    Only site ADMIN users can provision instances.
+    """
+    if not hasattr(request.state, "user") or not request.state.user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = request.state.user
+    user_id = user["id"]
+
+    db_pool: asyncpg.Pool = request.app.state.db_pool
+    if not db_pool:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    # Pre-validate before starting the SSE stream
+    async with db_pool.acquire() as conn:
+        user_role = await conn.fetchval(
+            "SELECT role FROM users WHERE id = $1", user_id
+        )
+        if user_role != "ADMIN":
+            raise HTTPException(
+                status_code=403,
+                detail="Only ADMIN users can provision instances",
+            )
+
+        instance = await conn.fetchrow(
+            'SELECT id, host, "sshPort" FROM instances WHERE id = $1',
+            instance_id,
+        )
+        if not instance:
+            raise HTTPException(status_code=404, detail="Instance not found")
+
+    host = instance["host"]
+    ssh_port = instance["sshPort"]
+    ssh_username = request_body.ssh_username
+    ssh_password = request_body.ssh_password
+
+    async def event_generator():
+        import asyncio
+        import json
+        import queue
+        import threading
+
+        from provisioning import ProvisioningEvent, provision_vyos_device_stream
+
+        event_queue: queue.Queue[ProvisioningEvent | None] = queue.Queue()
+
+        def _run_in_thread():
+            try:
+                for event in provision_vyos_device_stream(
+                    host=host,
+                    ssh_port=ssh_port,
+                    ssh_username=ssh_username,
+                    ssh_password=ssh_password,
+                ):
+                    event_queue.put(event)
+                event_queue.put(None)  # sentinel
+            except Exception as exc:
+                event_queue.put(
+                    ProvisioningEvent(
+                        step="error", status="failed", message=str(exc)
+                    )
+                )
+                event_queue.put(None)
+
+        thread = threading.Thread(target=_run_in_thread, daemon=True)
+        thread.start()
+
+        while True:
+            try:
+                event = event_queue.get_nowait()
+            except queue.Empty:
+                await asyncio.sleep(0.1)
+                continue
+
+            if event is None:
+                break
+
+            event_data: dict = {
+                "step": event.step,
+                "status": event.status,
+                "message": event.message,
+            }
+            if event.detail:
+                event_data["detail"] = event.detail
+            if event.data:
+                event_data["data"] = event.data
+
+            yield f"event: provision\ndata: {json.dumps(event_data)}\n\n"
+
+            # On successful completion, update instance in DB
+            if (
+                event.step == "complete"
+                and event.status == "complete"
+                and event.data
+            ):
+                try:
+                    async with db_pool.acquire() as conn:
+                        await conn.execute(
+                            """
+                            UPDATE instances
+                            SET "apiKey" = $1,
+                                "sshPublicKey" = $2,
+                                "sshEncryptedPrivKey" = $3,
+                                "sshKeyNonce" = $4,
+                                "sshKeyConfigured" = true,
+                                "sshUsername" = $5,
+                                "vyosVersion" = $6,
+                                "updatedAt" = NOW()
+                            WHERE id = $7
+                            """,
+                            event.data.get("api_key"),
+                            event.data.get("ssh_public_key"),
+                            event.data.get("ssh_encrypted_private_key"),
+                            event.data.get("ssh_key_nonce"),
+                            ssh_username,
+                            event.data.get("vyos_version", "1.5"),
+                            instance_id,
+                        )
+                        clear_session_cache(instance_id)
+                except Exception as db_err:
+                    logger.error(
+                        "Failed to update instance after provisioning: %s",
+                        db_err,
+                    )
+                    yield (
+                        f'event: provision\ndata: {json.dumps({"step": "db_update", "status": "failed", "message": "Provisioning succeeded but failed to save credentials"})}\n\n'
+                    )
+
+        thread.join(timeout=5)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 # ============================================================================

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   AlertCircle,
   Smartphone,
@@ -296,110 +296,106 @@ PersistentKeepalive = 25`;
 
         {step === "input" ? (
           <div className="space-y-4">
-            {/* Client Name */}
-            <div className="space-y-2">
-              <Label htmlFor="config-client-name">Client Name</Label>
-              <Input
-                id="config-client-name"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="my-phone"
-              />
-              <p className="text-xs text-muted-foreground">
-                A name to identify this client (used as peer name).
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Client Name"
+                htmlFor="config-client-name"
+                description="A name to identify this client (used as peer name)."
+              >
+                <Input
+                  id="config-client-name"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="my-phone"
+                />
+              </FormField>
 
-            {/* Client Keypair */}
-            <div className="space-y-2">
-              <Label>Client Keys</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    type={showPrivateKey ? "text" : "password"}
-                    value={clientPrivateKey}
-                    onChange={(e) => setClientPrivateKey(e.target.value)}
-                    placeholder="Generate or enter private key"
-                    className="pr-10 font-mono text-xs"
-                  />
+              <FormField label="Client Keys">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      type={showPrivateKey ? "text" : "password"}
+                      value={clientPrivateKey}
+                      onChange={(e) => setClientPrivateKey(e.target.value)}
+                      placeholder="Generate or enter private key"
+                      className="pr-10 font-mono text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowPrivateKey(!showPrivateKey)}
+                    >
+                      {showPrivateKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPrivateKey(!showPrivateKey)}
+                    variant="outline"
+                    onClick={handleGenerateClientKey}
+                    disabled={generating}
+                    className="gap-2"
                   >
-                    {showPrivateKey ? (
-                      <EyeOff className="h-4 w-4" />
+                    {generating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Sparkles className="h-4 w-4" />
                     )}
+                    Generate
                   </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleGenerateClientKey}
-                  disabled={generating}
-                  className="gap-2"
-                >
-                  {generating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
-                  Generate
-                </Button>
-              </div>
-              {clientPublicKey && (
-                <div className="rounded bg-muted p-2 mt-2">
-                  <p className="text-xs text-muted-foreground mb-1">Public Key:</p>
-                  <p className="font-mono text-xs break-all">{clientPublicKey}</p>
-                </div>
-              )}
-            </div>
+                {clientPublicKey && (
+                  <div className="rounded bg-muted p-2 mt-2">
+                    <p className="text-xs text-muted-foreground mb-1">Public Key:</p>
+                    <p className="font-mono text-xs break-all">{clientPublicKey}</p>
+                  </div>
+                )}
+              </FormField>
 
-            {/* Server Endpoint */}
-            <div className="space-y-2">
-              <Label htmlFor="config-server">Server Endpoint</Label>
-              <Input
-                id="config-server"
-                value={serverEndpoint}
-                onChange={(e) => setServerEndpoint(e.target.value)}
-                placeholder="vpn.example.com or public IP"
-              />
-              <p className="text-xs text-muted-foreground">
-                The public IP or hostname clients will connect to.
-              </p>
-            </div>
+              <FormField
+                label="Server Endpoint"
+                htmlFor="config-server"
+                description="The public IP or hostname clients will connect to."
+              >
+                <Input
+                  id="config-server"
+                  value={serverEndpoint}
+                  onChange={(e) => setServerEndpoint(e.target.value)}
+                  placeholder="vpn.example.com or public IP"
+                />
+              </FormField>
 
-            {/* Client Address */}
-            <div className="space-y-2">
-              <Label htmlFor="config-client-addr">Client IP Address</Label>
-              <Input
-                id="config-client-addr"
-                value={clientAddress}
-                onChange={(e) => setClientAddress(e.target.value)}
-                placeholder="10.0.0.2/32"
-              />
-              <p className="text-xs text-muted-foreground">
-                The IP address to assign to the client on the VPN.
-              </p>
-            </div>
+              <FormField
+                label="Client IP Address"
+                htmlFor="config-client-addr"
+                description="The IP address to assign to the client on the VPN."
+              >
+                <Input
+                  id="config-client-addr"
+                  value={clientAddress}
+                  onChange={(e) => setClientAddress(e.target.value)}
+                  placeholder="10.0.0.2/32"
+                />
+              </FormField>
 
-            {/* DNS Servers */}
-            <div className="space-y-2">
-              <Label htmlFor="config-dns">DNS Servers (Optional)</Label>
-              <Input
-                id="config-dns"
-                value={dns}
-                onChange={(e) => setDns(e.target.value)}
-                placeholder="1.1.1.1, 8.8.8.8"
-              />
-              <p className="text-xs text-muted-foreground">
-                Comma-separated DNS servers for the client to use when connected.
-              </p>
-            </div>
+              <FormField
+                label="DNS Servers"
+                htmlFor="config-dns"
+                description="Comma-separated DNS servers for the client to use when connected."
+              >
+                <Input
+                  id="config-dns"
+                  value={dns}
+                  onChange={(e) => setDns(e.target.value)}
+                  placeholder="1.1.1.1, 8.8.8.8"
+                />
+              </FormField>
+            </Fieldset>
 
             {/* Server Public Key Status */}
             <div className="rounded-lg border p-3 bg-muted/30">
@@ -465,7 +461,7 @@ PersistentKeepalive = 25`;
             {/* Config Text */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Configuration File</Label>
+                <span className="text-sm font-medium">Configuration File</span>
                 <div className="flex gap-2">
                   <Button
                     type="button"

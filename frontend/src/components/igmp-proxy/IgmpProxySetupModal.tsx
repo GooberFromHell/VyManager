@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -236,8 +236,7 @@ export function IgmpProxySetupModal({
                 Receives multicast traffic from the source network.
               </p>
 
-              <div className="space-y-2">
-                <Label>Interface</Label>
+              <FormField label="Interface" description="Network interface that receives multicast from the source network">
                 <Select value={upstreamName} onValueChange={setUpstreamName}>
                   <SelectTrigger>
                     <SelectValue placeholder={interfacesLoading ? "Loading interfaces..." : "Select interface"} />
@@ -251,10 +250,13 @@ export function IgmpProxySetupModal({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="setup-upstream-threshold">TTL Threshold</Label>
+              <FormField
+                label="TTL Threshold"
+                htmlFor="setup-upstream-threshold"
+                description="Minimum TTL required for multicast packets to be forwarded (1-255)"
+              >
                 <Input
                   id="setup-upstream-threshold"
                   type="number"
@@ -264,11 +266,11 @@ export function IgmpProxySetupModal({
                   min={1}
                   max={255}
                 />
-              </div>
+              </FormField>
 
               {/* Upstream Alt Subnets */}
               <div className="space-y-2">
-                <Label>Alternate Subnets</Label>
+                <p className="text-sm font-medium">Alternate Subnets</p>
                 <p className="text-xs text-muted-foreground">
                   Allow multicast from sources outside the directly connected subnet.
                 </p>
@@ -316,7 +318,7 @@ export function IgmpProxySetupModal({
 
               {/* Upstream Whitelists */}
               <div className="space-y-2">
-                <Label>Multicast Group Whitelist</Label>
+                <p className="text-sm font-medium">Multicast Group Whitelist</p>
                 <p className="text-xs text-muted-foreground">
                   Only proxy these multicast group ranges. Leave empty for all.
                 </p>
@@ -377,8 +379,7 @@ export function IgmpProxySetupModal({
                 Forwards multicast traffic to the client network.
               </p>
 
-              <div className="space-y-2">
-                <Label>Interface</Label>
+              <FormField label="Interface" description="Network interface that forwards multicast to the client network">
                 <Select value={downstreamName} onValueChange={setDownstreamName}>
                   <SelectTrigger>
                     <SelectValue placeholder={interfacesLoading ? "Loading interfaces..." : "Select interface"} />
@@ -392,10 +393,13 @@ export function IgmpProxySetupModal({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="setup-downstream-threshold">TTL Threshold</Label>
+              <FormField
+                label="TTL Threshold"
+                htmlFor="setup-downstream-threshold"
+                description="Minimum TTL required for multicast packets to be forwarded (1-255)"
+              >
                 <Input
                   id="setup-downstream-threshold"
                   type="number"
@@ -405,11 +409,11 @@ export function IgmpProxySetupModal({
                   min={1}
                   max={255}
                 />
-              </div>
+              </FormField>
 
               {/* Downstream Whitelists */}
               <div className="space-y-2">
-                <Label>Multicast Group Whitelist</Label>
+                <p className="text-sm font-medium">Multicast Group Whitelist</p>
                 <p className="text-xs text-muted-foreground">
                   Only proxy these multicast group ranges. Leave empty for all.
                 </p>

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -112,9 +112,12 @@ export function Ospfv3RedistributeModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ospfv3-redist-proto">Protocol</Label>
+        <Fieldset>
+          <FormField
+            label="Protocol"
+            htmlFor="ospfv3-redist-proto"
+            required
+          >
             <Select value={protocol} onValueChange={setProtocol}>
               <SelectTrigger id="ospfv3-redist-proto">
                 <SelectValue placeholder="Select protocol" />
@@ -125,11 +128,13 @@ export function Ospfv3RedistributeModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ospfv3-redist-metric">Metric</Label>
+            <FormField
+              label="Metric"
+              htmlFor="ospfv3-redist-metric"
+            >
               <Input
                 id="ospfv3-redist-metric"
                 type="number"
@@ -137,9 +142,11 @@ export function Ospfv3RedistributeModal({
                 onChange={(e) => setMetric(e.target.value)}
                 placeholder="Metric value"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ospfv3-redist-metric-type">Metric Type</Label>
+            </FormField>
+            <FormField
+              label="Metric Type"
+              htmlFor="ospfv3-redist-metric-type"
+            >
               <Select value={metricType} onValueChange={setMetricType}>
                 <SelectTrigger id="ospfv3-redist-metric-type">
                   <SelectValue placeholder="Default" />
@@ -149,11 +156,13 @@ export function Ospfv3RedistributeModal({
                   <SelectItem value="2">Type 2</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ospfv3-redist-route-map">Route Map</Label>
+          <FormField
+            label="Route Map"
+            htmlFor="ospfv3-redist-route-map"
+          >
             <Select
               value={routeMap}
               onValueChange={(v) => setRouteMap(v === "__none__" ? "" : v)}
@@ -168,8 +177,8 @@ export function Ospfv3RedistributeModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        </div>
+          </FormField>
+        </Fieldset>
 
         {error && (
           <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3">

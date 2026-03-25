@@ -1,0 +1,40 @@
+# DERPO Goal Contract
+# Created: 2026-03-23
+
+goal: "Enhance the sites page with instance reachability status indicators, per-site proxy host designation for connecting to other instances, and a per-site Tools placeholder for future site-level utilities."
+
+scope:
+  include:
+    - "backend/routers/session/"
+    - "backend/middleware/session.py"
+    - "frontend/src/app/(default)/sites/"
+    - "frontend/src/components/sites/"
+    - "frontend/src/lib/api/session.ts"
+    - "frontend/prisma/schema.prisma"
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must follow existing architecture patterns (see CLAUDE.md)"
+  - "No new dependencies without user approval"
+  - "Per-site Tools is a UI placeholder only — no backend implementation needed yet"
+  - "Proxy host is optional per site — existing sites must work unchanged"
+  - "Status checks must not block page load — async/background polling"
+
+acceptance_criteria:
+  - "Instance cards on sites page show a reachability status indicator (online/offline/checking)"
+  - "Sites have an optional proxy host instance designation in the database"
+  - "Sites page exposes UI to set/change proxy host per site"
+  - "Per-site Tools section renders as a placeholder with 'Coming Soon' state"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes (npm run lint)"
+
+human_checkpoints:
+  - after: evaluate  # single fast-track checkpoint
+
+max_iterations: 3
+
+context: "These are enhancements to the existing sites/instance management page, not new VyOS feature integrations. The status indicator and proxy host features require backend endpoint changes and database schema changes."

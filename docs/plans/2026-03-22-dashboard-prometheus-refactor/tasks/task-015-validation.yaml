@@ -1,0 +1,51 @@
+id: "task-015"
+title: "Validation — TypeScript, lint, integration check"
+phase: observe
+execution_phase: 5
+agent: "general-purpose"
+status: not_started
+depends_on: ["task-010", "task-011", "task-012", "task-013", "task-014"]
+blocks: []
+parallel_with: []
+
+files:
+  modify: []
+
+context_files: []
+
+instructions: |
+  Run all validation checks:
+
+  1. TypeScript type check: `cd frontend && npx tsc --noEmit`
+  2. Lint: `cd frontend && npm run lint`
+  3. Verify all new files exist:
+     - backend/prometheus_parser.py
+     - backend/routers/prometheus/prometheus.py
+     - frontend/src/lib/api/prometheus.ts
+     - frontend/src/hooks/usePrometheusData.ts
+     - frontend/src/components/dashboard/widget-registry.ts
+     - frontend/src/components/dashboard/WidgetShell.tsx
+     - frontend/src/components/dashboard/WidgetConfigDrawer.tsx
+     - frontend/src/components/dashboard/layout-migration.ts
+     - frontend/src/components/dashboard/widgets/PrometheusSystemGauge.tsx
+     - frontend/src/components/dashboard/widgets/PrometheusTimeSeries.tsx
+     - frontend/src/components/dashboard/widgets/PrometheusDiskDonut.tsx
+     - frontend/src/components/dashboard/widgets/PrometheusInterfaceSparklines.tsx
+     - frontend/src/components/dashboard/widgets/PrometheusMetricTable.tsx
+  4. Verify widget registry has all 9 widget types registered (4 existing + 5 new)
+  5. Verify Prometheus router is registered in app.py
+
+  Fix any TypeScript errors or lint issues found. Do NOT make architectural changes — only fix compilation/lint problems.
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+  - "Command passes: cd frontend && npm run lint"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

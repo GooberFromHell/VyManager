@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -453,406 +453,220 @@ export function BgpNeighborModal({
             {/* ============================================================ */}
             {/* SECTION 1 - BASIC SETTINGS                                   */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Basic Settings</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                {/* Address */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-address">Address</Label>
-                  <Input
-                    id="bgp-neighbor-address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="e.g. 192.0.2.1 or 2001:db8::1"
-                    disabled={isEditMode}
-                    className={isEditMode ? "bg-muted" : ""}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    IPv4 or IPv6 address of the BGP neighbor.
-                  </p>
-                </div>
+            <Fieldset label="Basic Settings">
+              <FormField
+                label="Address"
+                htmlFor="bgp-neighbor-address"
+                description="IPv4 or IPv6 address of the BGP neighbor."
+                required={!isEditMode}
+              >
+                <Input
+                  id="bgp-neighbor-address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g. 192.0.2.1 or 2001:db8::1"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                />
+              </FormField>
 
-                {/* Remote AS */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-remote-as">Remote AS</Label>
-                  <Input
-                    id="bgp-neighbor-remote-as"
-                    value={remoteAs}
-                    onChange={(e) => setRemoteAs(e.target.value)}
-                    placeholder='e.g. 65001, "internal", or "external"'
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Autonomous System number, or &quot;internal&quot; /
-                    &quot;external&quot;.
-                  </p>
-                </div>
+              <FormField
+                label="Remote AS"
+                htmlFor="bgp-neighbor-remote-as"
+                description={'Autonomous System number, or "internal" / "external".'}
+              >
+                <Input
+                  id="bgp-neighbor-remote-as"
+                  value={remoteAs}
+                  onChange={(e) => setRemoteAs(e.target.value)}
+                  placeholder='e.g. 65001, "internal", or "external"'
+                />
+              </FormField>
 
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-description">Description</Label>
-                  <Input
-                    id="bgp-neighbor-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Optional description"
-                  />
-                </div>
+              <FormField
+                label="Description"
+                htmlFor="bgp-neighbor-description"
+              >
+                <Input
+                  id="bgp-neighbor-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Optional description"
+                />
+              </FormField>
 
-                {/* Peer Group */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-peer-group">Peer Group</Label>
-                  <Select value={peerGroup || "__none__"} onValueChange={setPeerGroup}>
-                    <SelectTrigger id="bgp-neighbor-peer-group">
-                      <SelectValue placeholder="Select peer group (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      {peerGroups.map((pg) => (
-                        <SelectItem key={pg} value={pg}>
-                          {pg}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <FormField
+                label="Peer Group"
+                htmlFor="bgp-neighbor-peer-group"
+              >
+                <Select value={peerGroup || "__none__"} onValueChange={setPeerGroup}>
+                  <SelectTrigger id="bgp-neighbor-peer-group">
+                    <SelectValue placeholder="Select peer group (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {peerGroups.map((pg) => (
+                      <SelectItem key={pg} value={pg}>
+                        {pg}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-                {/* Update Source */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-update-source">
-                    Update Source
-                  </Label>
-                  <Input
-                    id="bgp-neighbor-update-source"
-                    value={updateSource}
-                    onChange={(e) => setUpdateSource(e.target.value)}
-                    placeholder="e.g. eth0 or 192.0.2.1"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Source address or interface for BGP sessions.
-                  </p>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="Update Source"
+                htmlFor="bgp-neighbor-update-source"
+                description="Source address or interface for BGP sessions."
+              >
+                <Input
+                  id="bgp-neighbor-update-source"
+                  value={updateSource}
+                  onChange={(e) => setUpdateSource(e.target.value)}
+                  placeholder="e.g. eth0 or 192.0.2.1"
+                />
+              </FormField>
+            </Fieldset>
 
             {/* ============================================================ */}
             {/* SECTION 2 - STATUS & OPTIONS                                 */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Status &amp; Options</h4>
-              <div className="space-y-3 rounded-lg border p-3">
-                {/* Shutdown */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-shutdown"
-                    checked={shutdown}
-                    onCheckedChange={(checked) =>
-                      setShutdown(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-shutdown"
-                      className="cursor-pointer text-destructive"
-                    >
-                      Shutdown
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Administratively disable this neighbor.
-                    </p>
-                  </div>
-                </div>
+            <FieldsetDivider />
+            <Fieldset label="Status and Options">
+              <FormField label="Shutdown" htmlFor="bgp-neighbor-shutdown" description="Administratively disable this neighbor." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-shutdown"
+                  checked={shutdown}
+                  onCheckedChange={(checked) => setShutdown(checked === true)}
+                />
+              </FormField>
 
-                {/* Passive */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-passive"
-                    checked={passive}
-                    onCheckedChange={(checked) =>
-                      setPassive(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-passive"
-                      className="cursor-pointer"
-                    >
-                      Passive
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Do not initiate a session; wait for remote peer.
-                    </p>
-                  </div>
-                </div>
+              <FormField label="Passive" htmlFor="bgp-neighbor-passive" description="Do not initiate a session; wait for remote peer." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-passive"
+                  checked={passive}
+                  onCheckedChange={(checked) => setPassive(checked === true)}
+                />
+              </FormField>
 
-                {/* Solo */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-solo"
-                    checked={solo}
-                    onCheckedChange={(checked) => setSolo(checked === true)}
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-solo"
-                      className="cursor-pointer"
-                    >
-                      Solo
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Solo peer (single adjacency in a group).
-                    </p>
-                  </div>
-                </div>
+              <FormField label="Solo" htmlFor="bgp-neighbor-solo" description="Solo peer (single adjacency in a group)." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-solo"
+                  checked={solo}
+                  onCheckedChange={(checked) => setSolo(checked === true)}
+                />
+              </FormField>
 
-                {/* Enforce First AS */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-enforce-first-as"
-                    checked={enforceFirstAs}
-                    onCheckedChange={(checked) =>
-                      setEnforceFirstAs(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-enforce-first-as"
-                      className="cursor-pointer"
-                    >
-                      Enforce First AS
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enforce the first AS in the AS path from this neighbor.
-                    </p>
-                  </div>
-                </div>
+              <FormField label="Enforce First AS" htmlFor="bgp-neighbor-enforce-first-as" description="Enforce the first AS in the AS path from this neighbor." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-enforce-first-as"
+                  checked={enforceFirstAs}
+                  onCheckedChange={(checked) => setEnforceFirstAs(checked === true)}
+                />
+              </FormField>
 
-                {/* Override Capability */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-override-capability"
-                    checked={overrideCapability}
-                    onCheckedChange={(checked) =>
-                      setOverrideCapability(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-override-capability"
-                      className="cursor-pointer"
-                    >
-                      Override Capability
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Override capability negotiation result.
-                    </p>
-                  </div>
-                </div>
+              <FormField label="Override Capability" htmlFor="bgp-neighbor-override-capability" description="Override capability negotiation result." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-override-capability"
+                  checked={overrideCapability}
+                  onCheckedChange={(checked) => setOverrideCapability(checked === true)}
+                />
+              </FormField>
 
-                {/* Disable Capability Negotiation */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-disable-cap-negotiation"
-                    checked={disableCapabilityNegotiation}
-                    onCheckedChange={(checked) =>
-                      setDisableCapabilityNegotiation(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-disable-cap-negotiation"
-                      className="cursor-pointer"
-                    >
-                      Disable Capability Negotiation
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Suppress sending capability negotiation.
-                    </p>
-                  </div>
-                </div>
+              <FormField label="Disable Capability Negotiation" htmlFor="bgp-neighbor-disable-cap-negotiation" description="Suppress sending capability negotiation." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-disable-cap-negotiation"
+                  checked={disableCapabilityNegotiation}
+                  onCheckedChange={(checked) => setDisableCapabilityNegotiation(checked === true)}
+                />
+              </FormField>
 
-                {/* Disable Connected Check */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-disable-connected-check"
-                    checked={disableConnectedCheck}
-                    onCheckedChange={(checked) =>
-                      setDisableConnectedCheck(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-disable-connected-check"
-                      className="cursor-pointer"
-                    >
-                      Disable Connected Check
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Allow peering with eBGP neighbors not on a directly
-                      connected network.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <FormField label="Disable Connected Check" htmlFor="bgp-neighbor-disable-connected-check" description="Allow peering with eBGP neighbors not on a directly connected network." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-disable-connected-check"
+                  checked={disableConnectedCheck}
+                  onCheckedChange={(checked) => setDisableConnectedCheck(checked === true)}
+                />
+              </FormField>
+            </Fieldset>
 
             {/* ============================================================ */}
             {/* SECTION 3 - BFD                                              */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">BFD</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                {/* Enable BFD */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-bfd-enabled"
-                    checked={bfdEnabled}
-                    onCheckedChange={(checked) =>
-                      setBfdEnabled(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-bfd-enabled"
-                      className="cursor-pointer"
-                    >
-                      Enable BFD
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enable Bidirectional Forwarding Detection for this
-                      neighbor.
-                    </p>
-                  </div>
-                </div>
+            <FieldsetDivider />
+            <Fieldset label="BFD">
+              <FormField label="Enable BFD" htmlFor="bgp-neighbor-bfd-enabled" description="Enable Bidirectional Forwarding Detection for this neighbor." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-bfd-enabled"
+                  checked={bfdEnabled}
+                  onCheckedChange={(checked) => setBfdEnabled(checked === true)}
+                />
+              </FormField>
 
-                {bfdEnabled && (
-                  <>
-                    {/* Check Control Plane Failure */}
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="bgp-neighbor-bfd-control-plane"
-                        checked={bfdCheckControlPlane}
-                        onCheckedChange={(checked) =>
-                          setBfdCheckControlPlane(checked === true)
-                        }
-                      />
-                      <div className="flex-1">
-                        <Label
-                          htmlFor="bgp-neighbor-bfd-control-plane"
-                          className="cursor-pointer"
-                        >
-                          Check Control Plane Failure
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          Detect control-plane failures via BFD.
-                        </p>
-                      </div>
-                    </div>
+              {bfdEnabled && (
+                <>
+                  <FormField label="Check Control Plane Failure" htmlFor="bgp-neighbor-bfd-control-plane" description="Detect control-plane failures via BFD." horizontal>
+                    <Checkbox
+                      id="bgp-neighbor-bfd-control-plane"
+                      checked={bfdCheckControlPlane}
+                      onCheckedChange={(checked) => setBfdCheckControlPlane(checked === true)}
+                    />
+                  </FormField>
 
-                    {/* BFD Profile */}
-                    <div className="space-y-2">
-                      <Label>BFD Profile</Label>
-                      <Select value={bfdProfile || "__none__"} onValueChange={(v) => setBfdProfile(v === "__none__" ? "" : v)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="None" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {bfdProfileNames.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+                  <FormField label="BFD Profile">
+                    <Select value={bfdProfile || "__none__"} onValueChange={(v) => setBfdProfile(v === "__none__" ? "" : v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="None" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {bfdProfileNames.map((name) => (
+                          <SelectItem key={name} value={name}>{name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </>
+              )}
+            </Fieldset>
 
             {/* ============================================================ */}
             {/* SECTION 4 - CAPABILITY                                       */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Capability</h4>
-              <div className="space-y-3 rounded-lg border p-3">
-                {/* Dynamic */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-cap-dynamic"
-                    checked={capDynamic}
-                    onCheckedChange={(checked) =>
-                      setCapDynamic(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-cap-dynamic"
-                      className="cursor-pointer"
-                    >
-                      Dynamic
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Advertise dynamic capability.
-                    </p>
-                  </div>
-                </div>
+            <FieldsetDivider />
+            <Fieldset label="Capability">
+              <FormField label="Dynamic" htmlFor="bgp-neighbor-cap-dynamic" description="Advertise dynamic capability." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-cap-dynamic"
+                  checked={capDynamic}
+                  onCheckedChange={(checked) => setCapDynamic(checked === true)}
+                />
+              </FormField>
 
-                {/* Extended Nexthop */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-cap-extended-nexthop"
-                    checked={capExtendedNexthop}
-                    onCheckedChange={(checked) =>
-                      setCapExtendedNexthop(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-cap-extended-nexthop"
-                      className="cursor-pointer"
-                    >
-                      Extended Nexthop
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Advertise extended nexthop capability.
-                    </p>
-                  </div>
-                </div>
+              <FormField label="Extended Nexthop" htmlFor="bgp-neighbor-cap-extended-nexthop" description="Advertise extended nexthop capability." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-cap-extended-nexthop"
+                  checked={capExtendedNexthop}
+                  onCheckedChange={(checked) => setCapExtendedNexthop(checked === true)}
+                />
+              </FormField>
 
-                {/* Software Version */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-neighbor-cap-software-version"
-                    checked={capSoftwareVersion}
-                    onCheckedChange={(checked) =>
-                      setCapSoftwareVersion(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-neighbor-cap-software-version"
-                      className="cursor-pointer"
-                    >
-                      Software Version
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Advertise software version capability.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <FormField label="Software Version" htmlFor="bgp-neighbor-cap-software-version" description="Advertise software version capability." horizontal>
+                <Checkbox
+                  id="bgp-neighbor-cap-software-version"
+                  checked={capSoftwareVersion}
+                  onCheckedChange={(checked) => setCapSoftwareVersion(checked === true)}
+                />
+              </FormField>
+            </Fieldset>
 
             {/* ============================================================ */}
             {/* SECTION 5 - TIMERS                                           */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Timers</h4>
-              <div className="grid grid-cols-3 gap-4 rounded-lg border p-3">
-                {/* Connect Timer */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-timer-connect">
-                    Connect Timer
-                  </Label>
+            <FieldsetDivider />
+            <Fieldset label="Timers">
+              <div className="grid grid-cols-3 gap-4">
+                <FormField label="Connect Timer" htmlFor="bgp-neighbor-timer-connect">
                   <Input
                     id="bgp-neighbor-timer-connect"
                     type="number"
@@ -861,13 +675,9 @@ export function BgpNeighborModal({
                     placeholder="Seconds"
                     min={1}
                   />
-                </div>
+                </FormField>
 
-                {/* Keepalive */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-timer-keepalive">
-                    Keepalive
-                  </Label>
+                <FormField label="Keepalive" htmlFor="bgp-neighbor-timer-keepalive">
                   <Input
                     id="bgp-neighbor-timer-keepalive"
                     type="number"
@@ -876,11 +686,9 @@ export function BgpNeighborModal({
                     placeholder="Seconds"
                     min={1}
                   />
-                </div>
+                </FormField>
 
-                {/* Holdtime */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-timer-holdtime">Holdtime</Label>
+                <FormField label="Holdtime" htmlFor="bgp-neighbor-timer-holdtime">
                   <Input
                     id="bgp-neighbor-timer-holdtime"
                     type="number"
@@ -889,415 +697,273 @@ export function BgpNeighborModal({
                     placeholder="Seconds"
                     min={0}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
             {/* ============================================================ */}
             {/* SECTION 6 - ADVANCED                                         */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Advanced</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* eBGP Multihop */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bgp-neighbor-ebgp-multihop">
-                      eBGP Multihop
-                    </Label>
-                    <Input
-                      id="bgp-neighbor-ebgp-multihop"
-                      type="number"
-                      value={ebgpMultihop}
-                      onChange={(e) => setEbgpMultihop(e.target.value)}
-                      placeholder="Max hops (1-255)"
-                      min={1}
-                      max={255}
-                    />
-                  </div>
-
-                  {/* Advertisement Interval */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bgp-neighbor-adv-interval">
-                      Advertisement Interval
-                    </Label>
-                    <Input
-                      id="bgp-neighbor-adv-interval"
-                      type="number"
-                      value={advertisementInterval}
-                      onChange={(e) =>
-                        setAdvertisementInterval(e.target.value)
-                      }
-                      placeholder="Seconds"
-                      min={0}
-                    />
-                  </div>
-
-                  {/* TTL Security Hops */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bgp-neighbor-ttl-security-hops">
-                      TTL Security Hops
-                    </Label>
-                    <Input
-                      id="bgp-neighbor-ttl-security-hops"
-                      type="number"
-                      value={ttlSecurityHops}
-                      onChange={(e) => setTtlSecurityHops(e.target.value)}
-                      placeholder="1-254"
-                      min={1}
-                      max={254}
-                    />
-                  </div>
-
-                  {/* Port */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bgp-neighbor-port">Port</Label>
-                    <Input
-                      id="bgp-neighbor-port"
-                      type="number"
-                      value={port}
-                      onChange={(e) => setPort(e.target.value)}
-                      placeholder="179"
-                      min={1}
-                      max={65535}
-                    />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-password">Password</Label>
+            <FieldsetDivider />
+            <Fieldset label="Advanced">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="eBGP Multihop" htmlFor="bgp-neighbor-ebgp-multihop">
                   <Input
-                    id="bgp-neighbor-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="BGP session password (optional)"
+                    id="bgp-neighbor-ebgp-multihop"
+                    type="number"
+                    value={ebgpMultihop}
+                    onChange={(e) => setEbgpMultihop(e.target.value)}
+                    placeholder="Max hops (1-255)"
+                    min={1}
+                    max={255}
                   />
-                </div>
+                </FormField>
 
-                {/* Graceful Restart */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-graceful-restart">
-                    Graceful Restart
-                  </Label>
-                  <Select
-                    value={gracefulRestart || "__none__"}
-                    onValueChange={setGracefulRestart}
-                  >
-                    <SelectTrigger id="bgp-neighbor-graceful-restart">
-                      <SelectValue placeholder="Select graceful restart mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      <SelectItem value="enable">Enable</SelectItem>
-                      <SelectItem value="disable">Disable</SelectItem>
-                      <SelectItem value="restart">Restart</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Local AS Number */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-neighbor-local-as">
-                    Local AS Number
-                  </Label>
+                <FormField label="Advertisement Interval" htmlFor="bgp-neighbor-adv-interval">
                   <Input
-                    id="bgp-neighbor-local-as"
-                    value={localAsAsn}
-                    onChange={(e) => setLocalAsAsn(e.target.value)}
-                    placeholder="Local AS number"
+                    id="bgp-neighbor-adv-interval"
+                    type="number"
+                    value={advertisementInterval}
+                    onChange={(e) => setAdvertisementInterval(e.target.value)}
+                    placeholder="Seconds"
+                    min={0}
                   />
-                </div>
-                {localAsAsn.trim() && (
-                  <div className="flex items-center space-x-3 pl-1">
-                    <Checkbox
-                      id="bgp-neighbor-local-as-no-prepend"
-                      checked={localAsNoPrependReplaceAs}
-                      onCheckedChange={(checked) =>
-                        setLocalAsNoPrependReplaceAs(checked === true)
-                      }
-                    />
-                    <div className="flex-1">
-                      <Label
-                        htmlFor="bgp-neighbor-local-as-no-prepend"
-                        className="cursor-pointer"
-                      >
-                        No Prepend Replace AS
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Do not prepend local-as to updates from this peer and
-                        replace the real AS in the AS path.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                </FormField>
 
-                {/* Local Role - only when capabilities support it */}
-                {capabilities?.features.local_role.supported && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="bgp-neighbor-local-role">
-                        Local Role
-                      </Label>
-                      <Select
-                        value={localRole || "__none__"}
-                        onValueChange={setLocalRole}
-                      >
-                        <SelectTrigger id="bgp-neighbor-local-role">
-                          <SelectValue placeholder="Select local role (optional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          <SelectItem value="provider">Provider</SelectItem>
-                          <SelectItem value="customer">Customer</SelectItem>
-                          <SelectItem value="rs-server">RS Server</SelectItem>
-                          <SelectItem value="rs-client">RS Client</SelectItem>
-                          <SelectItem value="peer">Peer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {localRole && localRole !== "__none__" && (
-                      <div className="flex items-center space-x-3 pl-1">
-                        <Checkbox
-                          id="bgp-neighbor-local-role-strict"
-                          checked={localRoleStrict}
-                          onCheckedChange={(checked) =>
-                            setLocalRoleStrict(checked === true)
-                          }
-                        />
-                        <div className="flex-1">
-                          <Label
-                            htmlFor="bgp-neighbor-local-role-strict"
-                            className="cursor-pointer"
-                          >
-                            Strict Mode
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Require the remote peer to send the correct role.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
+                <FormField label="TTL Security Hops" htmlFor="bgp-neighbor-ttl-security-hops">
+                  <Input
+                    id="bgp-neighbor-ttl-security-hops"
+                    type="number"
+                    value={ttlSecurityHops}
+                    onChange={(e) => setTtlSecurityHops(e.target.value)}
+                    placeholder="1-254"
+                    min={1}
+                    max={254}
+                  />
+                </FormField>
+
+                <FormField label="Port" htmlFor="bgp-neighbor-port">
+                  <Input
+                    id="bgp-neighbor-port"
+                    type="number"
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
+                    placeholder="179"
+                    min={1}
+                    max={65535}
+                  />
+                </FormField>
               </div>
-            </div>
+
+              <FormField label="Password" htmlFor="bgp-neighbor-password">
+                <Input
+                  id="bgp-neighbor-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="BGP session password (optional)"
+                />
+              </FormField>
+
+              <FormField label="Graceful Restart" htmlFor="bgp-neighbor-graceful-restart">
+                <Select
+                  value={gracefulRestart || "__none__"}
+                  onValueChange={setGracefulRestart}
+                >
+                  <SelectTrigger id="bgp-neighbor-graceful-restart">
+                    <SelectValue placeholder="Select graceful restart mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    <SelectItem value="enable">Enable</SelectItem>
+                    <SelectItem value="disable">Disable</SelectItem>
+                    <SelectItem value="restart">Restart</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+
+              <FormField label="Local AS Number" htmlFor="bgp-neighbor-local-as">
+                <Input
+                  id="bgp-neighbor-local-as"
+                  value={localAsAsn}
+                  onChange={(e) => setLocalAsAsn(e.target.value)}
+                  placeholder="Local AS number"
+                />
+              </FormField>
+              {localAsAsn.trim() && (
+                <FormField label="No Prepend Replace AS" htmlFor="bgp-neighbor-local-as-no-prepend" description="Do not prepend local-as to updates from this peer and replace the real AS in the AS path." horizontal>
+                  <Checkbox
+                    id="bgp-neighbor-local-as-no-prepend"
+                    checked={localAsNoPrependReplaceAs}
+                    onCheckedChange={(checked) => setLocalAsNoPrependReplaceAs(checked === true)}
+                  />
+                </FormField>
+              )}
+
+              {capabilities?.features.local_role.supported && (
+                <>
+                  <FormField label="Local Role" htmlFor="bgp-neighbor-local-role">
+                    <Select
+                      value={localRole || "__none__"}
+                      onValueChange={setLocalRole}
+                    >
+                      <SelectTrigger id="bgp-neighbor-local-role">
+                        <SelectValue placeholder="Select local role (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="provider">Provider</SelectItem>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="rs-server">RS Server</SelectItem>
+                        <SelectItem value="rs-client">RS Client</SelectItem>
+                        <SelectItem value="peer">Peer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  {localRole && localRole !== "__none__" && (
+                    <FormField label="Strict Mode" htmlFor="bgp-neighbor-local-role-strict" description="Require the remote peer to send the correct role." horizontal>
+                      <Checkbox
+                        id="bgp-neighbor-local-role-strict"
+                        checked={localRoleStrict}
+                        onCheckedChange={(checked) => setLocalRoleStrict(checked === true)}
+                      />
+                    </FormField>
+                  )}
+                </>
+              )}
+            </Fieldset>
 
             {/* ============================================================ */}
             {/* SECTION 7 - ADDRESS FAMILIES                                 */}
             {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Address Families</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                {availableAFIs.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    No address family types available. Load capabilities first.
-                  </p>
-                )}
+            <FieldsetDivider />
+            <Fieldset label="Address Families">
+              {availableAFIs.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No address family types available. Load capabilities first.
+                </p>
+              )}
 
-                {availableAFIs.map((afi) => {
-                  const isEnabled = !!addressFamilies[afi];
-                  const afConfig = addressFamilies[afi] || emptyAfConfig();
-                  return (
-                    <div key={afi} className="space-y-3">
-                      {/* AFI toggle */}
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id={`bgp-neighbor-af-${afi}`}
-                          checked={isEnabled}
-                          onCheckedChange={() => toggleAF(afi)}
-                        />
-                        <Label
-                          htmlFor={`bgp-neighbor-af-${afi}`}
-                          className="cursor-pointer font-medium"
-                        >
-                          {afi}
-                        </Label>
-                      </div>
+              {availableAFIs.map((afi) => {
+                const isEnabled = !!addressFamilies[afi];
+                const afConfig = addressFamilies[afi] || emptyAfConfig();
+                return (
+                  <div key={afi} className="space-y-3">
+                    {/* AFI toggle */}
+                    <FormField label={afi} htmlFor={`bgp-neighbor-af-${afi}`} horizontal>
+                      <Checkbox
+                        id={`bgp-neighbor-af-${afi}`}
+                        checked={isEnabled}
+                        onCheckedChange={() => toggleAF(afi)}
+                      />
+                    </FormField>
 
-                      {/* Per-AFI settings */}
-                      {isEnabled && (
-                        <div className="ml-7 space-y-4 rounded-lg border p-3">
-                          {/* Route Maps */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor={`bgp-af-${afi}-rm-import`}>
-                                Route Map Import
-                              </Label>
-                              <Select
-                                value={afConfig.route_map_import || "__none__"}
-                                onValueChange={(v) =>
-                                  updateAfField(
-                                    afi,
-                                    "route_map_import",
-                                    v === "__none__" ? null : v
-                                  )
-                                }
-                              >
-                                <SelectTrigger id={`bgp-af-${afi}-rm-import`}>
-                                  <SelectValue placeholder="None" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="__none__">None</SelectItem>
-                                  {routeMapNames.map((name) => (
-                                    <SelectItem key={name} value={name}>{name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`bgp-af-${afi}-rm-export`}>
-                                Route Map Export
-                              </Label>
-                              <Select
-                                value={afConfig.route_map_export || "__none__"}
-                                onValueChange={(v) =>
-                                  updateAfField(
-                                    afi,
-                                    "route_map_export",
-                                    v === "__none__" ? null : v
-                                  )
-                                }
-                              >
-                                <SelectTrigger id={`bgp-af-${afi}-rm-export`}>
-                                  <SelectValue placeholder="None" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="__none__">None</SelectItem>
-                                  {routeMapNames.map((name) => (
-                                    <SelectItem key={name} value={name}>{name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
+                    {/* Per-AFI settings */}
+                    {isEnabled && (
+                      <div className="ml-7 space-y-4 rounded-lg border p-3">
+                        {/* Route Maps */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField label="Route Map Import" htmlFor={`bgp-af-${afi}-rm-import`}>
+                            <Select
+                              value={afConfig.route_map_import || "__none__"}
+                              onValueChange={(v) =>
+                                updateAfField(afi, "route_map_import", v === "__none__" ? null : v)
+                              }
+                            >
+                              <SelectTrigger id={`bgp-af-${afi}-rm-import`}>
+                                <SelectValue placeholder="None" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">None</SelectItem>
+                                {routeMapNames.map((name) => (
+                                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormField>
+                          <FormField label="Route Map Export" htmlFor={`bgp-af-${afi}-rm-export`}>
+                            <Select
+                              value={afConfig.route_map_export || "__none__"}
+                              onValueChange={(v) =>
+                                updateAfField(afi, "route_map_export", v === "__none__" ? null : v)
+                              }
+                            >
+                              <SelectTrigger id={`bgp-af-${afi}-rm-export`}>
+                                <SelectValue placeholder="None" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">None</SelectItem>
+                                {routeMapNames.map((name) => (
+                                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormField>
+                        </div>
 
-                          {/* Boolean options */}
-                          <div className="space-y-3">
-                            {/* Soft Reconfiguration Inbound */}
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={`bgp-af-${afi}-soft-reconfig`}
-                                checked={afConfig.soft_reconfiguration_inbound}
-                                onCheckedChange={(checked) =>
-                                  updateAfField(
-                                    afi,
-                                    "soft_reconfiguration_inbound",
-                                    checked === true
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`bgp-af-${afi}-soft-reconfig`}
-                                className="cursor-pointer"
-                              >
-                                Soft Reconfiguration Inbound
-                              </Label>
-                            </div>
+                        {/* Boolean options */}
+                        <div className="space-y-3">
+                          <FormField label="Soft Reconfiguration Inbound" htmlFor={`bgp-af-${afi}-soft-reconfig`} horizontal>
+                            <Checkbox
+                              id={`bgp-af-${afi}-soft-reconfig`}
+                              checked={afConfig.soft_reconfiguration_inbound}
+                              onCheckedChange={(checked) =>
+                                updateAfField(afi, "soft_reconfiguration_inbound", checked === true)
+                              }
+                            />
+                          </FormField>
 
-                            {/* Next-Hop Self */}
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={`bgp-af-${afi}-nexthop-self`}
-                                checked={afConfig.nexthop_self}
-                                onCheckedChange={(checked) =>
-                                  updateAfField(
-                                    afi,
-                                    "nexthop_self",
-                                    checked === true
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`bgp-af-${afi}-nexthop-self`}
-                                className="cursor-pointer"
-                              >
-                                Next-Hop Self
-                              </Label>
-                            </div>
+                          <FormField label="Next-Hop Self" htmlFor={`bgp-af-${afi}-nexthop-self`} horizontal>
+                            <Checkbox
+                              id={`bgp-af-${afi}-nexthop-self`}
+                              checked={afConfig.nexthop_self}
+                              onCheckedChange={(checked) =>
+                                updateAfField(afi, "nexthop_self", checked === true)
+                              }
+                            />
+                          </FormField>
 
-                            {/* Next-Hop Self Force (sub-option) */}
-                            {afConfig.nexthop_self && (
-                              <div className="flex items-center space-x-3 pl-6">
+                          {afConfig.nexthop_self && (
+                            <div className="pl-6">
+                              <FormField label="Force" htmlFor={`bgp-af-${afi}-nexthop-self-force`} horizontal>
                                 <Checkbox
                                   id={`bgp-af-${afi}-nexthop-self-force`}
                                   checked={afConfig.nexthop_self_force}
                                   onCheckedChange={(checked) =>
-                                    updateAfField(
-                                      afi,
-                                      "nexthop_self_force",
-                                      checked === true
-                                    )
+                                    updateAfField(afi, "nexthop_self_force", checked === true)
                                   }
                                 />
-                                <Label
-                                  htmlFor={`bgp-af-${afi}-nexthop-self-force`}
-                                  className="cursor-pointer"
-                                >
-                                  Force
-                                </Label>
-                              </div>
-                            )}
-
-                            {/* Route Reflector Client */}
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={`bgp-af-${afi}-rr-client`}
-                                checked={afConfig.route_reflector_client}
-                                onCheckedChange={(checked) =>
-                                  updateAfField(
-                                    afi,
-                                    "route_reflector_client",
-                                    checked === true
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`bgp-af-${afi}-rr-client`}
-                                className="cursor-pointer"
-                              >
-                                Route Reflector Client
-                              </Label>
+                              </FormField>
                             </div>
+                          )}
 
-                            {/* Default Originate */}
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={`bgp-af-${afi}-default-originate`}
-                                checked={afConfig.default_originate}
-                                onCheckedChange={(checked) =>
-                                  updateAfField(
-                                    afi,
-                                    "default_originate",
-                                    checked === true
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`bgp-af-${afi}-default-originate`}
-                                className="cursor-pointer"
-                              >
-                                Default Originate
-                              </Label>
-                            </div>
+                          <FormField label="Route Reflector Client" htmlFor={`bgp-af-${afi}-rr-client`} horizontal>
+                            <Checkbox
+                              id={`bgp-af-${afi}-rr-client`}
+                              checked={afConfig.route_reflector_client}
+                              onCheckedChange={(checked) =>
+                                updateAfField(afi, "route_reflector_client", checked === true)
+                              }
+                            />
+                          </FormField>
 
-                            {/* Default Originate Route Map (sub-option) */}
-                            {afConfig.default_originate && (
-                              <div className="space-y-2 pl-6">
-                                <Label
-                                  htmlFor={`bgp-af-${afi}-default-originate-rm`}
-                                >
-                                  Default Originate Route Map
-                                </Label>
+                          <FormField label="Default Originate" htmlFor={`bgp-af-${afi}-default-originate`} horizontal>
+                            <Checkbox
+                              id={`bgp-af-${afi}-default-originate`}
+                              checked={afConfig.default_originate}
+                              onCheckedChange={(checked) =>
+                                updateAfField(afi, "default_originate", checked === true)
+                              }
+                            />
+                          </FormField>
+
+                          {afConfig.default_originate && (
+                            <div className="pl-6">
+                              <FormField label="Default Originate Route Map" htmlFor={`bgp-af-${afi}-default-originate-rm`}>
                                 <Select
                                   value={afConfig.default_originate_route_map || "__none__"}
                                   onValueChange={(v) =>
-                                    updateAfField(
-                                      afi,
-                                      "default_originate_route_map",
-                                      v === "__none__" ? null : v
-                                    )
+                                    updateAfField(afi, "default_originate_route_map", v === "__none__" ? null : v)
                                   }
                                 >
                                   <SelectTrigger id={`bgp-af-${afi}-default-originate-rm`}>
@@ -1310,167 +976,94 @@ export function BgpNeighborModal({
                                     ))}
                                   </SelectContent>
                                 </Select>
-                              </div>
-                            )}
-
-                            {/* AS Override */}
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={`bgp-af-${afi}-as-override`}
-                                checked={afConfig.as_override}
-                                onCheckedChange={(checked) =>
-                                  updateAfField(
-                                    afi,
-                                    "as_override",
-                                    checked === true
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`bgp-af-${afi}-as-override`}
-                                className="cursor-pointer"
-                              >
-                                AS Override
-                              </Label>
+                              </FormField>
                             </div>
+                          )}
 
-                            {/* Remove Private AS */}
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={`bgp-af-${afi}-remove-private-as`}
-                                checked={afConfig.remove_private_as}
-                                onCheckedChange={(checked) =>
-                                  updateAfField(
-                                    afi,
-                                    "remove_private_as",
-                                    checked === true
-                                  )
-                                }
-                              />
-                              <Label
-                                htmlFor={`bgp-af-${afi}-remove-private-as`}
-                                className="cursor-pointer"
-                              >
-                                Remove Private AS
-                              </Label>
-                            </div>
+                          <FormField label="AS Override" htmlFor={`bgp-af-${afi}-as-override`} horizontal>
+                            <Checkbox
+                              id={`bgp-af-${afi}-as-override`}
+                              checked={afConfig.as_override}
+                              onCheckedChange={(checked) =>
+                                updateAfField(afi, "as_override", checked === true)
+                              }
+                            />
+                          </FormField>
 
-                            {/* Remove Private AS All (sub-option) */}
-                            {afConfig.remove_private_as && (
-                              <div className="flex items-center space-x-3 pl-6">
+                          <FormField label="Remove Private AS" htmlFor={`bgp-af-${afi}-remove-private-as`} horizontal>
+                            <Checkbox
+                              id={`bgp-af-${afi}-remove-private-as`}
+                              checked={afConfig.remove_private_as}
+                              onCheckedChange={(checked) =>
+                                updateAfField(afi, "remove_private_as", checked === true)
+                              }
+                            />
+                          </FormField>
+
+                          {afConfig.remove_private_as && (
+                            <div className="pl-6">
+                              <FormField label="All" htmlFor={`bgp-af-${afi}-remove-private-as-all`} horizontal>
                                 <Checkbox
                                   id={`bgp-af-${afi}-remove-private-as-all`}
                                   checked={afConfig.remove_private_as_all}
                                   onCheckedChange={(checked) =>
-                                    updateAfField(
-                                      afi,
-                                      "remove_private_as_all",
-                                      checked === true
-                                    )
+                                    updateAfField(afi, "remove_private_as_all", checked === true)
                                   }
                                 />
-                                <Label
-                                  htmlFor={`bgp-af-${afi}-remove-private-as-all`}
-                                  className="cursor-pointer"
-                                >
-                                  All
-                                </Label>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Numeric fields */}
-                          <div className="grid grid-cols-3 gap-4">
-                            {/* Maximum Prefix */}
-                            <div className="space-y-2">
-                              <Label htmlFor={`bgp-af-${afi}-max-prefix`}>
-                                Maximum Prefix
-                              </Label>
-                              <Input
-                                id={`bgp-af-${afi}-max-prefix`}
-                                type="number"
-                                value={
-                                  afConfig.maximum_prefix != null
-                                    ? String(afConfig.maximum_prefix)
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  updateAfField(
-                                    afi,
-                                    "maximum_prefix",
-                                    e.target.value
-                                      ? parseInt(e.target.value, 10)
-                                      : null
-                                  )
-                                }
-                                placeholder="Max prefixes"
-                                min={1}
-                              />
+                              </FormField>
                             </div>
-
-                            {/* Allowas-In Number */}
-                            <div className="space-y-2">
-                              <Label htmlFor={`bgp-af-${afi}-allowas-in`}>
-                                Allowas-In Number
-                              </Label>
-                              <Input
-                                id={`bgp-af-${afi}-allowas-in`}
-                                type="number"
-                                value={
-                                  afConfig.allowas_in_number != null
-                                    ? String(afConfig.allowas_in_number)
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  updateAfField(
-                                    afi,
-                                    "allowas_in_number",
-                                    e.target.value
-                                      ? parseInt(e.target.value, 10)
-                                      : null
-                                  )
-                                }
-                                placeholder="Count"
-                                min={1}
-                                max={10}
-                              />
-                            </div>
-
-                            {/* Weight */}
-                            <div className="space-y-2">
-                              <Label htmlFor={`bgp-af-${afi}-weight`}>
-                                Weight
-                              </Label>
-                              <Input
-                                id={`bgp-af-${afi}-weight`}
-                                type="number"
-                                value={
-                                  afConfig.weight != null
-                                    ? String(afConfig.weight)
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  updateAfField(
-                                    afi,
-                                    "weight",
-                                    e.target.value
-                                      ? parseInt(e.target.value, 10)
-                                      : null
-                                  )
-                                }
-                                placeholder="Weight"
-                                min={0}
-                                max={65535}
-                              />
-                            </div>
-                          </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+
+                        {/* Numeric fields */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <FormField label="Maximum Prefix" htmlFor={`bgp-af-${afi}-max-prefix`}>
+                            <Input
+                              id={`bgp-af-${afi}-max-prefix`}
+                              type="number"
+                              value={afConfig.maximum_prefix != null ? String(afConfig.maximum_prefix) : ""}
+                              onChange={(e) =>
+                                updateAfField(afi, "maximum_prefix", e.target.value ? parseInt(e.target.value, 10) : null)
+                              }
+                              placeholder="Max prefixes"
+                              min={1}
+                            />
+                          </FormField>
+
+                          <FormField label="Allowas-In Number" htmlFor={`bgp-af-${afi}-allowas-in`}>
+                            <Input
+                              id={`bgp-af-${afi}-allowas-in`}
+                              type="number"
+                              value={afConfig.allowas_in_number != null ? String(afConfig.allowas_in_number) : ""}
+                              onChange={(e) =>
+                                updateAfField(afi, "allowas_in_number", e.target.value ? parseInt(e.target.value, 10) : null)
+                              }
+                              placeholder="Count"
+                              min={1}
+                              max={10}
+                            />
+                          </FormField>
+
+                          <FormField label="Weight" htmlFor={`bgp-af-${afi}-weight`}>
+                            <Input
+                              id={`bgp-af-${afi}-weight`}
+                              type="number"
+                              value={afConfig.weight != null ? String(afConfig.weight) : ""}
+                              onChange={(e) =>
+                                updateAfField(afi, "weight", e.target.value ? parseInt(e.target.value, 10) : null)
+                              }
+                              placeholder="Weight"
+                              min={0}
+                              max={65535}
+                            />
+                          </FormField>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </Fieldset>
           </div>
         </ScrollArea>
 

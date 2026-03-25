@@ -1,0 +1,155 @@
+id: "task-001"
+title: "Create backend provisioning module (backend/provisioning.py)"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+
+depends_on: []
+blocks: ["task-002"]
+parallel_with: []
+
+files:
+  create:
+    - "backend/provisioning.py"
+  modify: []
+
+context_files:
+  - "backend/ssh_key_manager.py"
+  - "backend/routers/monitoring/monitoring.py"
+  - "backend/routers/session/session.py"
+
+instructions: |
+  Create a new module `backend/provisioning.py` that handles auto-provisioning of VyOS devices
+  via SSH with username/password authentication.
+
+  ## What to build
+
+  ### 1. ProvisioningResult dataclass
+  ```python
+  @dataclass
+  class ProvisioningResult:
+      success: bool
+      ssh_connected: bool
+      api_key_configured: bool
+      ssh_key_configured: bool
+      committed: bool
+      saved: bool
+      api_key: str | None          # The generated API key (if successful)
+      ssh_public_key: str | None   # The generated SSH public key (if successful)
+      ssh_encrypted_private_key: str | None  # Base64 encrypted private key
+      ssh_key_nonce: str | None    # Base64 nonce for decryption
+      error: str | None            # Error message if failed
+      step_errors: dict[str, str]  # Per-step error details
+  ```
+
+  ### 2. provision_vyos_device() async function
+  ```python
+  async def provision_vyos_device(
+      host: str,
+      ssh_port: int,
+      ssh_username: str,
+      ssh_password: str,
+      vyos_username: str,     # The VyOS user to deploy SSH key to (usually same as ssh_username)
+      api_key_name: str = "vymanager",
+      ssh_key_name: str = "vymanager",
+      timeout: int = 30,
+  ) -> ProvisioningResult:
+  ```
+
+  ### 3. Implementation details
+
+  **API key generation:**
+  - Use `secrets.token_urlsafe(32)` to generate a 43-character URL-safe API key
+
+  **SSH keypair generation:**
+  - Import and use `generate_keypair()` from `backend/ssh_key_manager.py`
+  - This returns `{"public_key": str, "encrypted_private_key": str, "nonce": str}`
+
+  **SSH connection:**
+  - Use `asyncssh.connect()` with `username=`, `password=`, `known_hosts=None`
+  - Reference pattern: see `backend/routers/monitoring/monitoring.py` lines 440-476 for asyncssh usage
+  - Important: use `password=ssh_password` instead of `client_keys=`
+
+  **VyOS configure-mode script:**
+  Build a shell script that runs in a single `conn.run()` call:
+  ```bash
+  #!/bin/vbash
+  source /opt/vyatta/etc/functions/script-begin
+  configure
+  set service https api keys id {api_key_name} key '{api_key}'
+  set system login user {vyos_username} authentication public-keys {ssh_key_name} type ssh-ed25519
+  set system login user {vyos_username} authentication public-keys {ssh_key_name} key {pubkey_base64}
+  commit
+  save
+  exit
+  ```
+
+  **Extracting the base64 key from the public key string:**
+  - `generate_keypair()` returns `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... comment`
+  - Split on space, take index [1] for the base64 portion
+  - The key type is always `ssh-ed25519`
+
+  **Executing the script:**
+  ```python
+  async with asyncssh.connect(
+      host=host,
+      port=ssh_port,
+      username=ssh_username,
+      password=ssh_password,
+      known_hosts=None,
+  ) as conn:
+      result = await asyncio.wait_for(
+          conn.run(script, check=False),
+          timeout=timeout,
+      )
+  ```
+
+  **Output parsing:**
+  - Check `result.exit_status` — 0 means success
+  - Check stdout/stderr for error indicators like "Configuration path ... is not valid", "Commit failed", etc.
+  - Parse the output to determine which steps succeeded/failed
+  - Common failure patterns:
+    - "Invalid command" → VyOS HTTPS API service not configured
+    - "Authentication failed" → Wrong SSH credentials
+    - "Connection refused" → SSH not running or wrong port
+
+  **Error handling:**
+  - Wrap the entire function in try/except
+  - `asyncssh.DisconnectError` → SSH connection failed
+  - `asyncssh.PermissionDenied` → Wrong credentials
+  - `asyncio.TimeoutError` → Operation timed out
+  - `OSError` → Network unreachable
+  - Return a ProvisioningResult with appropriate error details for each case
+
+  **Logging:**
+  - Use `import logging; logger = logging.getLogger(__name__)`
+  - Log SSH connection attempts (without password)
+  - Log provisioning steps and outcomes
+  - NEVER log the generated API key or SSH private key
+
+  ### 4. Helper functions
+  - `_build_provisioning_script(api_key_name, api_key, vyos_username, ssh_key_name, pubkey_base64) -> str`
+    - Constructs the VyOS configure-mode script
+    - Properly escapes single quotes in the API key value
+  - `_parse_provisioning_output(stdout, stderr, exit_status) -> tuple[bool, dict[str, str]]`
+    - Returns (success, step_errors) based on output analysis
+
+acceptance_criteria:
+  - "File exists: backend/provisioning.py"
+  - "Grep match: 'class ProvisioningResult' in backend/provisioning.py"
+  - "Grep match: 'async def provision_vyos_device' in backend/provisioning.py"
+  - "Grep match: 'asyncssh.connect' in backend/provisioning.py"
+  - "Grep match: 'generate_keypair' in backend/provisioning.py"
+  - "Grep match: 'secrets.token_urlsafe' in backend/provisioning.py"
+  - "Grep match: '_build_provisioning_script' in backend/provisioning.py"
+  - "Grep match: '_parse_provisioning_output' in backend/provisioning.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

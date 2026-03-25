@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle, Loader2, Info, Eye } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { extcommunityListService } from "@/lib/api/extcommunity-list";
 
 interface CreateExtCommunityListModalProps {
@@ -160,41 +160,41 @@ export function CreateExtCommunityListModal({
         </DialogHeader>
 
         <div className="space-y-5 py-4">
-          {/* ExtCommunity List Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">List Name *</Label>
-            <Input
-              id="name"
-              placeholder="e.g., DATACENTER_RT or VPN_SOO"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              A unique name to identify this extended community list
-            </p>
-          </div>
+          <Fieldset label="Extended Community List">
+            <FormField
+              label="List Name"
+              htmlFor="name"
+              description="A unique name to identify this extended community list"
+              required
+            >
+              <Input
+                id="name"
+                placeholder="e.g., DATACENTER_RT or VPN_SOO"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+              />
+            </FormField>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">List Description (Optional)</Label>
-            <Textarea
-              id="description"
-              placeholder="e.g., Route targets for datacenter VPN"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={loading}
-              rows={2}
-            />
-          </div>
+            <FormField label="List Description" htmlFor="description">
+              <Textarea
+                id="description"
+                placeholder="e.g., Route targets for datacenter VPN"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+                rows={2}
+              />
+            </FormField>
+          </Fieldset>
+
+          <FieldsetDivider />
 
           {/* Initial Rule Section */}
-          <div className="pt-4 border-t">
-            <h3 className="font-semibold text-sm mb-4">Initial Rule Configuration</h3>
-
+          <Fieldset label="Initial Rule Configuration">
             {/* Action Selection */}
-            <div className="space-y-3 mb-4">
-              <Label className="text-sm font-medium">Rule Action</Label>
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Rule Action</p>
               <RadioGroup
                 value={action}
                 onValueChange={(v) => setAction(v as "permit" | "deny")}
@@ -203,28 +203,28 @@ export function CreateExtCommunityListModal({
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="permit" id="permit" />
-                  <Label htmlFor="permit" className="font-normal cursor-pointer">
+                  <label htmlFor="permit" className="font-normal cursor-pointer">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
                       Permit
                     </span>
-                  </Label>
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="deny" id="deny" />
-                  <Label htmlFor="deny" className="font-normal cursor-pointer">
+                  <label htmlFor="deny" className="font-normal cursor-pointer">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-red-500"></span>
                       Deny
                     </span>
-                  </Label>
+                  </label>
                 </div>
               </RadioGroup>
             </div>
 
             {/* Match Type Selection */}
-            <div className="space-y-3 mb-4">
-              <Label className="text-sm font-medium">Community Type</Label>
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Community Type</p>
               <RadioGroup
                 value={matchType}
                 onValueChange={(v) => setMatchType(v as "rt" | "soo" | "regex")}
@@ -234,7 +234,7 @@ export function CreateExtCommunityListModal({
                 <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="rt" id="rt" className="mt-0.5" />
                   <div className="flex-1">
-                    <Label htmlFor="rt" className="font-medium cursor-pointer">Route Target (RT)</Label>
+                    <label htmlFor="rt" className="font-medium cursor-pointer">Route Target (RT)</label>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Used for VPN route distribution between VRFs
                     </p>
@@ -243,7 +243,7 @@ export function CreateExtCommunityListModal({
                 <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="soo" id="soo" className="mt-0.5" />
                   <div className="flex-1">
-                    <Label htmlFor="soo" className="font-medium cursor-pointer">Site of Origin (SoO)</Label>
+                    <label htmlFor="soo" className="font-medium cursor-pointer">Site of Origin (SoO)</label>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Used to prevent routing loops in multi-homed sites
                     </p>
@@ -252,7 +252,7 @@ export function CreateExtCommunityListModal({
                 <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="regex" id="regex" className="mt-0.5" />
                   <div className="flex-1">
-                    <Label htmlFor="regex" className="font-medium cursor-pointer">Advanced (Regex Pattern)</Label>
+                    <label htmlFor="regex" className="font-medium cursor-pointer">Advanced (Regex Pattern)</label>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Enter a custom regex pattern for complex matching
                     </p>
@@ -263,14 +263,17 @@ export function CreateExtCommunityListModal({
 
             {/* Community Value Fields */}
             {matchType !== "regex" ? (
-              <div className="space-y-3 p-4 bg-muted/30 rounded-lg border mb-4">
+              <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
                   <Info className="h-4 w-4" />
                   Enter the {matchType === "rt" ? "Route Target" : "Site of Origin"} values (format: aa:nn:nn)
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="adminField">AS Number</Label>
+                  <FormField
+                    label="AS Number"
+                    htmlFor="adminField"
+                    description="Administrator"
+                  >
                     <Input
                       id="adminField"
                       placeholder="65000"
@@ -281,12 +284,12 @@ export function CreateExtCommunityListModal({
                       min="1"
                       max="4294967295"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Administrator
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="assignedNum1">Value 1</Label>
+                  </FormField>
+                  <FormField
+                    label="Value 1"
+                    htmlFor="assignedNum1"
+                    description="Assigned #1"
+                  >
                     <Input
                       id="assignedNum1"
                       placeholder="100"
@@ -297,12 +300,12 @@ export function CreateExtCommunityListModal({
                       min="0"
                       max="65535"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Assigned #1
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="assignedNum2">Value 2</Label>
+                  </FormField>
+                  <FormField
+                    label="Value 2"
+                    htmlFor="assignedNum2"
+                    description="Assigned #2"
+                  >
                     <Input
                       id="assignedNum2"
                       placeholder="200"
@@ -313,23 +316,23 @@ export function CreateExtCommunityListModal({
                       min="0"
                       max="65535"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Assigned #2
-                    </p>
-                  </div>
+                  </FormField>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   Example: <code className="bg-muted px-1 rounded">65000:100:200</code> creates {matchType} 65000:100:200
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 p-4 bg-muted/30 rounded-lg border mb-4">
+              <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
                   <Info className="h-4 w-4" />
                   Enter a regex pattern to match extended communities
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rawRegex">Regex Pattern</Label>
+                <FormField
+                  label="Regex Pattern"
+                  htmlFor="rawRegex"
+                  description={<>Examples: <code className="bg-muted px-1 rounded">rt 65000:.*:.*</code> (all RTs from AS 65000), <code className="bg-muted px-1 rounded ml-1">soo .*:100:.*</code> (all SoOs with value 100)</>}
+                >
                   <Input
                     id="rawRegex"
                     placeholder="e.g., rt 65000:100:200 or soo 65000:.*:.*"
@@ -338,16 +341,12 @@ export function CreateExtCommunityListModal({
                     disabled={loading}
                     className="font-mono text-sm"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Examples: <code className="bg-muted px-1 rounded">rt 65000:.*:.*</code> (all RTs from AS 65000),
-                    <code className="bg-muted px-1 rounded ml-1">soo .*:100:.*</code> (all SoOs with value 100)
-                  </p>
-                </div>
+                </FormField>
               </div>
             )}
 
             {/* Preview */}
-            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg mb-4">
+            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg">
               <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Configuration Preview</p>
@@ -357,9 +356,7 @@ export function CreateExtCommunityListModal({
               </div>
             </div>
 
-            {/* Rule Description */}
-            <div className="space-y-2">
-              <Label htmlFor="ruleDescription">Rule Description (Optional)</Label>
+            <FormField label="Rule Description" htmlFor="ruleDescription">
               <Input
                 id="ruleDescription"
                 placeholder="e.g., Allow route targets from datacenter"
@@ -367,8 +364,8 @@ export function CreateExtCommunityListModal({
                 onChange={(e) => setRuleDescription(e.target.value)}
                 disabled={loading}
               />
-            </div>
-          </div>
+            </FormField>
+          </Fieldset>
 
           {error && (
             <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">

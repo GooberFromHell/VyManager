@@ -1,0 +1,69 @@
+id: "task-010"
+title: "Create PrometheusSystemGauge widget"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005", "task-006", "task-008"]
+blocks: ["task-015"]
+parallel_with: ["task-011", "task-012", "task-013", "task-014"]
+
+files:
+  create:
+    - "frontend/src/components/dashboard/widgets/PrometheusSystemGauge.tsx"
+  modify:
+    - "frontend/src/components/dashboard/widget-registry.ts"
+
+context_files:
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/dashboard/WidgetShell.tsx"
+  - "frontend/src/components/dashboard/SystemInfoCard.tsx"
+  - "frontend/src/hooks/usePrometheusData.ts"
+
+instructions: |
+  Create a dual radial gauge widget showing CPU utilization and memory usage percentage.
+
+  ## Component: PrometheusSystemGauge.tsx
+
+  - Subscribe to Prometheus metrics: `cpu_usage_idle`, `mem_used_percent` (or `mem_used` + `mem_total`)
+  - Use Recharts PieChart in gauge mode:
+    - `startAngle={180}` `endAngle={0}` for semicircular gauge
+    - Two gauges side-by-side (CPU left, Memory right)
+    - Background arc (dark gray), foreground arc (colored by value)
+  - Color thresholds: green (0-60%), yellow (60-80%), red (80-100%)
+  - Center text: percentage value in large monospace font
+  - Label below each gauge: "CPU" / "Memory"
+  - If Prometheus unavailable, show empty state with "Enable Prometheus" message
+  - If data loading, show skeleton/placeholder
+
+  Config panel: refresh interval selector (5s/10s/30s)
+
+  ## Register in widget-registry.ts
+
+  ```typescript
+  registerWidget({
+    type: "prometheus-system-gauge",
+    name: "CPU & Memory Gauge",
+    description: "Dual radial gauge showing current CPU and memory utilization",
+    icon: Gauge,
+    component: PrometheusSystemGauge,
+    defaultConfig: { refreshInterval: 5000 },
+    defaultSpan: 4,
+    defaultHeight: 1,
+    dataSource: "prometheus",
+  });
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/widgets/PrometheusSystemGauge.tsx"
+  - "Grep match: 'prometheus-system-gauge' in frontend/src/components/dashboard/widget-registry.ts"
+  - "Grep match: 'PieChart' in frontend/src/components/dashboard/widgets/PrometheusSystemGauge.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

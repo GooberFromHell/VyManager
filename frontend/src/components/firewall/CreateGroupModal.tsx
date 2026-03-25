@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -248,7 +248,7 @@ export function CreateGroupModal({ open, onOpenChange, onSuccess, capabilities }
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-5 py-4">
           {/* Error Alert */}
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
@@ -259,78 +259,82 @@ export function CreateGroupModal({ open, onOpenChange, onSuccess, capabilities }
             </div>
           )}
 
-          {/* Group Name */}
-          <div className="space-y-2">
-            <Label htmlFor="group-name">
-              Group Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="group-name"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="e.g., INTERNAL_NETS"
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              Use uppercase with underscores (e.g., WEB_SERVERS, INTERNAL_NETS)
-            </p>
-          </div>
-
-          {/* Group Type */}
-          <div className="space-y-2">
-            <Label htmlFor="group-type">
-              Group Type <span className="text-destructive">*</span>
-            </Label>
-            <Select value={groupType} onValueChange={(v) => setGroupType(v as GroupType)}>
-              <SelectTrigger id="group-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {getAvailableGroupTypes().map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description for this group"
-              rows={2}
-            />
-          </div>
-
-          {/* Members */}
-          <div className="space-y-2">
-            <Label htmlFor="new-member">
-              {getMemberLabel(groupType)} <span className="text-destructive">*</span>
-            </Label>
-            <div className="flex gap-2">
+          <Fieldset label="Group Details">
+            <FormField
+              label="Group Name"
+              htmlFor="group-name"
+              description="Use uppercase with underscores (e.g., WEB_SERVERS, INTERNAL_NETS)"
+              required
+            >
               <Input
-                id="new-member"
-                value={newMember}
-                onChange={(e) => setNewMember(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addMember();
-                  }
-                }}
-                placeholder={getMemberPlaceholder(groupType)}
+                id="group-name"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="e.g., INTERNAL_NETS"
                 className="font-mono"
               />
-              <Button type="button" onClick={addMember} size="sm">
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
-            </div>
+            </FormField>
+
+            <FormField
+              label="Group Type"
+              htmlFor="group-type"
+              required
+            >
+              <Select value={groupType} onValueChange={(v) => setGroupType(v as GroupType)}>
+                <SelectTrigger id="group-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableGroupTypes().map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            <FormField
+              label="Description"
+              htmlFor="description"
+            >
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description for this group"
+                rows={2}
+              />
+            </FormField>
+          </Fieldset>
+
+          {/* Members */}
+          <Fieldset label="Members">
+            <FormField
+              label={getMemberLabel(groupType)}
+              htmlFor="new-member"
+              required
+            >
+              <div className="flex gap-2">
+                <Input
+                  id="new-member"
+                  value={newMember}
+                  onChange={(e) => setNewMember(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addMember();
+                    }
+                  }}
+                  placeholder={getMemberPlaceholder(groupType)}
+                  className="font-mono"
+                />
+                <Button type="button" onClick={addMember} size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </FormField>
 
             {/* Current Members */}
             {members.length > 0 && (
@@ -351,20 +355,19 @@ export function CreateGroupModal({ open, onOpenChange, onSuccess, capabilities }
                 </div>
               </div>
             )}
-          </div>
+          </Fieldset>
 
           {/* Include Groups (only for supported types) */}
           {supportsInclude() && availableGroups.length > 0 && (
-            <div className="space-y-2">
+            <Fieldset label="Include Other Groups">
               <div className="flex items-center justify-between">
-                <Label>Include Other Groups (Optional)</Label>
+                <span className="text-xs text-muted-foreground">
+                  Select other groups of the same type to include in this group
+                </span>
                 <span className="text-xs text-muted-foreground">
                   {includedGroups.length} of {availableGroups.length} selected
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Select other groups of the same type to include in this group
-              </p>
 
               {/* Search and Quick Actions */}
               <div className="flex gap-2">
@@ -465,7 +468,7 @@ export function CreateGroupModal({ open, onOpenChange, onSuccess, capabilities }
                   </div>
                 )}
               </div>
-            </div>
+            </Fieldset>
           )}
         </div>
 

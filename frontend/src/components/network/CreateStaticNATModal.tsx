@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle } from "lucide-react";
@@ -200,81 +200,80 @@ export function CreateStaticNATModal({ open, onOpenChange, onSuccess }: CreateSt
           )}
 
           {/* Rule Number (Auto-calculated) */}
-          <div className="space-y-2 bg-muted/30 border border-muted rounded-lg p-4">
-            <Label htmlFor="rule-number">Rule Number (Auto-assigned)</Label>
+          <div className="bg-muted/30 border border-muted rounded-lg p-4">
+            <p className="text-sm font-medium mb-1">Rule Number (Auto-assigned)</p>
             <div className="text-2xl font-mono font-bold text-primary">
               {ruleNumber}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               This rule will be automatically assigned number {ruleNumber}
             </p>
           </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description for this rule"
-              rows={2}
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Description" htmlFor="description">
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description for this rule"
+                rows={2}
+              />
+            </FormField>
+          </Fieldset>
 
-          {/* Destination Address */}
-          <div className="space-y-2">
-            <Label htmlFor="destination-address">
-              Destination Address <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="destination-address"
-              value={destinationAddress}
-              onChange={(e) => setDestinationAddress(e.target.value)}
-              placeholder="e.g., 203.0.113.10"
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              The external/public IP address to translate from
-            </p>
-          </div>
+          <FieldsetDivider />
 
-          {/* Inbound Interface */}
-          <div className="space-y-2">
-            <Label htmlFor="inbound-interface">Inbound Interface</Label>
-            <Select value={inboundInterface} onValueChange={setInboundInterface}>
-              <SelectTrigger id="inbound-interface">
-                <SelectValue placeholder="Select interface" />
-              </SelectTrigger>
-              <SelectContent>
-                {interfaces.map((iface) => (
-                  <SelectItem key={iface.name} value={iface.name}>
-                    {iface.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              The interface on which the traffic arrives
-            </p>
-          </div>
+          <Fieldset label="Address Mapping">
+            <FormField
+              label="Destination Address"
+              htmlFor="destination-address"
+              description="The external/public IP address to translate from"
+              required
+            >
+              <Input
+                id="destination-address"
+                value={destinationAddress}
+                onChange={(e) => setDestinationAddress(e.target.value)}
+                placeholder="e.g., 203.0.113.10"
+                className="font-mono"
+              />
+            </FormField>
 
-          {/* Translation Address */}
-          <div className="space-y-2">
-            <Label htmlFor="translation-address">
-              Translation Address <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="translation-address"
-              value={translationAddress}
-              onChange={(e) => setTranslationAddress(e.target.value)}
-              placeholder="e.g., 192.168.1.10"
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              The internal/private IP address to translate to
-            </p>
-          </div>
+            <FormField
+              label="Inbound Interface"
+              htmlFor="inbound-interface"
+              description="The interface on which the traffic arrives"
+            >
+              <Select value={inboundInterface} onValueChange={setInboundInterface}>
+                <SelectTrigger id="inbound-interface">
+                  <SelectValue placeholder="Select interface" />
+                </SelectTrigger>
+                <SelectContent>
+                  {interfaces.map((iface) => (
+                    <SelectItem key={iface.name} value={iface.name}>
+                      {iface.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            <FormField
+              label="Translation Address"
+              htmlFor="translation-address"
+              description="The internal/private IP address to translate to"
+              required
+            >
+              <Input
+                id="translation-address"
+                value={translationAddress}
+                onChange={(e) => setTranslationAddress(e.target.value)}
+                placeholder="e.g., 192.168.1.10"
+                className="font-mono"
+              />
+            </FormField>
+          </Fieldset>
 
           {/* Info Box */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">

@@ -1,0 +1,34 @@
+id: "006"
+title: "Validate: TypeScript type-check and lint"
+phase: 3
+status: not_started
+agent_type: general-purpose
+depends_on: ["003", "004", "005"]
+parallel_with: []
+
+description: |
+  Run TypeScript type checking and linting to catch any issues from the changes.
+
+files:
+  check:
+    - frontend/
+
+instructions: |
+  1. Run: cd frontend && npx tsc --noEmit
+  2. If there are type errors, fix them in the relevant files
+  3. Run: cd frontend && npm run lint
+  4. If there are lint errors, fix them
+  5. Repeat until both pass clean
+
+acceptance_criteria:
+  - npx tsc --noEmit passes with no errors
+  - npm run lint passes with no errors
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

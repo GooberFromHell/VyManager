@@ -1,0 +1,32 @@
+# DERPO Project Knowledge Base Manifest
+# Tracks when the index was last built so discovery can detect staleness
+
+# Git commit SHA at time of last full index build
+last_indexed_commit: "536af59664f4fc2bea15d543cfd513a8934d5ec0"
+
+# Timestamp of last index update
+last_updated: "2026-03-17T00:00:00Z"
+
+# Index version (increment on structural changes to the index format)
+index_version: 1
+
+# Directories that, if changed, indicate the index may be stale
+# Used by: git diff --stat {last_indexed_commit}..HEAD -- {paths}
+watched_paths:
+  - "backend/vyos_mappers/"
+  - "backend/vyos_builders/"
+  - "backend/routers/"
+  - "backend/rbac_permissions.py"
+  - "backend/app.py"
+  - "backend/middleware/"
+  - "backend/provisioning.py"
+  - "frontend/src/lib/api/"
+  - "frontend/src/components/"
+  - "frontend/src/app/(default)/(app)/"
+
+# Staleness thresholds
+staleness:
+  # If fewer than this many files changed in watched_paths, use TIER 1 (cached)
+  tier1_max_changed_files: 5
+  # If more than this, use TIER 2 (incremental); above this → TIER 3 (full)
+  tier2_max_changed_files: 30

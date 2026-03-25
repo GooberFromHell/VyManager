@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { staticRoutesService, type ArpEntry } from "@/lib/api/static-routes";
 
 interface EditArpEntryModalProps {
@@ -98,38 +98,36 @@ export function EditArpEntryModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Interface</Label>
-            <Input value={interfaceName} disabled className="bg-muted" />
-          </div>
+          <Fieldset>
+            <FormField label="Interface">
+              <Input value={interfaceName} disabled className="bg-muted" />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label>IP Address</Label>
-            <Input value={entry.ip_address} disabled className="bg-muted" />
-            <p className="text-xs text-muted-foreground">
-              IP address cannot be changed. Delete and recreate to change it.
-            </p>
-          </div>
+            <FormField
+              label="IP Address"
+              description="IP address cannot be changed. Delete and recreate to change it."
+            >
+              <Input value={entry.ip_address} disabled className="bg-muted" />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="mac-address">MAC Address</Label>
-            <Input
-              id="mac-address"
-              placeholder="00:11:22:33:44:55"
-              value={macAddress}
-              onChange={(e) => setMacAddress(e.target.value)}
-            />
-          </div>
+            <FormField label="MAC Address" htmlFor="mac-address">
+              <Input
+                id="mac-address"
+                placeholder="00:11:22:33:44:55"
+                value={macAddress}
+                onChange={(e) => setMacAddress(e.target.value)}
+              />
+            </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Input
-              id="description"
-              placeholder="Description for this ARP entry"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Input
+                id="description"
+                placeholder="Description for this ARP entry (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

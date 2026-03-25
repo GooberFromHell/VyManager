@@ -108,7 +108,7 @@ export function PowerActionBanner() {
   // Show cancelled message
   if (showCancelledMessage && status?.cancelled) {
     return (
-      <div className="bg-green-50 dark:bg-green-950/20 border-b border-green-200 dark:border-green-900">
+      <div className="bg-green-50 dark:bg-green-950/20 border-b border-green-200 dark:border-green-900 animate-slide-down">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -153,7 +153,7 @@ export function PowerActionBanner() {
     : "text-red-600 dark:text-red-400";
 
   return (
-    <div className={`${bgColor} border-b`}>
+    <div className={`${bgColor} border-b animate-slide-down`}>
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

@@ -1,0 +1,192 @@
+id: task-012-container-restore-wizard
+title: "Create ContainerRestoreWizard with 3-step restore flow"
+archetype: custom
+phase: 3
+depends_on: [task-011, task-007]
+parallel_with: []
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "frontend/src/components/management/ContainerRestoreWizard.tsx"
+  modify:
+    - "frontend/src/components/management/BackupDetailModal.tsx"
+
+context_files:
+  - ".derpo/architecture.md"
+  - ".derpo/pattern-snippets/frontend-modal.tsx"
+  - "frontend/src/lib/api/background-jobs.ts"
+  - "frontend/src/lib/api/types/background-jobs.ts"
+  - "frontend/src/lib/api/session.ts"
+  - "frontend/src/components/management/BackupDetailModal.tsx"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Create the ContainerRestoreWizard component that guides the user through restoring a
+  container to a target VyOS instance from backup data.
+
+  ## Step 1: Read reference files
+  - Read `.derpo/pattern-snippets/frontend-modal.tsx` for the Dialog pattern.
+  - Read `frontend/src/lib/api/background-jobs.ts` for the `restoreContainer` method.
+  - Read `frontend/src/lib/api/session.ts` for the `sessionService.listInstances()` method
+    (needed to populate the target instance dropdown).
+  - Read `frontend/src/components/management/BackupDetailModal.tsx` to understand how
+    to integrate the "Restore Container" button.
+
+  ## Step 2: Create ContainerRestoreWizard
+  Create `frontend/src/components/management/ContainerRestoreWizard.tsx`:
+
+  ```typescript
+  "use client";
+
+  import { useState, useEffect } from "react";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+  } from "@/components/ui/dialog";
+  import { Button } from "@/components/ui/button";
+  import { Badge } from "@/components/ui/badge";
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
+  import {
+    CheckCircle2,
+    XCircle,
+    Loader2,
+    AlertCircle,
+    Container,
+    HardDrive,
+    ArrowRight,
+  } from "lucide-react";
+  import { cn } from "@/lib/utils";
+  import { backgroundJobsService } from "@/lib/api/background-jobs";
+  import { sessionService, Instance } from "@/lib/api/session";
+  import type {
+    ContainerFullBackup,
+    ContainerRestoreResponse,
+    RestoreStepResult,
+  } from "@/lib/api/types/background-jobs";
+  ```
+
+  Props interface:
+  ```typescript
+  interface ContainerRestoreWizardProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    container: ContainerFullBackup;
+    siteId: string;
+    siteName: string;
+  }
+  ```
+
+  ## Step 3: Implement the 3-step wizard
+
+  ### State
+  ```typescript
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [instances, setInstances] = useState<Instance[]>([]);
+  const [loadingInstances, setLoadingInstances] = useState(true);
+  const [selectedInstanceId, setSelectedInstanceId] = useState<string>("");
+  const [restoring, setRestoring] = useState(false);
+  const [result, setResult] = useState<ContainerRestoreResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  ```
+
+  ### Step 1: Select Target Instance
+  - On open, fetch instances for the site: `sessionService.listInstances(siteId)`.
+  - Show a Select dropdown with available instances in the site.
+  - Disable instances that don't have SSH configured (if the container has volumes to restore).
+  - "Next" button to proceed to step 2.
+
+  ### Step 2: Confirm Restore Data
+  - Summary of what will be restored:
+    - Config commands: "{N} set commands will be applied"
+    - Volumes: list each volume with name, source path, and size
+    - Image: image reference and pinned digest (if available)
+    - Runtime: "Container will be restarted after restore" if it was running
+  - "Back" button to go back to step 1.
+  - "Restore" button to proceed to step 3.
+
+  ### Step 3: Execute Restore
+  - On entering step 3, immediately call:
+    ```typescript
+    const response = await backgroundJobsService.restoreContainer(
+      siteId, selectedInstanceId, container
+    );
+    ```
+  - Show a loading spinner during execution.
+  - On completion, show the per-step results:
+    - Each `RestoreStepResult` as a row with check/X icon and message.
+  - Show overall success/failure status.
+  - "Close" button to dismiss the wizard.
+
+  ### Reset on open/close
+  When the dialog opens, reset to step 1. When it closes, clear all state.
+
+  ## Step 4: Update BackupDetailModal
+  Add a "Restore Container" button to each container row in the BackupDetailModal:
+  - The button should appear on expanded container details.
+  - It should only be enabled if the container has config_commands.
+  - Clicking it opens the ContainerRestoreWizard in a separate Dialog.
+
+  Add state to BackupDetailModal:
+  ```typescript
+  const [restoreContainer, setRestoreContainer] = useState<ContainerFullBackup | null>(null);
+  ```
+
+  Render the wizard:
+  ```tsx
+  {restoreContainer && (
+    <ContainerRestoreWizard
+      open={!!restoreContainer}
+      onOpenChange={(open) => !open && setRestoreContainer(null)}
+      container={restoreContainer}
+      siteId={/* pass from props */}
+      siteName={/* pass from props */}
+    />
+  )}
+  ```
+
+  Note: BackupDetailModal needs `siteId` added to its props if not already present.
+  Check the props interface and add it if needed.
+
+  ## Important notes
+  - The wizard uses Dialog (not Sheet) for consistency with other modals.
+  - Step transitions should be smooth — no page reloads.
+  - Error handling: show errors inline within the wizard, not as toasts.
+  - The Select dropdown for instances should show instance name and host.
+  - For step 2, if no volumes have `data_base64`, note that volume restore will be skipped.
+  - For step 3, the per-step results match the backend's RestoreStepResult format.
+
+acceptance_criteria:
+  - "ContainerRestoreWizard.tsx exists with Dialog-based 3-step wizard"
+  - "Step 1 shows a Select dropdown of instances in the site"
+  - "Step 1 fetches instances via sessionService.listInstances"
+  - "Step 2 shows a summary of what will be restored (config, volumes, image, runtime)"
+  - "Step 3 executes the restore and shows per-step results"
+  - "Loading spinner is shown during restore execution"
+  - "Per-step results use color-coded check/X icons"
+  - "Back/Next navigation between steps 1 and 2"
+  - "Close button on step 3 after completion"
+  - "BackupDetailModal has a 'Restore Container' button per container row"
+  - "Wizard resets to step 1 when reopened"
+  - "Error state is handled and displayed inline"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

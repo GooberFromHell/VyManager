@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -167,105 +167,119 @@ export function Ospfv3AreaModal({
 
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-4 pb-2">
-            {/* Area ID */}
-            <div className="space-y-2">
-              <Label htmlFor="ospfv3-area-id">Area ID</Label>
-              <Input
-                id="ospfv3-area-id"
-                value={areaId}
-                onChange={(e) => setAreaId(e.target.value)}
-                placeholder="0.0.0.0 or integer"
-                disabled={isEditMode}
-                className={isEditMode ? "bg-muted" : ""}
-              />
-              <p className="text-xs text-muted-foreground">
-                Area identifier in dotted-decimal or integer format.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Area ID"
+                htmlFor="ospfv3-area-id"
+                description="Area identifier in dotted-decimal or integer format."
+                required={!isEditMode}
+              >
+                <Input
+                  id="ospfv3-area-id"
+                  value={areaId}
+                  onChange={(e) => setAreaId(e.target.value)}
+                  placeholder="0.0.0.0 or integer"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                />
+              </FormField>
 
-            {/* Area Type */}
-            <div className="space-y-2">
-              <Label htmlFor="ospfv3-area-type">Area Type</Label>
-              <Select value={areaType} onValueChange={setAreaType}>
-                <SelectTrigger id="ospfv3-area-type">
-                  <SelectValue placeholder="Normal (default)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="stub">Stub</SelectItem>
-                  <SelectItem value="nssa">NSSA</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <FormField
+                label="Area Type"
+                htmlFor="ospfv3-area-type"
+              >
+                <Select value={areaType} onValueChange={setAreaType}>
+                  <SelectTrigger id="ospfv3-area-type">
+                    <SelectValue placeholder="Normal (default)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="stub">Stub</SelectItem>
+                    <SelectItem value="nssa">NSSA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </Fieldset>
 
             {/* Stub/NSSA options */}
             {showStubNssaOptions && (
-              <div className="space-y-3 pl-4 border-l-2 border-muted">
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="ospfv3-area-no-summary"
-                    checked={noSummary}
-                    onCheckedChange={(checked) => setNoSummary(checked === true)}
-                  />
-                  <Label htmlFor="ospfv3-area-no-summary" className="cursor-pointer">
-                    No Summary (Totally {areaType === "stub" ? "Stubby" : "NSSA"})
-                  </Label>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-area-default-cost">Default Cost</Label>
-                  <Input
-                    id="ospfv3-area-default-cost"
-                    type="number"
-                    value={defaultCost}
-                    onChange={(e) => setDefaultCost(e.target.value)}
-                    placeholder="Default cost for injected default route"
-                    min={0}
-                  />
-                </div>
-                {areaType === "nssa" && (
-                  <div className="flex items-center space-x-3">
+              <>
+                <FieldsetDivider />
+                <Fieldset label="Stub / NSSA Options">
+                  <FormField
+                    label={`No Summary (Totally ${areaType === "stub" ? "Stubby" : "NSSA"})`}
+                    htmlFor="ospfv3-area-no-summary"
+                    horizontal
+                  >
                     <Checkbox
-                      id="ospfv3-area-nssa-originate"
-                      checked={nssaDefaultOriginate}
-                      onCheckedChange={(checked) => setNssaDefaultOriginate(checked === true)}
+                      id="ospfv3-area-no-summary"
+                      checked={noSummary}
+                      onCheckedChange={(checked) => setNoSummary(checked === true)}
                     />
-                    <Label htmlFor="ospfv3-area-nssa-originate" className="cursor-pointer">
-                      Default Information Originate
-                    </Label>
-                  </div>
-                )}
-              </div>
+                  </FormField>
+
+                  <FormField
+                    label="Default Cost"
+                    htmlFor="ospfv3-area-default-cost"
+                  >
+                    <Input
+                      id="ospfv3-area-default-cost"
+                      type="number"
+                      value={defaultCost}
+                      onChange={(e) => setDefaultCost(e.target.value)}
+                      placeholder="Default cost for injected default route"
+                      min={0}
+                    />
+                  </FormField>
+
+                  {areaType === "nssa" && (
+                    <FormField
+                      label="Default Information Originate"
+                      htmlFor="ospfv3-area-nssa-originate"
+                      horizontal
+                    >
+                      <Checkbox
+                        id="ospfv3-area-nssa-originate"
+                        checked={nssaDefaultOriginate}
+                        onCheckedChange={(checked) => setNssaDefaultOriginate(checked === true)}
+                      />
+                    </FormField>
+                  )}
+                </Fieldset>
+              </>
             )}
 
-            {/* Ranges */}
-            <div className="space-y-2">
-              <Label>Ranges</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newRangePrefix}
-                  onChange={(e) => setNewRangePrefix(e.target.value)}
-                  placeholder="e.g. 2001:db8::/32"
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addRange())}
-                  className="flex-1"
-                />
-                <Select
-                  value={newRangeAdvertise ? "advertise" : "not-advertise"}
-                  onValueChange={(v) => setNewRangeAdvertise(v === "advertise")}
-                >
-                  <SelectTrigger className="w-36">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="advertise">Advertise</SelectItem>
-                    <SelectItem value="not-advertise">Not Advertise</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button type="button" variant="outline" size="icon" onClick={addRange}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+            <FieldsetDivider />
+
+            <Fieldset label="Ranges">
+              <FormField label="Add Range">
+                <div className="flex gap-2">
+                  <Input
+                    value={newRangePrefix}
+                    onChange={(e) => setNewRangePrefix(e.target.value)}
+                    placeholder="e.g. 2001:db8::/32"
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addRange())}
+                    className="flex-1"
+                  />
+                  <Select
+                    value={newRangeAdvertise ? "advertise" : "not-advertise"}
+                    onValueChange={(v) => setNewRangeAdvertise(v === "advertise")}
+                  >
+                    <SelectTrigger className="w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="advertise">Advertise</SelectItem>
+                      <SelectItem value="not-advertise">Not Advertise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button type="button" variant="outline" size="icon" onClick={addRange}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </FormField>
               {ranges.length > 0 && (
-                <div className="space-y-1 mt-2">
+                <div className="space-y-1">
                   {ranges.map((range, idx) => (
                     <div key={idx} className="flex items-center justify-between rounded-md border px-3 py-1.5">
                       <div className="flex items-center gap-2">
@@ -284,45 +298,52 @@ export function Ospfv3AreaModal({
               <p className="text-xs text-muted-foreground">
                 IPv6 CIDR prefixes to summarize in this area.
               </p>
-            </div>
+            </Fieldset>
 
-            {/* Export/Import Lists */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ospfv3-area-export">Export List</Label>
-                <Select
-                  value={exportList}
-                  onValueChange={(v) => setExportList(v === "__none__" ? "" : v)}
+            <FieldsetDivider />
+
+            <Fieldset label="Access Lists">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="Export List"
+                  htmlFor="ospfv3-area-export"
                 >
-                  <SelectTrigger id="ospfv3-area-export">
-                    <SelectValue placeholder="None" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {accessListNames.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ospfv3-area-import">Import List</Label>
-                <Select
-                  value={importList}
-                  onValueChange={(v) => setImportList(v === "__none__" ? "" : v)}
+                  <Select
+                    value={exportList}
+                    onValueChange={(v) => setExportList(v === "__none__" ? "" : v)}
+                  >
+                    <SelectTrigger id="ospfv3-area-export">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {accessListNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField
+                  label="Import List"
+                  htmlFor="ospfv3-area-import"
                 >
-                  <SelectTrigger id="ospfv3-area-import">
-                    <SelectValue placeholder="None" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {accessListNames.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select
+                    value={importList}
+                    onValueChange={(v) => setImportList(v === "__none__" ? "" : v)}
+                  >
+                    <SelectTrigger id="ospfv3-area-import">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {accessListNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
           </div>
         </ScrollArea>
 

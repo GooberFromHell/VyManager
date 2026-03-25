@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
@@ -133,28 +133,31 @@ export function SyncGroupModal({
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <Label>Sync Group Name <span className="text-destructive">*</span></Label>
+            <FormField
+              label="Sync Group Name"
+              htmlFor="sg-name"
+              required
+              description={isEdit ? "Name cannot be changed" : undefined}
+            >
               <Input
+                id="sg-name"
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                 disabled={isEdit}
                 placeholder="e.g. SYNC-GROUP-1"
                 className={isEdit ? "opacity-60" : ""}
               />
-              {isEdit && <p className="text-xs text-muted-foreground">Name cannot be changed</p>}
-            </div>
+            </FormField>
 
             <Separator />
 
             {/* Members */}
             <div className="space-y-3">
-              <div>
-                <Label>VRRP Group Members <span className="text-destructive">*</span></Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Select which VRRP groups to synchronize together
-                </p>
-              </div>
+              <FormField
+                label="VRRP Group Members"
+                required
+                description="Select which VRRP groups to synchronize together"
+              >
 
               {vrrpGroups.length === 0 ? (
                 <div className="border border-dashed rounded-lg p-4 text-center text-sm text-muted-foreground">
@@ -190,54 +193,54 @@ export function SyncGroupModal({
                   {form.members.length} member{form.members.length !== 1 ? "s" : ""} selected
                 </p>
               )}
+              </FormField>
             </div>
 
             <Separator />
 
             {/* Health Check */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Health Check (optional)</Label>
+            <Fieldset label="Health Check (optional)">
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Ping Target</Label>
+                <FormField label="Ping Target" htmlFor="hc-ping">
                   <Input
+                    id="hc-ping"
                     value={form.hc_ping}
                     onChange={(e) => setForm((p) => ({ ...p, hc_ping: e.target.value }))}
                     placeholder="IP to ping"
                     className="font-mono"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Interval (s)</Label>
+                </FormField>
+                <FormField label="Interval (s)" htmlFor="hc-interval">
                   <Input
+                    id="hc-interval"
                     type="number"
                     min={1}
                     value={form.hc_interval}
                     onChange={(e) => setForm((p) => ({ ...p, hc_interval: e.target.value }))}
                     placeholder="10"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Failure Count</Label>
+                </FormField>
+                <FormField label="Failure Count" htmlFor="hc-fail-count">
                   <Input
+                    id="hc-fail-count"
                     type="number"
                     min={1}
                     value={form.hc_failure_count}
                     onChange={(e) => setForm((p) => ({ ...p, hc_failure_count: e.target.value }))}
                     placeholder="3"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Script Path</Label>
+                </FormField>
+                <FormField label="Script Path" htmlFor="hc-script">
                   <Input
+                    id="hc-script"
                     value={form.hc_script}
                     onChange={(e) => setForm((p) => ({ ...p, hc_script: e.target.value }))}
                     placeholder="/path/to/script.sh"
                     className="font-mono"
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
           </div>
         </div>
 

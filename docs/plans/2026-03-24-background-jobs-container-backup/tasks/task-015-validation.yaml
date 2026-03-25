@@ -1,0 +1,95 @@
+id: task-015-validation
+title: "Run TypeScript type checking, linting, and Prisma generate validation"
+archetype: validation
+phase: 5
+depends_on: [task-008, task-009, task-010, task-011, task-012, task-013, task-014]
+parallel_with: []
+agent: general-purpose
+status: not_started
+
+files:
+  create: []
+  modify: []
+
+context_files:
+  - ".derpo/architecture.md"
+  - "frontend/package.json"
+  - "frontend/prisma/schema.prisma"
+
+instructions: |
+  Run the project's validation commands to check for TypeScript errors, linting issues,
+  and Prisma client generation. Report all failures without attempting to fix them.
+
+  ## Step 1: Prisma Generate
+  Run from the frontend directory:
+  ```bash
+  cd frontend && npx prisma generate
+  ```
+
+  This regenerates the Prisma client from the updated schema (which now includes the
+  BackgroundJob model from task-001). If this fails, report the error.
+
+  Expected outcome: Success — the Prisma client should regenerate with the new model.
+
+  ## Step 2: TypeScript Type Checking
+  Run from the frontend directory:
+  ```bash
+  cd frontend && npx tsc --noEmit
+  ```
+
+  This checks all TypeScript files for type errors without producing output files.
+  Common issues to watch for after this feature implementation:
+  - Missing imports for new types/components
+  - Type mismatches between API response types and component props
+  - Unused imports left over from refactored code (SiteToolsSection)
+  - Props interface changes in modified components
+
+  Report ALL errors with file paths and line numbers. Do not fix them.
+
+  ## Step 3: ESLint
+  Run from the frontend directory:
+  ```bash
+  cd frontend && npm run lint
+  ```
+
+  This runs the Next.js linter (ESLint with Next.js config). Common issues:
+  - Unused variables/imports
+  - Missing dependencies in useEffect/useCallback dependency arrays
+  - React hooks rules violations
+  - Import ordering issues
+
+  Report ALL warnings and errors. Do not fix them.
+
+  ## Step 4: Report
+  Create a summary report with three sections:
+  1. **Prisma Generate**: Pass/Fail + output
+  2. **TypeScript**: Pass/Fail + list of errors (file:line: message)
+  3. **ESLint**: Pass/Fail + list of warnings/errors
+
+  If all three pass, report "All validation checks passed."
+  If any fail, list the specific failures clearly so they can be addressed.
+
+  ## Important notes
+  - Do NOT attempt to fix any errors found. The purpose of this task is validation only.
+  - Do NOT modify any files.
+  - Run commands from the `frontend` directory (cd into it first).
+  - If `node_modules` is missing, run `npm install` first.
+  - The `npx tsc --noEmit` command may take a minute on a large project — be patient.
+  - Backend Python files are not validated here (no mypy/flake8 in this task).
+
+acceptance_criteria:
+  - "npx prisma generate was executed and result reported"
+  - "npx tsc --noEmit was executed and result reported"
+  - "npm run lint was executed and result reported"
+  - "All errors and warnings are listed with file paths and messages"
+  - "No files were modified during validation"
+  - "Summary report clearly states pass/fail for each check"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

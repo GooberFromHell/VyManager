@@ -1,0 +1,43 @@
+id: "task-003"
+title: "Install xterm.js packages"
+phase: produce
+execution_phase: 1
+agent: "general-purpose"
+status: not_started
+depends_on: []
+blocks: ["task-005"]
+parallel_with: ["task-001"]
+
+files:
+  create: []
+  modify:
+    - "frontend/package.json"
+    - "frontend/package-lock.json"
+
+context_files:
+  - "frontend/package.json"
+
+instructions: |
+  Install xterm.js packages for the terminal emulator.
+
+  Run from the frontend directory:
+  ```bash
+  cd frontend && npm install @xterm/xterm @xterm/addon-fit
+  ```
+
+  This installs:
+  - @xterm/xterm — core terminal emulator (v5)
+  - @xterm/addon-fit — automatically fits terminal to container size
+
+acceptance_criteria:
+  - "Grep match: '@xterm/xterm' in frontend/package.json"
+  - "Grep match: '@xterm/addon-fit' in frontend/package.json"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -244,10 +244,9 @@ function GlobalSettingsPanel({ config, onSaved }: { config: HAConfig; onSaved: (
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <Label>VRRP Version</Label>
+            <FormField label="VRRP Version" htmlFor="vrrp-version">
               <Select value={version || "default"} onValueChange={(v) => setVersion(v === "default" ? "" : v)}>
-                <SelectTrigger>
+                <SelectTrigger id="vrrp-version">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -256,21 +255,18 @@ function GlobalSettingsPanel({ config, onSaved }: { config: HAConfig; onSaved: (
                   <SelectItem value="3">Version 3</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
 
-            <div className="space-y-1.5">
-              <Label>Startup Delay (s)</Label>
+            <FormField label="Startup Delay (s)" htmlFor="vrrp-startup-delay" description="Delay before VRRP starts after system boot">
               <Input
+                id="vrrp-startup-delay"
                 type="number"
                 min={0}
                 value={startupDelay}
                 onChange={(e) => setStartupDelay(e.target.value)}
                 placeholder="0 — no delay"
               />
-              <p className="text-xs text-muted-foreground">
-                Delay before VRRP starts after system boot
-              </p>
-            </div>
+            </FormField>
 
             <div className="flex items-center gap-3 rounded-lg border p-3">
               <Checkbox

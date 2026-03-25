@@ -1,0 +1,175 @@
+id: "task-002"
+title: "Extend session router with provisioning support"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:python-pro"
+status: not_started
+
+depends_on: ["task-001"]
+blocks: ["task-005"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "backend/routers/session/session.py"
+
+context_files:
+  - "backend/provisioning.py"
+  - "backend/routers/session/session.py"
+  - "backend/ssh_key_manager.py"
+
+instructions: |
+  Modify the session router to support auto-provisioning during instance creation
+  and add a standalone re-provisioning endpoint.
+
+  ## 1. Modify InstanceCreateRequest model
+
+  Find the `InstanceCreateRequest` Pydantic model (around line 85-101) and make these changes:
+  - Change `api_key: str` to `api_key: Optional[str] = None`
+  - Add three new optional fields:
+    ```python
+    provision_ssh_username: Optional[str] = None
+    provision_ssh_password: Optional[str] = None
+    ```
+  - Add a model validator to ensure either `api_key` or provisioning credentials are provided:
+    ```python
+    @model_validator(mode="after")
+    def validate_api_key_or_provisioning(self):
+        if not self.api_key and not (self.provision_ssh_username and self.provision_ssh_password):
+            raise ValueError("Either api_key or provisioning SSH credentials (provision_ssh_username + provision_ssh_password) must be provided")
+        return self
+    ```
+  - Make sure to import `model_validator` from pydantic if not already imported.
+
+  ## 2. Add ProvisionRequest model
+
+  Add a new Pydantic model for the standalone provisioning endpoint:
+  ```python
+  class ProvisionRequest(BaseModel):
+      ssh_username: str
+      ssh_password: str
+  ```
+
+  ## 3. Add ProvisioningResponse model
+
+  ```python
+  class ProvisioningResponse(BaseModel):
+      success: bool
+      ssh_connected: bool
+      api_key_configured: bool
+      ssh_key_configured: bool
+      committed: bool
+      saved: bool
+      error: Optional[str] = None
+      step_errors: dict = {}
+  ```
+
+  ## 4. Modify create_instance endpoint
+
+  In the `create_instance` function (around line 882-990):
+
+  a. After the database INSERT (which creates the instance), check if provisioning credentials are provided:
+  ```python
+  provisioning_result = None
+  if request.provision_ssh_username and request.provision_ssh_password:
+      from provisioning import provision_vyos_device
+
+      provisioning_result = await provision_vyos_device(
+          host=request.host,
+          ssh_port=request.ssh_port,
+          ssh_username=request.provision_ssh_username,
+          ssh_password=request.provision_ssh_password,
+          vyos_username=request.provision_ssh_username,  # Deploy SSH key to the same user
+      )
+
+      if provisioning_result.success:
+          # Update instance with generated API key and SSH key data
+          await conn.execute(
+              """
+              UPDATE instances
+              SET "apiKey" = $1,
+                  "sshPublicKey" = $2,
+                  "sshEncryptedPrivKey" = $3,
+                  "sshKeyNonce" = $4,
+                  "sshKeyConfigured" = true,
+                  "sshUsername" = $5,
+                  "updatedAt" = NOW()
+              WHERE id = $6
+              """,
+              provisioning_result.api_key,
+              provisioning_result.ssh_public_key,
+              provisioning_result.ssh_encrypted_private_key,
+              provisioning_result.ssh_key_nonce,
+              request.provision_ssh_username,
+              instance_id,
+          )
+  ```
+
+  b. If provisioning was attempted, the `api_key` for the initial INSERT should use a placeholder or empty string when `request.api_key` is None, then get updated by provisioning:
+  - In the INSERT statement, use `request.api_key or ""` for the apiKey value
+  - The provisioning UPDATE will overwrite it with the real key on success
+
+  c. Include provisioning result in the response. Extend the response dict to include:
+  ```python
+  response = {
+      "id": instance_id,
+      "name": request.name,
+      # ... existing fields ...
+  }
+  if provisioning_result:
+      response["provisioning"] = {
+          "success": provisioning_result.success,
+          "ssh_connected": provisioning_result.ssh_connected,
+          "api_key_configured": provisioning_result.api_key_configured,
+          "ssh_key_configured": provisioning_result.ssh_key_configured,
+          "committed": provisioning_result.committed,
+          "saved": provisioning_result.saved,
+          "error": provisioning_result.error,
+          "step_errors": provisioning_result.step_errors,
+      }
+  ```
+
+  ## 5. Add standalone provision endpoint
+
+  Add a new endpoint after the existing instance management endpoints:
+  ```python
+  @router.post("/session/instances/{instance_id}/provision")
+  async def provision_instance(
+      instance_id: str,
+      request_body: ProvisionRequest,
+      request: Request,
+  ):
+  ```
+
+  This endpoint should:
+  a. Require authentication (get user from request.state)
+  b. Require site ADMIN role for the instance's site
+  c. Fetch the instance from DB
+  d. Call `provision_vyos_device()` with the instance's host/port and the provided SSH credentials
+  e. On success, update the instance record with API key + SSH key data (same UPDATE as above)
+  f. Return the ProvisioningResponse
+
+  ## Important notes
+  - The `provision_ssh_password` field should NEVER be logged. Use logger carefully.
+  - Import `provision_vyos_device` from `provisioning` module
+  - The provisioning call should be wrapped in try/except to handle unexpected errors gracefully
+  - If provisioning fails, the instance still exists — return both the instance data AND the provisioning error
+
+acceptance_criteria:
+  - "Grep match: 'provision_ssh_username' in backend/routers/session/session.py"
+  - "Grep match: 'provision_ssh_password' in backend/routers/session/session.py"
+  - "Grep match: 'provision_vyos_device' in backend/routers/session/session.py"
+  - "Grep match: 'class ProvisionRequest' in backend/routers/session/session.py"
+  - "Grep match: 'class ProvisioningResponse' in backend/routers/session/session.py"
+  - "Grep match: '/session/instances/{instance_id}/provision' in backend/routers/session/session.py"
+  - "Grep match: 'api_key: Optional' in backend/routers/session/session.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

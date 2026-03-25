@@ -1,0 +1,135 @@
+id: "task-007"
+title: "Create container page with tabs and sidebar nav"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-006"]
+blocks: ["task-011"]
+parallel_with: ["task-008", "task-009", "task-010"]
+
+files:
+  create:
+    - "frontend/src/app/(default)/(app)/containers/page.tsx"
+  modify:
+    - "frontend/src/components/layout/Sidebar.tsx"
+
+context_files:
+  - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "frontend/src/app/(default)/(app)/system/services/snmp/page.tsx"
+  - "frontend/src/components/layout/Sidebar.tsx"
+  - "frontend/src/lib/api/container.ts"
+  - "frontend/src/lib/api/types/container.ts"
+  - "frontend/src/hooks/usePermissions.ts"
+  - "frontend/src/lib/api/user-management.ts"
+  - "frontend/src/components/ui/page-header.tsx"
+  - "frontend/src/components/ui/empty-state.tsx"
+  - "frontend/src/components/ui/error-alert.tsx"
+
+instructions: |
+  Create the main container management page and add sidebar navigation entry.
+
+  ## 1. frontend/src/app/(default)/(app)/containers/page.tsx
+
+  "use client" component with tabbed layout showing Containers, Networks, and Registries.
+
+  ### State management:
+  ```typescript
+  const [config, setConfig] = useState<ContainerConfig | null>(null);
+  const [capabilities, setCapabilities] = useState<ContainerCapabilities | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("containers");
+
+  // Container modals
+  const [createContainerOpen, setCreateContainerOpen] = useState(false);
+  const [editingContainer, setEditingContainer] = useState<ContainerEntry | null>(null);
+  const [deletingContainer, setDeletingContainer] = useState<string | null>(null);
+
+  // Network modals
+  const [createNetworkOpen, setCreateNetworkOpen] = useState(false);
+  const [editingNetwork, setEditingNetwork] = useState<ContainerNetwork | null>(null);
+  const [deletingNetwork, setDeletingNetwork] = useState<string | null>(null);
+
+  // Registry modals
+  const [createRegistryOpen, setCreateRegistryOpen] = useState(false);
+  const [editingRegistry, setEditingRegistry] = useState<ContainerRegistry | null>(null);
+  const [deletingRegistry, setDeletingRegistry] = useState<string | null>(null);
+  ```
+
+  ### Data loading:
+  - `loadData` callback fetches config + capabilities in parallel (same as NTP page)
+  - useEffect to call loadData on mount
+
+  ### Page layout:
+  - PageHeader: title="Containers", description="Manage containers, networks, and registries", refresh button
+  - Tabs component (from shadcn/ui) with 3 tabs:
+
+  #### Containers Tab:
+  - Add Container button (if canWrite)
+  - Table with columns: Name, Image, Network, Ports, Status (disabled badge), Restart, Actions (edit/delete)
+  - If no containers: EmptyState component
+  - Each row shows key container info
+  - For ports: show as badges like "web: 8080→80/tcp"
+
+  #### Networks Tab:
+  - Add Network button (if canWrite)
+  - Table with columns: Name, Prefix(es), Description, MTU, VRF, Actions
+  - If no networks: EmptyState
+
+  #### Registries Tab:
+  - Add Registry button (if canWrite)
+  - Table with columns: URL, Username, Status (disabled/insecure badges), Actions
+  - If no registries: EmptyState
+  - Password field should NOT be displayed (security)
+
+  ### Loading/error states:
+  - Loading spinner while fetching
+  - ErrorAlert on failure with retry button
+
+  ### Permission checks:
+  ```typescript
+  const { canWrite } = usePermissions();
+  // Use canWrite(FeatureGroup.CONTAINER) for action buttons
+  ```
+
+  ### Modal integration:
+  Import and render all 9 modals (they will be created in tasks 008-010). For now, add the import statements and JSX even though the components don't exist yet — they will be created in parallel tasks. Use these component names:
+  - `CreateContainerModal`, `EditContainerModal`, `DeleteContainerModal`
+  - `CreateContainerNetworkModal`, `EditContainerNetworkModal`, `DeleteContainerNetworkModal`
+  - `CreateContainerRegistryModal`, `EditContainerRegistryModal`, `DeleteContainerRegistryModal`
+
+  All modals receive: `open`, `onOpenChange`, `onSuccess` (calls loadData), `capabilities`
+  Edit modals also receive the entity being edited.
+  Delete modals receive the entity name/url being deleted.
+
+  ## 2. Add sidebar navigation entry
+
+  In `frontend/src/components/layout/Sidebar.tsx`, add a new entry to the `navigation` array. Place it after "High Availability" and before "Monitoring":
+
+  ```typescript
+  {
+    title: "Containers",
+    href: "/containers",
+    icon: Container,
+    requiredPermission: FeatureGroup.CONTAINER,
+  },
+  ```
+
+  Import the `Container` icon from `lucide-react` (it's the box/container icon). If Container is not available, use `Box` instead.
+
+acceptance_criteria:
+  - "File exists: frontend/src/app/(default)/(app)/containers/page.tsx"
+  - "Grep match: 'Containers' in frontend/src/components/layout/Sidebar.tsx"
+  - "Grep match: '/containers' in frontend/src/components/layout/Sidebar.tsx"
+  - "Grep match: 'containerService' in frontend/src/app/(default)/(app)/containers/page.tsx"
+  - "Grep match: 'TabsList' or 'Tabs' in frontend/src/app/(default)/(app)/containers/page.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

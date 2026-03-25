@@ -1,0 +1,499 @@
+# VyManager Feature Registry
+# Maps every implemented VyOS feature to its files across architecture layers.
+# Used by DERPO to skip redundant discovery and provide precise context to agents.
+#
+# Convention: feature keys use snake_case (matching backend), file paths use kebab-case (matching frontend)
+
+features:
+
+  # === Network Interfaces ===
+
+  interface_ethernet:
+    mapper: backend/vyos_mappers/interfaces/ethernet.py
+    versions: backend/vyos_mappers/interfaces/ethernet_versions/
+    builder: backend/vyos_builders/interfaces/ethernet.py
+    router: backend/routers/interfaces/interfaces.py
+    types: frontend/src/lib/api/types/ethernet.ts
+    service: frontend/src/lib/api/interfaces.ts
+    page: frontend/src/app/(default)/(app)/network/interfaces/page.tsx
+    components: frontend/src/components/network/
+    feature_group: INTERFACES
+
+  interface_dummy:
+    mapper: backend/vyos_mappers/interfaces/dummy.py
+    builder: backend/vyos_builders/interfaces/ethernet.py  # shared
+    router: backend/routers/interfaces/interfaces.py  # shared
+    feature_group: INTERFACES
+
+  interface_tunnel:
+    mapper: backend/vyos_mappers/interfaces/tunnel.py
+    types: frontend/src/lib/api/types/tunnel.ts
+    service: frontend/src/lib/api/tunnel.ts
+    components: frontend/src/components/network/TunnelModal.tsx
+    feature_group: INTERFACES
+
+  interface_vxlan:
+    mapper: backend/vyos_mappers/interfaces/vxlan.py
+    types: frontend/src/lib/api/types/vxlan.ts
+    service: frontend/src/lib/api/vxlan.ts
+    components: frontend/src/components/network/VxlanModal.tsx
+    feature_group: INTERFACES
+
+  # === Firewall ===
+
+  firewall_ipv4:
+    mapper: backend/vyos_mappers/firewall/firewall_ipv4.py
+    builder: backend/vyos_builders/firewall/firewall_ipv4.py
+    router: backend/routers/firewall/firewall_ipv4.py
+    service: frontend/src/lib/api/firewall-ipv4.ts
+    page: frontend/src/app/(default)/(app)/firewall/policies/page.tsx
+    components: frontend/src/components/firewall/
+    feature_group: FIREWALL_POLICIES
+
+  firewall_ipv6:
+    mapper: backend/vyos_mappers/firewall/firewall_ipv6.py
+    builder: backend/vyos_builders/firewall/firewall_ipv6.py
+    router: backend/routers/firewall/firewall_ipv6.py
+    service: frontend/src/lib/api/firewall-ipv6.ts
+    feature_group: FIREWALL_POLICIES
+
+  firewall_groups:
+    mapper: backend/vyos_mappers/firewall/firewall_groups.py
+    builder: backend/vyos_builders/firewall/firewall_groups.py
+    router: backend/routers/firewall/firewall_groups.py
+    types: frontend/src/lib/api/types/firewall-groups.ts
+    service: frontend/src/lib/api/firewall-groups.ts
+    page: frontend/src/app/(default)/(app)/firewall/groups/page.tsx
+    components: frontend/src/components/firewall/
+    feature_group: FIREWALL_GROUPS
+
+  firewall_bridge:
+    mapper: backend/vyos_mappers/firewall/firewall_bridge.py
+    builder: backend/vyos_builders/firewall/firewall_bridge.py
+    router: backend/routers/firewall/firewall_bridge.py
+    service: frontend/src/lib/api/firewall-bridge.ts
+    page: frontend/src/app/(default)/(app)/firewall/bridge/page.tsx
+    feature_group: FIREWALL_BRIDGE
+
+  firewall_flowtables:
+    mapper: backend/vyos_mappers/firewall/firewall_flowtables.py
+    builder: backend/vyos_builders/firewall/firewall_flowtables.py
+    router: backend/routers/firewall/firewall_flowtables.py
+    service: frontend/src/lib/api/firewall-flowtables.ts
+    page: frontend/src/app/(default)/(app)/firewall/flowtables/page.tsx
+    feature_group: FIREWALL_FLOWTABLES
+
+  firewall_zones:
+    mapper: backend/vyos_mappers/firewall/firewall_zones.py
+    builder: backend/vyos_builders/firewall/firewall_zones.py
+    router: backend/routers/firewall/firewall_zones.py
+    types: frontend/src/lib/api/types/firewall-zones.ts
+    service: frontend/src/lib/api/firewall-zones.ts
+    components: frontend/src/components/firewall/zones/
+    feature_group: FIREWALL_ZONES
+
+  firewall_global_options:
+    mapper: backend/vyos_mappers/firewall_global_options/firewall_global_options.py
+    builder: backend/vyos_builders/firewall_global_options/firewall_global_options.py
+    router: backend/routers/firewall_global_options/firewall_global_options.py
+    service: frontend/src/lib/api/firewall-global-options.ts
+    page: frontend/src/app/(default)/(app)/firewall/global-options/page.tsx
+    feature_group: FIREWALL_GLOBAL_OPTIONS
+
+  # === NAT ===
+
+  nat:
+    mapper: backend/vyos_mappers/nat/nat.py
+    builder: backend/vyos_builders/nat/nat.py
+    router: backend/routers/nat/nat.py
+    service: frontend/src/lib/api/nat.ts
+    page: frontend/src/app/(default)/(app)/network/nat/page.tsx
+    components: frontend/src/components/network/
+    feature_group: NAT
+
+  # === DHCP ===
+
+  dhcp:
+    mapper: backend/vyos_mappers/dhcp/dhcp.py
+    builder: backend/vyos_builders/dhcp/dhcp.py
+    router: backend/routers/dhcp/dhcp.py
+    service: frontend/src/lib/api/dhcp.ts
+    components: frontend/src/components/services/
+    feature_group: DHCP
+
+  # === Routing ===
+
+  static_routes:
+    mapper: backend/vyos_mappers/static_routes/static_routes.py
+    builder: backend/vyos_builders/static_routes/static_routes.py
+    router: backend/routers/static_routes/static_routes.py
+    service: frontend/src/lib/api/static-routes.ts
+    page: frontend/src/app/(default)/(app)/routing/static-failover/static-routes/page.tsx
+    components: frontend/src/components/routing/
+    feature_group: STATIC_ROUTES
+
+  bgp:
+    mapper: backend/vyos_mappers/bgp/bgp.py
+    builder: backend/vyos_builders/bgp/bgp.py
+    router: backend/routers/bgp/bgp.py
+    service: frontend/src/lib/api/bgp.ts
+    components: frontend/src/components/bgp/
+    feature_group: BGP
+
+  ospf:
+    mapper: backend/vyos_mappers/ospf/ospf.py
+    builder: backend/vyos_builders/ospf/ospf.py
+    router: backend/routers/ospf/ospf.py
+    service: frontend/src/lib/api/ospf.ts
+    components: frontend/src/components/ospf/
+    feature_group: OSPF
+
+  ospfv3:
+    mapper: backend/vyos_mappers/ospfv3/ospfv3.py
+    builder: backend/vyos_builders/ospfv3/ospfv3.py
+    router: backend/routers/ospfv3/ospfv3.py
+    service: frontend/src/lib/api/ospfv3.ts
+    components: frontend/src/components/ospfv3/
+    feature_group: OSPFV3
+
+  isis:
+    mapper: backend/vyos_mappers/isis/isis.py
+    builder: backend/vyos_builders/isis/isis.py
+    router: backend/routers/isis/isis.py
+    service: frontend/src/lib/api/isis.ts
+    components: frontend/src/components/isis/
+    feature_group: ISIS
+
+  babel:
+    mapper: backend/vyos_mappers/babel/babel.py
+    builder: backend/vyos_builders/babel/babel.py
+    router: backend/routers/babel/babel.py
+    service: frontend/src/lib/api/babel.ts
+    components: frontend/src/components/babel/
+    feature_group: BABEL
+
+  bfd:
+    mapper: backend/vyos_mappers/bfd/bfd.py
+    builder: backend/vyos_builders/bfd/bfd.py
+    router: backend/routers/bfd/bfd.py
+    service: frontend/src/lib/api/bfd.ts
+    components: frontend/src/components/bfd/
+    feature_group: BFD
+
+  mpls:
+    mapper: backend/vyos_mappers/mpls/mpls.py
+    builder: backend/vyos_builders/mpls/mpls.py
+    router: backend/routers/mpls/mpls.py
+    service: frontend/src/lib/api/mpls.ts
+    components: frontend/src/components/mpls/
+    feature_group: MPLS
+
+  failover:
+    mapper: backend/vyos_mappers/failover/failover.py
+    builder: backend/vyos_builders/failover/failover.py
+    router: backend/routers/failover/failover.py
+    service: frontend/src/lib/api/failover.ts
+    page: frontend/src/app/(default)/(app)/routing/static-failover/
+    components: frontend/src/components/failover/
+    feature_group: FAILOVER
+
+  igmp_proxy:
+    mapper: backend/vyos_mappers/igmp_proxy/igmp_proxy.py
+    builder: backend/vyos_builders/igmp_proxy/igmp_proxy.py
+    router: backend/routers/igmp_proxy/igmp_proxy.py
+    service: frontend/src/lib/api/igmp-proxy.ts
+    components: frontend/src/components/igmp-proxy/
+    feature_group: IGMP_PROXY
+
+  vrf:
+    mapper: backend/vyos_mappers/vrf/vrf.py
+    builder: backend/vyos_builders/vrf/vrf.py
+    router: backend/routers/vrf/vrf.py
+    service: frontend/src/lib/api/vrf.ts
+    page: frontend/src/app/(default)/(app)/network/vrf/page.tsx
+    components: frontend/src/components/vrf/
+    feature_group: VRF
+
+  # === Routing Policies ===
+
+  route_map:
+    mapper: backend/vyos_mappers/route_map/route_map.py
+    builder: backend/vyos_builders/route_map/route_map.py
+    router: backend/routers/route_map/route_map.py
+    service: frontend/src/lib/api/route-map.ts
+    components: frontend/src/components/policies/
+    feature_group: ROUTE_MAP
+
+  access_list:
+    mapper: backend/vyos_mappers/access_list/access_list.py
+    builder: backend/vyos_builders/access_list/access_list.py
+    router: backend/routers/access_list/access_list.py
+    service: frontend/src/lib/api/access-list.ts
+    components: frontend/src/components/policies/
+    feature_group: ACCESS_LIST
+
+  prefix_list:
+    mapper: backend/vyos_mappers/prefix_list/prefix_list.py
+    builder: backend/vyos_builders/prefix_list/prefix_list.py
+    router: backend/routers/prefix_list/prefix_list.py
+    service: frontend/src/lib/api/prefix-list.ts
+    components: frontend/src/components/policies/
+    feature_group: PREFIX_LIST
+
+  local_route:
+    mapper: backend/vyos_mappers/local_route/local_route.py
+    builder: backend/vyos_builders/local_route/local_route.py
+    router: backend/routers/local_route/local_route.py
+    service: frontend/src/lib/api/local-route.ts
+    page: frontend/src/app/(default)/(app)/policies/local-route/page.tsx
+    components: frontend/src/components/policies/
+    feature_group: LOCAL_ROUTE
+
+  route:
+    mapper: backend/vyos_mappers/route/route.py
+    builder: backend/vyos_builders/route/route.py
+    router: backend/routers/route/route.py
+    service: frontend/src/lib/api/route.ts
+    components: frontend/src/components/routing/
+    feature_group: ROUTING
+
+  as_path_list:
+    mapper: backend/vyos_mappers/as_path_list/as_path_list.py
+    builder: backend/vyos_builders/as_path_list/as_path_list.py
+    router: backend/routers/as_path_list/as_path_list.py
+    service: frontend/src/lib/api/as-path-list.ts
+    components: frontend/src/components/policies/
+    feature_group: BGP_AS_PATH
+
+  community_list:
+    mapper: backend/vyos_mappers/community_list/community_list.py
+    builder: backend/vyos_builders/community_list/community_list.py
+    router: backend/routers/community_list/community_list.py
+    service: frontend/src/lib/api/community-list.ts
+    components: frontend/src/components/policies/
+    feature_group: BGP_COMMUNITY
+
+  extcommunity_list:
+    mapper: backend/vyos_mappers/extcommunity_list/extcommunity_list.py
+    builder: backend/vyos_builders/extcommunity_list/extcommunity_list.py
+    router: backend/routers/extcommunity_list/extcommunity_list.py
+    service: frontend/src/lib/api/extcommunity-list.ts
+    components: frontend/src/components/policies/
+    feature_group: BGP_EXTENDED_COMMUNITY
+
+  large_community_list:
+    mapper: backend/vyos_mappers/large_community_list/large_community_list.py
+    builder: backend/vyos_builders/large_community_list/large_community_list.py
+    router: backend/routers/large_community_list/large_community_list.py
+    service: frontend/src/lib/api/large-community-list.ts
+    components: frontend/src/components/policies/
+    feature_group: BGP_LARGE_COMMUNITY
+
+  # === Services ===
+
+  dns_forwarding:
+    mapper: backend/vyos_mappers/dns_forwarding/dns_forwarding.py
+    versions: backend/vyos_mappers/dns_forwarding/dns_forwarding_versions/
+    builder: backend/vyos_builders/dns_forwarding/dns_forwarding.py
+    router: backend/routers/dns_forwarding/dns_forwarding.py
+    types: frontend/src/lib/api/types/dns-forwarding.ts
+    service: frontend/src/lib/api/dns-forwarding.ts
+    page: frontend/src/app/(default)/(app)/system/services/dns-forwarding/page.tsx
+    components: frontend/src/components/services/dns-forwarding/
+    feature_group: DNS_FORWARDING
+
+  ntp:
+    mapper: backend/vyos_mappers/ntp/ntp.py
+    versions: backend/vyos_mappers/ntp/ntp_versions/
+    builder: backend/vyos_builders/ntp/ntp.py
+    router: backend/routers/ntp/ntp.py
+    types: frontend/src/lib/api/types/ntp.ts
+    service: frontend/src/lib/api/ntp.ts
+    page: frontend/src/app/(default)/(app)/system/services/ntp/page.tsx
+    components: frontend/src/components/services/ntp/
+    feature_group: NTP
+
+  ssh:
+    mapper: backend/vyos_mappers/ssh/ssh.py
+    versions: backend/vyos_mappers/ssh/ssh_versions/
+    builder: backend/vyos_builders/ssh/ssh.py
+    router: backend/routers/ssh/ssh.py
+    types: frontend/src/lib/api/types/ssh.ts
+    service: frontend/src/lib/api/ssh.ts
+    page: frontend/src/app/(default)/(app)/system/services/ssh/page.tsx
+    components: frontend/src/components/services/ssh/
+    feature_group: SSH
+
+  dhcp_relay:
+    mapper: backend/vyos_mappers/dhcp_relay/dhcp_relay.py
+    versions: backend/vyos_mappers/dhcp_relay/dhcp_relay_versions/
+    builder: backend/vyos_builders/dhcp_relay/dhcp_relay.py
+    router: backend/routers/dhcp_relay/dhcp_relay.py
+    types: frontend/src/lib/api/types/dhcp-relay.ts
+    service: frontend/src/lib/api/dhcp-relay.ts
+    page: frontend/src/app/(default)/(app)/system/services/dhcp-relay/page.tsx
+    components: frontend/src/components/services/dhcp-relay/
+    feature_group: DHCP_RELAY
+
+  dhcpv6_server:
+    mapper: backend/vyos_mappers/dhcpv6_server/dhcpv6_server.py
+    versions: backend/vyos_mappers/dhcpv6_server/dhcpv6_server_versions/
+    builder: backend/vyos_builders/dhcpv6_server/dhcpv6_server.py
+    router: backend/routers/dhcpv6_server/dhcpv6_server.py
+    types: frontend/src/lib/api/types/dhcpv6-server.ts
+    service: frontend/src/lib/api/dhcpv6-server.ts
+    page: frontend/src/app/(default)/(app)/system/services/dhcpv6-server/page.tsx
+    components: frontend/src/components/services/dhcpv6-server/
+    feature_group: DHCPV6_SERVER
+
+  lldp:
+    mapper: backend/vyos_mappers/lldp/lldp.py
+    versions: backend/vyos_mappers/lldp/lldp_versions/
+    builder: backend/vyos_builders/lldp/lldp.py
+    router: backend/routers/lldp/lldp.py
+    types: frontend/src/lib/api/types/lldp.ts
+    service: frontend/src/lib/api/lldp.ts
+    page: frontend/src/app/(default)/(app)/system/services/lldp/page.tsx
+    components: frontend/src/components/services/lldp/
+    feature_group: LLDP
+
+  snmp:
+    mapper: backend/vyos_mappers/snmp/snmp.py
+    versions: backend/vyos_mappers/snmp/snmp_versions/
+    builder: backend/vyos_builders/snmp/snmp.py
+    router: backend/routers/snmp/snmp.py
+    types: frontend/src/lib/api/types/snmp.ts
+    service: frontend/src/lib/api/snmp.ts
+    page: frontend/src/app/(default)/(app)/system/services/snmp/page.tsx
+    components: frontend/src/components/services/snmp/
+    feature_group: SNMP
+
+  router_advert:
+    mapper: backend/vyos_mappers/router_advert/router_advert.py
+    versions: backend/vyos_mappers/router_advert/router_advert_versions/
+    builder: backend/vyos_builders/router_advert/router_advert.py
+    router: backend/routers/router_advert/router_advert.py
+    types: frontend/src/lib/api/types/router-advert.ts
+    service: frontend/src/lib/api/router-advert.ts
+    page: frontend/src/app/(default)/(app)/system/services/router-advert/page.tsx
+    components: frontend/src/components/services/router-advert/
+    feature_group: ROUTER_ADVERT
+
+  tftp_server:
+    mapper: backend/vyos_mappers/tftp_server/tftp_server.py
+    versions: backend/vyos_mappers/tftp_server/tftp_server_versions/
+    builder: backend/vyos_builders/tftp_server/tftp_server.py
+    router: backend/routers/tftp_server/tftp_server.py
+    types: frontend/src/lib/api/types/tftp-server.ts
+    service: frontend/src/lib/api/tftp-server.ts
+    page: frontend/src/app/(default)/(app)/system/services/tftp-server/page.tsx
+    components: frontend/src/components/services/tftp-server/
+    feature_group: TFTP_SERVER
+
+  broadcast_relay:
+    mapper: backend/vyos_mappers/broadcast_relay/broadcast_relay.py
+    versions: backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/
+    builder: backend/vyos_builders/broadcast_relay/broadcast_relay.py
+    router: backend/routers/broadcast_relay/broadcast_relay.py
+    types: frontend/src/lib/api/types/broadcast-relay.ts
+    service: frontend/src/lib/api/broadcast-relay.ts
+    page: frontend/src/app/(default)/(app)/system/services/broadcast-relay/page.tsx
+    components: frontend/src/components/services/broadcast-relay/
+    feature_group: BROADCAST_RELAY
+
+  conntrack_sync:
+    mapper: backend/vyos_mappers/conntrack_sync/conntrack_sync.py
+    versions: backend/vyos_mappers/conntrack_sync/conntrack_sync_versions/
+    builder: backend/vyos_builders/conntrack_sync/conntrack_sync.py
+    router: backend/routers/conntrack_sync/conntrack_sync.py
+    types: frontend/src/lib/api/types/conntrack-sync.ts
+    service: frontend/src/lib/api/conntrack-sync.ts
+    page: frontend/src/app/(default)/(app)/system/services/conntrack-sync/page.tsx
+    components: frontend/src/components/services/conntrack-sync/
+    feature_group: CONNTRACK_SYNC
+
+  container:
+    mapper: backend/vyos_mappers/container/container.py
+    versions: backend/vyos_mappers/container/container_versions/
+    builder: backend/vyos_builders/container/container.py
+    router: backend/routers/container/container.py
+    types: frontend/src/lib/api/types/container.ts
+    service: frontend/src/lib/api/container.ts
+    page: frontend/src/app/(default)/(app)/containers/page.tsx
+    components: frontend/src/components/containers/
+    feature_group: CONTAINER
+
+  # === Other ===
+
+  high_availability:
+    mapper: backend/vyos_mappers/high_availability/high_availability.py
+    builder: backend/vyos_builders/high_availability/high_availability.py
+    router: backend/routers/high_availability/high_availability.py
+    service: frontend/src/lib/api/high-availability.ts
+    components: frontend/src/components/high-availability/
+    feature_group: HIGH_AVAILABILITY
+
+  load_balancing:
+    mapper: backend/vyos_mappers/load_balancing/load_balancing.py
+    builder: backend/vyos_builders/load_balancing/load_balancing.py
+    router: backend/routers/load_balancing/load_balancing.py
+    service: frontend/src/lib/api/load-balancing.ts
+    components: frontend/src/components/load-balancing/
+    feature_group: LOAD_BALANCING
+
+  wireguard:
+    mapper: backend/vyos_mappers/wireguard/wireguard.py
+    builder: backend/vyos_builders/wireguard/wireguard.py
+    router: backend/routers/wireguard/wireguard.py
+    service: frontend/src/lib/api/wireguard.ts
+    components: frontend/src/components/vpn/
+    feature_group: WIREGUARD
+
+  system:
+    mapper: backend/vyos_mappers/system/system.py
+    builder: backend/vyos_builders/system/system.py
+    router: backend/routers/system/system.py
+    service: frontend/src/lib/api/system-settings.ts
+    page: frontend/src/app/(default)/(app)/system/settings/page.tsx
+    components: frontend/src/components/system/settings/
+    feature_group: SYSTEM
+
+# === System Routers (non-feature) ===
+
+system_routers:
+  config:
+    router: backend/routers/config/config.py
+    purpose: "Config cache management, refresh endpoint"
+  monitoring:
+    router: backend/routers/monitoring/monitoring.py
+    purpose: "SSE dashboard, WebSocket monitoring, SSH bridge"
+  session:
+    router: backend/routers/session/session.py
+    purpose: "VyOS instance connection management, auto-provisioning"
+  terminal:
+    router: backend/routers/terminal/terminal.py
+    purpose: "WebSocket SSH terminal"
+
+# === Infrastructure Modules (non-feature, non-router) ===
+
+infrastructure:
+  provisioning:
+    module: backend/provisioning.py
+    purpose: "SSH-based auto-provisioning of VyOS API keys and SSH keys during instance creation"
+    integrates_with: backend/routers/session/session.py
+    depends_on:
+      - backend/ssh_key_manager.py  # Ed25519 keypair generation + encryption
+    frontend_integration:
+      - frontend/src/lib/api/session.ts  # ProvisioningResult type, provisionInstance method
+      - frontend/src/components/sites/CreateInstanceModal.tsx  # Auto-provisioning UI section
+
+# === Registration Files ===
+# These shared files must be updated when adding any new feature:
+
+registration:
+  mapper_registry: backend/vyos_mappers/__init__.py
+  builder_exports: backend/vyos_builders/__init__.py
+  router_inclusion: backend/app.py
+  rbac_backend: backend/rbac_permissions.py
+  rbac_frontend: frontend/src/lib/api/user-management.ts
+  services_layout: frontend/src/app/(default)/(app)/system/services/layout.tsx

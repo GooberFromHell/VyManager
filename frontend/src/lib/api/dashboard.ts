@@ -8,9 +8,10 @@ import { VyOSResponse } from "@/lib/types/api";
 export interface DashboardCard {
   id: string;
   type: string; // "interface-statistics", etc.
-  column: number; // 0, 1, or 2
-  position: number; // position within column
-  span?: number; // how many columns this card spans (1, 2, or 3) - defaults to 1
+  column: number; // 0-11 in 12-column grid
+  position: number; // row position within grid
+  span?: number; // how many columns this card spans (3, 4, 6, 8, or 12) - defaults to 4
+  height?: number; // row height multiplier (1, 2, or 3) - defaults to 2
   config?: Record<string, any>; // card-specific configuration
 }
 

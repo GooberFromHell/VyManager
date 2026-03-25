@@ -1,0 +1,50 @@
+# DERPO Goal Contract
+# Auto-Provisioning of VyOS Router Instances
+
+# Human-readable goal statement
+goal: "When a user creates a new VyOS router instance in VyManager, automatically provision the API key and SSH private key on the VyOS device using SSH with username/password credentials provided during instance creation. This eliminates the manual step of pre-configuring the VyOS API and SSH keys before adding the router to VyManager."
+
+# What areas of the codebase are in scope
+scope:
+  include:
+    - "backend/routers/**"          # Instance creation endpoint
+    - "backend/middleware/**"        # Session/auth context
+    - "backend/pyvyos/**"           # VyOS SSH/API SDK
+    - "frontend/src/components/sites/**"  # CreateInstanceModal, EditInstanceModal
+    - "frontend/src/lib/api/**"     # API service for instances
+    - "frontend/prisma/**"          # Schema if credential fields needed
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+# Hard constraints the implementation must follow
+constraints:
+  - "Must follow existing architecture patterns (see CLAUDE.md)"
+  - "No new dependencies without user approval"
+  - "SSH credentials (username/password) must NEVER be persisted — used only during provisioning then discarded"
+  - "Generated API key and SSH private key must be stored securely using existing encryption (SSH_ENCRYPTION_KEY)"
+  - "Must handle provisioning failures gracefully — instance should still be created even if auto-provisioning fails, with clear error feedback"
+  - "Must work with VyOS 1.4 and 1.5"
+
+# Objectively verifiable conditions for goal completion
+acceptance_criteria:
+  - "CreateInstanceModal has optional SSH username/password fields for auto-provisioning"
+  - "Backend endpoint accepts provisioning credentials and attempts auto-setup"
+  - "API key is generated and configured on the VyOS device via SSH"
+  - "SSH key pair is generated, public key deployed to VyOS device, private key stored encrypted"
+  - "Provisioning status/errors are reported back to the frontend"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes (npm run lint)"
+
+# When to pause and ask the user for approval
+human_checkpoints:
+  - after: evaluate    # approve approach before building plan
+  - after: resolve     # approve plan before execution
+
+# How many Observe→Produce loops before forcing human review
+max_iterations: 3
+
+# Priority context
+context: "This is a key UX improvement — currently users must manually SSH into VyOS, configure the HTTP API, generate an API key, and set up SSH keys before they can add the router to VyManager. This automates that entire bootstrap process."

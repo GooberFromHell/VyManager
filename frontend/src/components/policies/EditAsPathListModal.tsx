@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { asPathListService, type AsPathList } from "@/lib/api/as-path-list";
 
 interface EditAsPathListModalProps {
@@ -71,17 +71,18 @@ export function EditAsPathListModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Optional description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={loading}
-              rows={3}
-            />
-          </div>
+          <Fieldset>
+            <FormField label="Description" htmlFor="description">
+              <Textarea
+                id="description"
+                placeholder="Optional description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+                rows={3}
+              />
+            </FormField>
+          </Fieldset>
 
           {error && (
             <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">

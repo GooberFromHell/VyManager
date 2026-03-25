@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -211,10 +211,13 @@ export function AddLeaseToStaticMappingModal({
           </div>
 
           {/* Subnet Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="subnet">Subnet</Label>
+          <FormField
+            label="Subnet"
+            htmlFor="subnet"
+            description="Select the subnet where this static mapping will be created"
+          >
             <Select value={selectedSubnet} onValueChange={setSelectedSubnet}>
-              <SelectTrigger>
+              <SelectTrigger id="subnet">
                 <SelectValue placeholder="Select a subnet" />
               </SelectTrigger>
               <SelectContent>
@@ -225,42 +228,42 @@ export function AddLeaseToStaticMappingModal({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Select the subnet where this static mapping will be created
-            </p>
-          </div>
+          </FormField>
 
           {/* Mapping Name */}
-          <div className="space-y-2">
-            <Label htmlFor="mapping-name">Mapping Name</Label>
+          <FormField
+            label="Mapping Name"
+            htmlFor="mapping-name"
+            description="A unique identifier for this mapping (letters, numbers, hyphens, underscores)"
+          >
             <Input
               id="mapping-name"
               placeholder="e.g., desktop-pc"
               value={mappingName}
               onChange={(e) => setMappingName(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              A unique identifier for this mapping (letters, numbers, hyphens, underscores)
-            </p>
-          </div>
+          </FormField>
 
           {/* IP Address */}
-          <div className="space-y-2">
-            <Label htmlFor="ip-address">IP Address</Label>
+          <FormField
+            label="IP Address"
+            htmlFor="ip-address"
+            description="The IP address to reserve for this device"
+          >
             <Input
               id="ip-address"
               placeholder="e.g., 192.168.1.100"
               value={ipAddress}
               onChange={(e) => setIpAddress(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              The IP address to reserve for this device
-            </p>
-          </div>
+          </FormField>
 
           {/* MAC Address */}
-          <div className="space-y-2">
-            <Label htmlFor="mac-address">MAC Address</Label>
+          <FormField
+            label="MAC Address"
+            htmlFor="mac-address"
+            description="The MAC address of the device (format: XX:XX:XX:XX:XX:XX)"
+          >
             <Input
               id="mac-address"
               placeholder="e.g., aa:bb:cc:dd:ee:ff"
@@ -268,10 +271,7 @@ export function AddLeaseToStaticMappingModal({
               onChange={(e) => setMacAddress(e.target.value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              The MAC address of the device (format: XX:XX:XX:XX:XX:XX)
-            </p>
-          </div>
+          </FormField>
 
           {/* Error Display */}
           {error && (

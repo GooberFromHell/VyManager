@@ -90,7 +90,7 @@ export function SyslogPanel({ config, capabilities, isReadOnly, onRefresh }: Pro
         onRefresh();
       }
     } catch {
-      setLocalError("An unexpected error occurred");
+      setLocalError("Something went wrong. Please try again.");
     } finally {
       setLocalSaving(false);
     }
@@ -109,7 +109,7 @@ export function SyslogPanel({ config, capabilities, isReadOnly, onRefresh }: Pro
         onRefresh();
       }
     } catch {
-      setConsoleError("An unexpected error occurred");
+      setConsoleError("Something went wrong. Please try again.");
     } finally {
       setConsoleSaving(false);
     }
@@ -127,7 +127,7 @@ export function SyslogPanel({ config, capabilities, isReadOnly, onRefresh }: Pro
         onRefresh();
       }
     } catch {
-      toast.error("Delete failed", "An unexpected error occurred");
+      toast.error("Delete failed", "Something went wrong. Please try again.");
     } finally {
       setDeletingRemote(false);
       setDeleteRemoteTarget(null);

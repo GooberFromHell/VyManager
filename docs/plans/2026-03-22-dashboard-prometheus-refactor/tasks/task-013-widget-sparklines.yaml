@@ -1,0 +1,68 @@
+id: "task-013"
+title: "Create PrometheusInterfaceSparklines widget"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005", "task-006", "task-008"]
+blocks: ["task-015"]
+parallel_with: ["task-010", "task-011", "task-012", "task-014"]
+
+files:
+  create:
+    - "frontend/src/components/dashboard/widgets/PrometheusInterfaceSparklines.tsx"
+  modify:
+    - "frontend/src/components/dashboard/widget-registry.ts"
+
+context_files:
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/dashboard/WidgetShell.tsx"
+  - "frontend/src/components/dashboard/NetworkSpeedCard.tsx"
+  - "frontend/src/hooks/usePrometheusData.ts"
+
+instructions: |
+  Create a grid of small sparkline charts, one per interface, showing throughput over time.
+
+  ## Component: PrometheusInterfaceSparklines.tsx
+
+  - Subscribe to: `net_bytes_recv`, `net_bytes_sent` (or equivalent Telegraf interface metrics)
+  - Calculate rate (bytes/sec) from counter deltas
+  - Render a CSS grid of small cards, each containing:
+    - Interface name (monospace, small)
+    - Tiny Recharts AreaChart (~120px wide, ~40px tall) showing RX/TX rates
+    - Current speed value below the sparkline
+  - Grid auto-fills based on container width (repeat(auto-fill, minmax(160px, 1fr)))
+  - Sort interfaces by name or by traffic volume
+  - Highlight interfaces with traffic above a threshold
+  - Empty interfaces shown dimmed
+
+  Config panel: interfaces to include/exclude, time window, sort order
+
+  ## Register
+
+  ```typescript
+  registerWidget({
+    type: "prometheus-interface-sparklines",
+    name: "Interface Sparklines",
+    description: "Grid of mini charts showing per-interface throughput",
+    icon: Activity,
+    component: PrometheusInterfaceSparklines,
+    defaultConfig: { timeWindow: 300000, sortBy: "name", refreshInterval: 5000 },
+    defaultSpan: 6,
+    defaultHeight: 2,
+    dataSource: "prometheus",
+  });
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/widgets/PrometheusInterfaceSparklines.tsx"
+  - "Grep match: 'prometheus-interface-sparklines' in frontend/src/components/dashboard/widget-registry.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

@@ -1,0 +1,36 @@
+id: "task-001"
+title: "Add proxyHostId to Site model + create migration"
+archetype: null
+phase: produce
+execution_phase: 1
+agent: "general-purpose"
+status: not_started
+depends_on: []
+blocks: ["task-004"]
+parallel_with: []
+files:
+  create: []
+  modify:
+    - frontend/prisma/schema.prisma
+context_files:
+  - frontend/prisma/schema.prisma
+instructions: |
+  1. Read `frontend/prisma/schema.prisma` and find the `Site` model
+  2. Add a nullable field `proxyHostId String?` to the Site model
+  3. Add a relation: `proxyHost Instance? @relation("SiteProxyHost", fields: [proxyHostId], references: [id], onDelete: SetNull)`
+  4. On the `Instance` model, add the back-relation: `proxiedSites Site[] @relation("SiteProxyHost")`
+  5. Run: `cd frontend && npx prisma migrate dev --name add_site_proxy_host`
+  6. Run: `cd frontend && npx prisma generate`
+  7. Verify the migration was created successfully
+acceptance_criteria:
+  - "Grep match: 'proxyHostId' in frontend/prisma/schema.prisma"
+  - "Grep match: 'SiteProxyHost' in frontend/prisma/schema.prisma"
+  - "Glob match: frontend/prisma/migrations/*add_site_proxy_host/migration.sql exists"
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

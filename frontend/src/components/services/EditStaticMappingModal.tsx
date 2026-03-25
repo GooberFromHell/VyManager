@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Monitor, Network } from "lucide-react";
@@ -170,41 +170,37 @@ export function EditStaticMappingModal({
           </div>
 
           {/* Mapping Name (Read-only) */}
-          <div className="space-y-2">
-            <Label>Mapping Name</Label>
+          <FormField label="Mapping Name" description="The mapping name cannot be changed">
             <Input value={mapping.name} disabled className="bg-muted" />
-            <p className="text-xs text-muted-foreground">
-              The mapping name cannot be changed
-            </p>
-          </div>
+          </FormField>
 
           {/* IP Address */}
-          <div className="space-y-2">
-            <Label htmlFor="ip-address">IP Address</Label>
+          <FormField
+            label="IP Address"
+            htmlFor="ip-address"
+            description="The IP address to assign to this device"
+          >
             <Input
               id="ip-address"
               placeholder="e.g., 192.168.1.100"
               value={ipAddress}
               onChange={(e) => setIpAddress(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              The IP address to assign to this device
-            </p>
-          </div>
+          </FormField>
 
           {/* MAC Address */}
-          <div className="space-y-2">
-            <Label htmlFor="mac-address">MAC Address</Label>
+          <FormField
+            label="MAC Address"
+            htmlFor="mac-address"
+            description="The MAC address of the device (format: XX:XX:XX:XX:XX:XX)"
+          >
             <Input
               id="mac-address"
               placeholder="e.g., aa:bb:cc:dd:ee:ff"
               value={macAddress}
               onChange={(e) => setMacAddress(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
-              The MAC address of the device (format: XX:XX:XX:XX:XX:XX)
-            </p>
-          </div>
+          </FormField>
 
           {/* Disabled Toggle */}
           <div className="flex items-center gap-3 rounded-lg border p-4">
@@ -214,7 +210,7 @@ export function EditStaticMappingModal({
               onCheckedChange={(checked) => setDisabled(checked === true)}
             />
             <div className="space-y-0.5">
-              <Label htmlFor="disabled" className="cursor-pointer">Disable Mapping</Label>
+              <label htmlFor="disabled" className="text-sm font-medium cursor-pointer">Disable Mapping</label>
               <p className="text-xs text-muted-foreground">
                 When disabled, this mapping will not assign the IP to the device
               </p>

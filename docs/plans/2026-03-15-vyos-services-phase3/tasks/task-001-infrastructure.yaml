@@ -1,0 +1,76 @@
+id: "task-001"
+title: "Infrastructure — FeatureGroup entries + services layout"
+phase: produce
+agent: general-purpose
+status: not_started
+depends_on: []
+blocks: ["task-002", "task-003", "task-004", "task-005", "task-006", "task-007", "task-008", "task-009"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "backend/rbac_permissions.py"
+    - "frontend/src/lib/api/user-management.ts"
+
+context_files:
+  - "backend/rbac_permissions.py"
+  - "frontend/src/lib/api/user-management.ts"
+
+instructions: |
+  Add FeatureGroup entries for the 4 Phase 3 services. This is a cross-cutting prerequisite — all
+  subsequent tasks depend on these entries existing.
+
+  ## Step 1: Backend FeatureGroup enum (backend/rbac_permissions.py)
+
+  Read the file first. Find the `FeatureGroup(str, Enum)` class and add these 4 entries following
+  the existing naming convention (look at how DNS_FORWARDING, NTP, SSH, DHCP_RELAY, etc. are defined):
+
+  ```python
+  ROUTER_ADVERT = "ROUTER_ADVERT"
+  TFTP_SERVER = "TFTP_SERVER"
+  BROADCAST_RELAY = "BROADCAST_RELAY"
+  CONNTRACK_SYNC = "CONNTRACK_SYNC"
+  ```
+
+  Then find ALL places where existing service FeatureGroups are referenced and add entries for the 4 new ones:
+
+  1. `BUILT_IN_PERMISSIONS[BuiltInRole.ADMIN]` — add all 4 with `PermissionLevel.WRITE`
+  2. `BUILT_IN_PERMISSIONS[BuiltInRole.OPERATOR]` — add all 4 with `PermissionLevel.WRITE`
+  3. `BUILT_IN_PERMISSIONS[BuiltInRole.VIEWER]` — add all 4 with `PermissionLevel.READ`
+  4. The `all_features` list in `get_user_permissions()` for site ADMIN — add all 4
+  5. The `vyos_features` list in `get_user_permissions()` for instance ADMIN — add all 4
+
+  Follow the EXACT pattern of existing services (DNS_FORWARDING, NTP, SSH, etc.).
+
+  ## Step 2: Frontend FeatureGroup enum (frontend/src/lib/api/user-management.ts)
+
+  Read the file. Find the TypeScript `FeatureGroup` enum and add matching entries:
+
+  ```typescript
+  ROUTER_ADVERT = "ROUTER_ADVERT",
+  TFTP_SERVER = "TFTP_SERVER",
+  BROADCAST_RELAY = "BROADCAST_RELAY",
+  CONNTRACK_SYNC = "CONNTRACK_SYNC",
+  ```
+
+  Follow the exact pattern of existing entries.
+
+acceptance_criteria:
+  - "Grep match: 'ROUTER_ADVERT' in backend/rbac_permissions.py"
+  - "Grep match: 'TFTP_SERVER' in backend/rbac_permissions.py"
+  - "Grep match: 'BROADCAST_RELAY' in backend/rbac_permissions.py"
+  - "Grep match: 'CONNTRACK_SYNC' in backend/rbac_permissions.py"
+  - "Grep match: 'ROUTER_ADVERT' in frontend/src/lib/api/user-management.ts"
+  - "Grep match: 'TFTP_SERVER' in frontend/src/lib/api/user-management.ts"
+  - "Grep match: 'BROADCAST_RELAY' in frontend/src/lib/api/user-management.ts"
+  - "Grep match: 'CONNTRACK_SYNC' in frontend/src/lib/api/user-management.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

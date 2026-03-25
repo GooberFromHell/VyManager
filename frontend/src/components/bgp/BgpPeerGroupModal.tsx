@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -405,352 +405,244 @@ export function BgpPeerGroupModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
-            {/* ============================================================ */}
+          <div className="space-y-4 pb-2">
             {/* Section 1: Basic Settings */}
-            {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Basic Settings</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                {/* Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-name">
-                    Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="bgp-pg-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. MY-PEERS"
-                    disabled={isEditMode}
-                    className={isEditMode ? "bg-muted" : ""}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Unique name for this BGP peer group.
-                  </p>
-                </div>
+            <Fieldset label="Basic Settings">
+              <FormField
+                label="Name"
+                htmlFor="bgp-pg-name"
+                description="Unique name for this BGP peer group."
+                required={!isEditMode}
+              >
+                <Input
+                  id="bgp-pg-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. MY-PEERS"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                />
+              </FormField>
 
-                {/* Remote AS */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-remote-as">Remote AS</Label>
-                  <Input
-                    id="bgp-pg-remote-as"
-                    value={remoteAs}
-                    onChange={(e) => setRemoteAs(e.target.value)}
-                    placeholder="e.g. 65001 or external or internal"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Remote AS number, or &quot;external&quot; /
-                    &quot;internal&quot;.
-                  </p>
-                </div>
+              <FormField
+                label="Remote AS"
+                htmlFor="bgp-pg-remote-as"
+                description={`Remote AS number, or "external" / "internal".`}
+              >
+                <Input
+                  id="bgp-pg-remote-as"
+                  value={remoteAs}
+                  onChange={(e) => setRemoteAs(e.target.value)}
+                  placeholder="e.g. 65001 or external or internal"
+                />
+              </FormField>
 
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-description">Description</Label>
-                  <Input
-                    id="bgp-pg-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Peer group description"
-                  />
-                </div>
+              <FormField
+                label="Description"
+                htmlFor="bgp-pg-description"
+              >
+                <Input
+                  id="bgp-pg-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Peer group description"
+                />
+              </FormField>
 
-                {/* Update Source */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-update-source">Update Source</Label>
-                  <Input
-                    id="bgp-pg-update-source"
-                    value={updateSource}
-                    onChange={(e) => setUpdateSource(e.target.value)}
-                    placeholder="e.g. eth0 or 192.0.2.1"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Source interface or address for BGP sessions.
-                  </p>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="Update Source"
+                htmlFor="bgp-pg-update-source"
+                description="Source interface or address for BGP sessions."
+              >
+                <Input
+                  id="bgp-pg-update-source"
+                  value={updateSource}
+                  onChange={(e) => setUpdateSource(e.target.value)}
+                  placeholder="e.g. eth0 or 192.0.2.1"
+                />
+              </FormField>
+            </Fieldset>
 
-            {/* ============================================================ */}
+            <FieldsetDivider />
+
             {/* Section 2: Status & Options */}
-            {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Status &amp; Options</h4>
-              <div className="space-y-3 rounded-lg border p-3">
-                {/* Shutdown */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-shutdown"
-                    checked={shutdown}
-                    onCheckedChange={(checked) =>
-                      setShutdown(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-shutdown"
-                      className="cursor-pointer text-destructive"
-                    >
-                      Shutdown
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Administratively disable this peer group.
-                    </p>
-                  </div>
-                </div>
+            <Fieldset label="Status and Options">
+              <FormField
+                label="Shutdown"
+                htmlFor="bgp-pg-shutdown"
+                description="Administratively disable this peer group."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-shutdown"
+                  checked={shutdown}
+                  onCheckedChange={(checked) => setShutdown(checked === true)}
+                />
+              </FormField>
 
-                {/* Passive */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-passive"
-                    checked={passive}
-                    onCheckedChange={(checked) =>
-                      setPassive(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-passive"
-                      className="cursor-pointer"
-                    >
-                      Passive
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Do not initiate BGP connections to peers in this group.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Passive"
+                htmlFor="bgp-pg-passive"
+                description="Do not initiate BGP connections to peers in this group."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-passive"
+                  checked={passive}
+                  onCheckedChange={(checked) => setPassive(checked === true)}
+                />
+              </FormField>
 
-                {/* Override Capability */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-override-capability"
-                    checked={overrideCapability}
-                    onCheckedChange={(checked) =>
-                      setOverrideCapability(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-override-capability"
-                      className="cursor-pointer"
-                    >
-                      Override Capability
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Override capability negotiation result.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Override Capability"
+                htmlFor="bgp-pg-override-capability"
+                description="Override capability negotiation result."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-override-capability"
+                  checked={overrideCapability}
+                  onCheckedChange={(checked) => setOverrideCapability(checked === true)}
+                />
+              </FormField>
 
-                {/* Disable Capability Negotiation */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-disable-cap-neg"
-                    checked={disableCapabilityNegotiation}
-                    onCheckedChange={(checked) =>
-                      setDisableCapabilityNegotiation(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-disable-cap-neg"
-                      className="cursor-pointer"
-                    >
-                      Disable Capability Negotiation
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Suppress sending capability negotiation as OPEN message.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Disable Capability Negotiation"
+                htmlFor="bgp-pg-disable-cap-neg"
+                description="Suppress sending capability negotiation as OPEN message."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-disable-cap-neg"
+                  checked={disableCapabilityNegotiation}
+                  onCheckedChange={(checked) => setDisableCapabilityNegotiation(checked === true)}
+                />
+              </FormField>
 
-                {/* Disable Connected Check */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-disable-conn-check"
-                    checked={disableConnectedCheck}
-                    onCheckedChange={(checked) =>
-                      setDisableConnectedCheck(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-disable-conn-check"
-                      className="cursor-pointer"
-                    >
-                      Disable Connected Check
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Allow peerings between directly connected eBGP peers
-                      using loopback addresses.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="Disable Connected Check"
+                htmlFor="bgp-pg-disable-conn-check"
+                description="Allow peerings between directly connected eBGP peers using loopback addresses."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-disable-conn-check"
+                  checked={disableConnectedCheck}
+                  onCheckedChange={(checked) => setDisableConnectedCheck(checked === true)}
+                />
+              </FormField>
+            </Fieldset>
 
-            {/* ============================================================ */}
+            <FieldsetDivider />
+
             {/* Section 3: BFD */}
-            {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">BFD</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                {/* Enable BFD */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-bfd-enabled"
-                    checked={bfdEnabled}
-                    onCheckedChange={(checked) =>
-                      setBfdEnabled(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-bfd-enabled"
-                      className="cursor-pointer"
+            <Fieldset label="BFD (Bidirectional Forwarding Detection)">
+              <FormField
+                label="Enable BFD"
+                htmlFor="bgp-pg-bfd-enabled"
+                description="Enable Bidirectional Forwarding Detection for this peer group."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-bfd-enabled"
+                  checked={bfdEnabled}
+                  onCheckedChange={(checked) => setBfdEnabled(checked === true)}
+                />
+              </FormField>
+
+              {bfdEnabled && (
+                <>
+                  <FormField
+                    label="Check Control Plane Failure"
+                    htmlFor="bgp-pg-bfd-ccpf"
+                    description="Trigger session down on control plane independent failure."
+                    horizontal
+                  >
+                    <Checkbox
+                      id="bgp-pg-bfd-ccpf"
+                      checked={bfdCheckControlPlaneFailure}
+                      onCheckedChange={(checked) => setBfdCheckControlPlaneFailure(checked === true)}
+                    />
+                  </FormField>
+
+                  <FormField
+                    label="BFD Profile"
+                    htmlFor="bgp-pg-bfd-profile"
+                    description="BFD profile to apply to this peer group."
+                  >
+                    <Select
+                      value={bfdProfile || "__none__"}
+                      onValueChange={(v) => setBfdProfile(v === "__none__" ? "" : v)}
                     >
-                      Enable BFD
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enable Bidirectional Forwarding Detection for this peer
-                      group.
-                    </p>
-                  </div>
-                </div>
+                      <SelectTrigger id="bgp-pg-bfd-profile">
+                        <SelectValue placeholder="None" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {bfdProfileNames.map((n) => (
+                          <SelectItem key={n} value={n}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </>
+              )}
+            </Fieldset>
 
-                {bfdEnabled && (
-                  <>
-                    {/* Check Control Plane Failure */}
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="bgp-pg-bfd-ccpf"
-                        checked={bfdCheckControlPlaneFailure}
-                        onCheckedChange={(checked) =>
-                          setBfdCheckControlPlaneFailure(checked === true)
-                        }
-                      />
-                      <div className="flex-1">
-                        <Label
-                          htmlFor="bgp-pg-bfd-ccpf"
-                          className="cursor-pointer"
-                        >
-                          Check Control Plane Failure
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          Trigger session down on control plane independent
-                          failure.
-                        </p>
-                      </div>
-                    </div>
+            <FieldsetDivider />
 
-                    {/* BFD Profile */}
-                    <div className="space-y-2">
-                      <Label>BFD Profile</Label>
-                      <Select value={bfdProfile || "__none__"} onValueChange={(v) => setBfdProfile(v === "__none__" ? "" : v)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="None" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {bfdProfileNames.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        BFD profile to apply to this peer group.
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* ============================================================ */}
             {/* Section 4: Capability */}
-            {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Capability</h4>
-              <div className="space-y-3 rounded-lg border p-3">
-                {/* Dynamic */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-cap-dynamic"
-                    checked={capDynamic}
-                    onCheckedChange={(checked) =>
-                      setCapDynamic(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-cap-dynamic"
-                      className="cursor-pointer"
-                    >
-                      Dynamic
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Advertise dynamic capability to this peer group.
-                    </p>
-                  </div>
-                </div>
+            <Fieldset label="Capability">
+              <FormField
+                label="Dynamic"
+                htmlFor="bgp-pg-cap-dynamic"
+                description="Advertise dynamic capability to this peer group."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-cap-dynamic"
+                  checked={capDynamic}
+                  onCheckedChange={(checked) => setCapDynamic(checked === true)}
+                />
+              </FormField>
 
-                {/* Extended Nexthop */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-cap-extended-nexthop"
-                    checked={capExtendedNexthop}
-                    onCheckedChange={(checked) =>
-                      setCapExtendedNexthop(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-cap-extended-nexthop"
-                      className="cursor-pointer"
-                    >
-                      Extended Nexthop
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Advertise extended nexthop capability.
-                    </p>
-                  </div>
-                </div>
+              <FormField
+                label="Extended Nexthop"
+                htmlFor="bgp-pg-cap-extended-nexthop"
+                description="Advertise extended nexthop capability."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-cap-extended-nexthop"
+                  checked={capExtendedNexthop}
+                  onCheckedChange={(checked) => setCapExtendedNexthop(checked === true)}
+                />
+              </FormField>
 
-                {/* Software Version */}
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="bgp-pg-cap-software-version"
-                    checked={capSoftwareVersion}
-                    onCheckedChange={(checked) =>
-                      setCapSoftwareVersion(checked === true)
-                    }
-                  />
-                  <div className="flex-1">
-                    <Label
-                      htmlFor="bgp-pg-cap-software-version"
-                      className="cursor-pointer"
-                    >
-                      Software Version
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Advertise software version capability.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <FormField
+                label="Software Version"
+                htmlFor="bgp-pg-cap-software-version"
+                description="Advertise software version capability."
+                horizontal
+              >
+                <Checkbox
+                  id="bgp-pg-cap-software-version"
+                  checked={capSoftwareVersion}
+                  onCheckedChange={(checked) => setCapSoftwareVersion(checked === true)}
+                />
+              </FormField>
+            </Fieldset>
 
-            {/* ============================================================ */}
+            <FieldsetDivider />
+
             {/* Section 5: Advanced */}
-            {/* ============================================================ */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Advanced</h4>
-              <div className="space-y-4 rounded-lg border p-3">
-                {/* eBGP Multihop */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-ebgp-multihop">eBGP Multihop</Label>
+            <Fieldset label="Advanced">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="eBGP Multihop"
+                  htmlFor="bgp-pg-ebgp-multihop"
+                  description="Maximum hops for eBGP neighbors (1-255)."
+                >
                   <Input
                     id="bgp-pg-ebgp-multihop"
                     type="number"
@@ -760,16 +652,13 @@ export function BgpPeerGroupModal({
                     min={1}
                     max={255}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Maximum number of hops for eBGP neighbors (1-255).
-                  </p>
-                </div>
+                </FormField>
 
-                {/* TTL Security Hops */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-ttl-security">
-                    TTL Security Hops
-                  </Label>
+                <FormField
+                  label="TTL Security Hops"
+                  htmlFor="bgp-pg-ttl-security"
+                  description="Enforce TTL security hops value (1-254)."
+                >
                   <Input
                     id="bgp-pg-ttl-security"
                     type="number"
@@ -779,206 +668,144 @@ export function BgpPeerGroupModal({
                     min={1}
                     max={254}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Enforce TTL security hops value (1-254).
-                  </p>
-                </div>
-
-                {/* Password */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-password">Password</Label>
-                  <Input
-                    id="bgp-pg-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="MD5 authentication password"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    BGP MD5 authentication password.
-                  </p>
-                </div>
-
-                {/* Graceful Restart */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-graceful-restart">
-                    Graceful Restart
-                  </Label>
-                  <Select
-                    value={gracefulRestart}
-                    onValueChange={setGracefulRestart}
-                  >
-                    <SelectTrigger id="bgp-pg-graceful-restart">
-                      <SelectValue placeholder="Select graceful restart mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      <SelectItem value="enable">Enable</SelectItem>
-                      <SelectItem value="disable">Disable</SelectItem>
-                      <SelectItem value="restart">Restart</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Configure graceful restart for this peer group.
-                  </p>
-                </div>
-
-                {/* Local AS */}
-                <div className="space-y-2">
-                  <Label htmlFor="bgp-pg-local-as">Local AS Number</Label>
-                  <Input
-                    id="bgp-pg-local-as"
-                    value={localAsAsn}
-                    onChange={(e) => setLocalAsAsn(e.target.value)}
-                    placeholder="e.g. 65100"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Alternate local AS number advertised to this peer group.
-                  </p>
-                </div>
-
-                {/* No Prepend Replace AS - shown when Local AS is set */}
-                {localAsAsn.trim() && (
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="bgp-pg-local-as-no-prepend"
-                      checked={localAsNoPrependReplaceAs}
-                      onCheckedChange={(checked) =>
-                        setLocalAsNoPrependReplaceAs(checked === true)
-                      }
-                    />
-                    <div className="flex-1">
-                      <Label
-                        htmlFor="bgp-pg-local-as-no-prepend"
-                        className="cursor-pointer"
-                      >
-                        No Prepend Replace AS
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Do not prepend local AS to updates from this peer
-                        group and replace AS in outgoing updates.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Local Role - only if capabilities support it */}
-                {capabilities?.features.local_role.supported && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="bgp-pg-local-role">Local Role</Label>
-                      <Select
-                        value={localRole}
-                        onValueChange={setLocalRole}
-                      >
-                        <SelectTrigger id="bgp-pg-local-role">
-                          <SelectValue placeholder="Select local role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          <SelectItem value="provider">Provider</SelectItem>
-                          <SelectItem value="customer">Customer</SelectItem>
-                          <SelectItem value="rs-server">RS Server</SelectItem>
-                          <SelectItem value="rs-client">RS Client</SelectItem>
-                          <SelectItem value="peer">Peer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Set the local role for this peer group (RFC 9234).
-                      </p>
-                    </div>
-
-                    {/* Strict Mode - shown when Local Role is set */}
-                    {localRole !== "__none__" && (
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id="bgp-pg-local-role-strict"
-                          checked={localRoleStrict}
-                          onCheckedChange={(checked) =>
-                            setLocalRoleStrict(checked === true)
-                          }
-                        />
-                        <div className="flex-1">
-                          <Label
-                            htmlFor="bgp-pg-local-role-strict"
-                            className="cursor-pointer"
-                          >
-                            Strict Mode
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Require the peer to send the correct role; reject
-                            the session otherwise.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
+                </FormField>
               </div>
-            </div>
 
-            {/* ============================================================ */}
+              <FormField
+                label="Password"
+                htmlFor="bgp-pg-password"
+                description="BGP MD5 authentication password."
+              >
+                <Input
+                  id="bgp-pg-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="MD5 authentication password"
+                />
+              </FormField>
+
+              <FormField
+                label="Graceful Restart"
+                htmlFor="bgp-pg-graceful-restart"
+                description="Configure graceful restart for this peer group."
+              >
+                <Select value={gracefulRestart} onValueChange={setGracefulRestart}>
+                  <SelectTrigger id="bgp-pg-graceful-restart">
+                    <SelectValue placeholder="Select graceful restart mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    <SelectItem value="enable">Enable</SelectItem>
+                    <SelectItem value="disable">Disable</SelectItem>
+                    <SelectItem value="restart">Restart</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+
+              <FormField
+                label="Local AS Number"
+                htmlFor="bgp-pg-local-as"
+                description="Alternate local AS number advertised to this peer group."
+              >
+                <Input
+                  id="bgp-pg-local-as"
+                  value={localAsAsn}
+                  onChange={(e) => setLocalAsAsn(e.target.value)}
+                  placeholder="e.g. 65100"
+                />
+              </FormField>
+
+              {localAsAsn.trim() && (
+                <FormField
+                  label="No Prepend Replace AS"
+                  htmlFor="bgp-pg-local-as-no-prepend"
+                  description="Do not prepend local AS to updates from this peer group and replace AS in outgoing updates."
+                  horizontal
+                >
+                  <Checkbox
+                    id="bgp-pg-local-as-no-prepend"
+                    checked={localAsNoPrependReplaceAs}
+                    onCheckedChange={(checked) => setLocalAsNoPrependReplaceAs(checked === true)}
+                  />
+                </FormField>
+              )}
+
+              {capabilities?.features.local_role.supported && (
+                <>
+                  <FormField
+                    label="Local Role"
+                    htmlFor="bgp-pg-local-role"
+                    description="Set the local role for this peer group (RFC 9234)."
+                  >
+                    <Select value={localRole} onValueChange={setLocalRole}>
+                      <SelectTrigger id="bgp-pg-local-role">
+                        <SelectValue placeholder="Select local role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        <SelectItem value="provider">Provider</SelectItem>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="rs-server">RS Server</SelectItem>
+                        <SelectItem value="rs-client">RS Client</SelectItem>
+                        <SelectItem value="peer">Peer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  {localRole !== "__none__" && (
+                    <FormField
+                      label="Strict Mode"
+                      htmlFor="bgp-pg-local-role-strict"
+                      description="Require the peer to send the correct role; reject the session otherwise."
+                      horizontal
+                    >
+                      <Checkbox
+                        id="bgp-pg-local-role-strict"
+                        checked={localRoleStrict}
+                        onCheckedChange={(checked) => setLocalRoleStrict(checked === true)}
+                      />
+                    </FormField>
+                  )}
+                </>
+              )}
+            </Fieldset>
+
             {/* Section 6: Address Families */}
-            {/* ============================================================ */}
             {availableAFs.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium">Address Families</h4>
-                <div className="space-y-4 rounded-lg border p-3">
-                  {/* AFI selection checkboxes */}
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Select address families to enable for this peer group.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableAFs.map((afi) => (
-                        <div
-                          key={afi}
-                          className="flex items-center space-x-2"
-                        >
-                          <Checkbox
-                            id={`bgp-pg-af-${afi}`}
-                            checked={enabledAFs.has(afi)}
-                            onCheckedChange={(checked) =>
-                              toggleAF(afi, checked === true)
-                            }
-                          />
-                          <Label
-                            htmlFor={`bgp-pg-af-${afi}`}
-                            className="cursor-pointer text-sm"
-                          >
-                            {afi}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
+              <>
+                <FieldsetDivider />
+                <Fieldset label="Address Families">
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableAFs.map((afi) => (
+                      <FormField
+                        key={afi}
+                        label={afi}
+                        htmlFor={`bgp-pg-af-${afi}`}
+                        horizontal
+                      >
+                        <Checkbox
+                          id={`bgp-pg-af-${afi}`}
+                          checked={enabledAFs.has(afi)}
+                          onCheckedChange={(checked) => toggleAF(afi, checked === true)}
+                        />
+                      </FormField>
+                    ))}
                   </div>
 
-                  {/* Per-AFI configuration */}
                   {Array.from(enabledAFs).map((afi) => {
                     const af = afConfigs[afi] || defaultAfState();
                     return (
-                      <div
-                        key={afi}
-                        className="space-y-3 rounded-md border p-3"
-                      >
-                        <h5 className="text-sm font-medium">{afi}</h5>
-
-                        {/* Route Map Import / Export */}
+                      <Fieldset key={afi} label={afi}>
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor={`bgp-pg-af-${afi}-rm-import`}
-                            >
-                              Route Map Import
-                            </Label>
+                          <FormField
+                            label="Route Map Import"
+                            htmlFor={`bgp-pg-af-${afi}-rm-import`}
+                          >
                             <Select
                               value={af.route_map_import || "__none__"}
                               onValueChange={(v) =>
-                                updateAfConfig(
-                                  afi,
-                                  "route_map_import",
-                                  v === "__none__" ? "" : v
-                                )
+                                updateAfConfig(afi, "route_map_import", v === "__none__" ? "" : v)
                               }
                             >
                               <SelectTrigger id={`bgp-pg-af-${afi}-rm-import`}>
@@ -986,27 +813,21 @@ export function BgpPeerGroupModal({
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="__none__">None</SelectItem>
-                                {routeMapNames.map((name) => (
-                                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                                {routeMapNames.map((n) => (
+                                  <SelectItem key={n} value={n}>{n}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
+                          </FormField>
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor={`bgp-pg-af-${afi}-rm-export`}
-                            >
-                              Route Map Export
-                            </Label>
+                          <FormField
+                            label="Route Map Export"
+                            htmlFor={`bgp-pg-af-${afi}-rm-export`}
+                          >
                             <Select
                               value={af.route_map_export || "__none__"}
                               onValueChange={(v) =>
-                                updateAfConfig(
-                                  afi,
-                                  "route_map_export",
-                                  v === "__none__" ? "" : v
-                                )
+                                updateAfConfig(afi, "route_map_export", v === "__none__" ? "" : v)
                               }
                             >
                               <SelectTrigger id={`bgp-pg-af-${afi}-rm-export`}>
@@ -1014,81 +835,60 @@ export function BgpPeerGroupModal({
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="__none__">None</SelectItem>
-                                {routeMapNames.map((name) => (
-                                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                                {routeMapNames.map((n) => (
+                                  <SelectItem key={n} value={n}>{n}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
+                          </FormField>
                         </div>
 
-                        {/* Boolean toggles */}
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              id={`bgp-pg-af-${afi}-soft-reconfig`}
-                              checked={af.soft_reconfiguration_inbound}
-                              onCheckedChange={(checked) =>
-                                updateAfConfig(
-                                  afi,
-                                  "soft_reconfiguration_inbound",
-                                  checked === true
-                                )
-                              }
-                            />
-                            <Label
-                              htmlFor={`bgp-pg-af-${afi}-soft-reconfig`}
-                              className="cursor-pointer text-sm"
-                            >
-                              Soft Reconfiguration Inbound
-                            </Label>
-                          </div>
+                        <FormField
+                          label="Soft Reconfiguration Inbound"
+                          htmlFor={`bgp-pg-af-${afi}-soft-reconfig`}
+                          horizontal
+                        >
+                          <Checkbox
+                            id={`bgp-pg-af-${afi}-soft-reconfig`}
+                            checked={af.soft_reconfiguration_inbound}
+                            onCheckedChange={(checked) =>
+                              updateAfConfig(afi, "soft_reconfiguration_inbound", checked === true)
+                            }
+                          />
+                        </FormField>
 
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              id={`bgp-pg-af-${afi}-nexthop-self`}
-                              checked={af.nexthop_self}
-                              onCheckedChange={(checked) =>
-                                updateAfConfig(
-                                  afi,
-                                  "nexthop_self",
-                                  checked === true
-                                )
-                              }
-                            />
-                            <Label
-                              htmlFor={`bgp-pg-af-${afi}-nexthop-self`}
-                              className="cursor-pointer text-sm"
-                            >
-                              Nexthop Self
-                            </Label>
-                          </div>
+                        <FormField
+                          label="Nexthop Self"
+                          htmlFor={`bgp-pg-af-${afi}-nexthop-self`}
+                          horizontal
+                        >
+                          <Checkbox
+                            id={`bgp-pg-af-${afi}-nexthop-self`}
+                            checked={af.nexthop_self}
+                            onCheckedChange={(checked) =>
+                              updateAfConfig(afi, "nexthop_self", checked === true)
+                            }
+                          />
+                        </FormField>
 
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              id={`bgp-pg-af-${afi}-rr-client`}
-                              checked={af.route_reflector_client}
-                              onCheckedChange={(checked) =>
-                                updateAfConfig(
-                                  afi,
-                                  "route_reflector_client",
-                                  checked === true
-                                )
-                              }
-                            />
-                            <Label
-                              htmlFor={`bgp-pg-af-${afi}-rr-client`}
-                              className="cursor-pointer text-sm"
-                            >
-                              Route Reflector Client
-                            </Label>
-                          </div>
-                        </div>
-                      </div>
+                        <FormField
+                          label="Route Reflector Client"
+                          htmlFor={`bgp-pg-af-${afi}-rr-client`}
+                          horizontal
+                        >
+                          <Checkbox
+                            id={`bgp-pg-af-${afi}-rr-client`}
+                            checked={af.route_reflector_client}
+                            onCheckedChange={(checked) =>
+                              updateAfConfig(afi, "route_reflector_client", checked === true)
+                            }
+                          />
+                        </FormField>
+                      </Fieldset>
                     );
                   })}
-                </div>
-              </div>
+                </Fieldset>
+              </>
             )}
           </div>
         </ScrollArea>

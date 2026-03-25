@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Context Manifest",
+  "description": "Defines the precise context an agent receives for a task. Every field is intentional — no extraneous data.",
+  "type": "object",
+  "required": ["task_id", "agent_role", "objective", "context"],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^(ARCH|IMPL|TEST|REVIEW|KB)-[0-9]{3,}$",
+      "description": "Unique task identifier: ROLE_PREFIX-SEQUENCE"
+    },
+    "agent_role": {
+      "type": "string",
+      "enum": ["architect", "implementer", "tester", "reviewer", "knowledge-broker"],
+      "description": "Agent role to dispatch for this task"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of manifest creation"
+    },
+    "token_budget": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 100000,
+          "description": "Maximum input tokens for agent context"
+        },
+        "output": {
+          "type": "integer",
+          "minimum": 500,
+          "maximum": 32000,
+          "description": "Maximum output tokens for agent response"
+        }
+      },
+      "required": ["context", "output"]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Clear, specific description of what the agent must accomplish"
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Measurable criteria that define task completion"
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "architect_spec": {
+          "type": "string",
+          "description": "Path to the architect's specification file (if applicable)"
+        },
+        "target_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Files the agent is authorized to create or modify"
+        },
+        "readable_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Files the agent may read for context"
+        },
+        "reference_snippets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": { "type": "string" },
+              "lines": { "type": "string", "pattern": "^[0-9]+-[0-9]+$" },
+              "purpose": { "type": "string" }
+            },
+            "required": ["source", "purpose"]
+          },
+          "description": "Targeted code snippets for pattern reference"
+        },
+        "project_conventions": {
+          "type": "object",
+          "description": "Key project conventions the agent must follow"
+        },
+        "memory_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to knowledge-broker reference docs in memory/"
+        }
+      },
+      "required": ["target_files"]
+    },
+    "upstream_dependencies": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Task IDs that must be complete before this task can start"
+    },
+    "downstream_consumers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Task IDs that will consume this task's output"
+    }
+  }
+}

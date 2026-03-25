@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, ListFilter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { accessListService, type AccessList } from "@/lib/api/access-list";
 
 interface EditAccessListModalProps {
@@ -81,20 +81,21 @@ export function EditAccessListModal({ open, onOpenChange, onSuccess, accessList 
             </div>
           </div>
 
-          {/* Description Field */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter access list description (optional)"
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave empty to remove the description
-            </p>
-          </div>
+          <Fieldset>
+            <FormField
+              label="Description"
+              htmlFor="description"
+              description="Leave empty to remove the description"
+            >
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter access list description (optional)"
+                disabled={loading}
+              />
+            </FormField>
+          </Fieldset>
         </div>
 
         {error && (

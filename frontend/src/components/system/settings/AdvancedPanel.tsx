@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -122,7 +122,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
       setEditingCm(false);
       onRefresh();
     } catch {
-      setCmError("An unexpected error occurred");
+      setCmError("Something went wrong. Please try again.");
     } finally {
       setCmSaving(false);
     }
@@ -142,7 +142,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
         onRefresh();
       }
     } catch {
-      toast.error("Error", "An unexpected error occurred");
+      toast.error("Error", "Something went wrong. Please try again.");
     } finally {
       setCmSaving(false);
     }
@@ -160,7 +160,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
         onRefresh();
       }
     } catch {
-      toast.error("Error", "An unexpected error occurred");
+      toast.error("Error", "Something went wrong. Please try again.");
     } finally {
       setDeletingArchive(false);
       setDeleteArchiveTarget(null);
@@ -187,7 +187,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
         onRefresh();
       }
     } catch {
-      setSysctlError("An unexpected error occurred");
+      setSysctlError("Something went wrong. Please try again.");
     } finally {
       setSysctlSaving(false);
     }
@@ -205,7 +205,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
         onRefresh();
       }
     } catch {
-      toast.error("Error", "An unexpected error occurred");
+      toast.error("Error", "Something went wrong. Please try again.");
     } finally {
       setDeletingSysctl(false);
       setDeleteSysctlTarget(null);
@@ -241,7 +241,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
       setEditingConsole(null);
       onRefresh();
     } catch {
-      setConsoleError("An unexpected error occurred");
+      setConsoleError("Something went wrong. Please try again.");
     } finally {
       setConsoleSaving(false);
     }
@@ -278,7 +278,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
       setEditingWd(false);
       onRefresh();
     } catch {
-      setWdError("An unexpected error occurred");
+      setWdError("Something went wrong. Please try again.");
     } finally {
       setWdSaving(false);
     }
@@ -298,7 +298,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
         onRefresh();
       }
     } catch {
-      toast.error("Error", "An unexpected error occurred");
+      toast.error("Error", "Something went wrong. Please try again.");
     } finally {
       setWirelessSaving(false);
     }
@@ -318,7 +318,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
         onRefresh();
       }
     } catch {
-      toast.error("Error", "An unexpected error occurred");
+      toast.error("Error", "Something went wrong. Please try again.");
     } finally {
       setFrrSaving(false);
     }
@@ -360,17 +360,17 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
               </div>
             </div>
           )}
-          <div className="space-y-2 max-w-xs">
-            <Label>Commit Revisions</Label>
-            {editingCm ? (
-              <Input type="number" min="0" value={cmRevisions} onChange={(e) => setCmRevisions(e.target.value)} placeholder="100" />
-            ) : (
-              <p className="text-sm font-medium">{config.config_management.commit_revisions ?? <span className="text-muted-foreground">Default</span>}</p>
-            )}
+          <div className="max-w-xs">
+            <FormField label="Commit Revisions">
+              {editingCm ? (
+                <Input type="number" min="0" value={cmRevisions} onChange={(e) => setCmRevisions(e.target.value)} placeholder="100" />
+              ) : (
+                <p className="text-sm font-medium">{config.config_management.commit_revisions ?? <span className="text-muted-foreground">Default</span>}</p>
+              )}
+            </FormField>
           </div>
 
-          <div className="space-y-2">
-            <Label>Archive Locations</Label>
+          <FormField label="Archive Locations">
             <div className="space-y-2">
               {config.config_management.archive_locations.map((loc) => (
                 <div key={loc} className="flex items-center justify-between bg-muted/30 rounded px-3 py-2">
@@ -394,7 +394,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                 </Button>
               </div>
             )}
-          </div>
+          </FormField>
         </CardContent>
       </Card>
 
@@ -425,14 +425,12 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Parameter</Label>
-                  <Input value={sysctlParam} onChange={(e) => setSysctlParam(e.target.value)} placeholder="net.ipv4.ip_forward" className="font-mono text-xs" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Value</Label>
-                  <Input value={sysctlValue} onChange={(e) => setSysctlValue(e.target.value)} placeholder="1" className="font-mono text-xs" />
-                </div>
+                <FormField label="Parameter" htmlFor="sysctl-param">
+                  <Input id="sysctl-param" value={sysctlParam} onChange={(e) => setSysctlParam(e.target.value)} placeholder="net.ipv4.ip_forward" className="font-mono text-xs" />
+                </FormField>
+                <FormField label="Value" htmlFor="sysctl-value">
+                  <Input id="sysctl-value" value={sysctlValue} onChange={(e) => setSysctlValue(e.target.value)} placeholder="1" className="font-mono text-xs" />
+                </FormField>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleAddSysctl} disabled={sysctlSaving}>{sysctlSaving ? "Saving…" : "Set"}</Button>
@@ -614,22 +612,20 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Timeout (s)</Label>
+                  <FormField label="Timeout (s)" htmlFor="wd-timeout">
                     {editingWd ? (
-                      <Input type="number" min="1" value={wdTimeout} onChange={(e) => setWdTimeout(e.target.value)} placeholder="60" />
+                      <Input id="wd-timeout" type="number" min="1" value={wdTimeout} onChange={(e) => setWdTimeout(e.target.value)} placeholder="60" />
                     ) : (
                       <p className="text-sm font-medium">{config.watchdog?.timeout ?? <span className="text-muted-foreground">Not set</span>}</p>
                     )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Reboot Timeout (s)</Label>
+                  </FormField>
+                  <FormField label="Reboot Timeout (s)" htmlFor="wd-reboot">
                     {editingWd ? (
-                      <Input type="number" min="1" value={wdReboot} onChange={(e) => setWdReboot(e.target.value)} placeholder="120" />
+                      <Input id="wd-reboot" type="number" min="1" value={wdReboot} onChange={(e) => setWdReboot(e.target.value)} placeholder="120" />
                     ) : (
                       <p className="text-sm font-medium">{config.watchdog?.reboot_timeout ?? <span className="text-muted-foreground">Not set</span>}</p>
                     )}
-                  </div>
+                  </FormField>
                 </div>
               </CardContent>
             </Card>
@@ -642,8 +638,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                 <CardDescription>Wireless regulatory domain configuration.</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
-                <div className="space-y-2">
-                  <Label>Country Code</Label>
+                <FormField label="Country Code" htmlFor="wireless-code">
                   <div className="flex gap-2">
                     <Select value={wirelessCode || "unset"} onValueChange={(v) => setWirelessCode(v === "unset" ? "" : v)} disabled={isReadOnly}>
                       <SelectTrigger className="flex-1">
@@ -662,7 +657,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                       </Button>
                     )}
                   </div>
-                </div>
+                </FormField>
               </CardContent>
             </Card>
           )}
@@ -674,8 +669,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                 <CardDescription>FRRouting configuration profile.</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
-                <div className="space-y-2">
-                  <Label>Profile</Label>
+                <FormField label="Profile" htmlFor="frr-profile">
                   <div className="flex gap-2">
                     <Select value={frrProfile || "unset"} onValueChange={(v) => setFrrProfile(v === "unset" ? "" : v)} disabled={isReadOnly}>
                       <SelectTrigger className="flex-1">
@@ -694,7 +688,7 @@ export function AdvancedPanel({ config, capabilities, isReadOnly, onRefresh }: P
                       </Button>
                     )}
                   </div>
-                </div>
+                </FormField>
               </CardContent>
             </Card>
           )}

@@ -1,0 +1,150 @@
+id: "004"
+title: "Update frontend session API types and add SSE provision method"
+phase: 2
+status: not_started
+agent_type: general-purpose
+depends_on: []
+parallel_with: ["003", "005"]
+
+description: |
+  Update session.ts with new types for provisioning events and a method that
+  connects to the SSE provision stream via fetch POST.
+
+files:
+  modify:
+    - frontend/src/lib/api/session.ts
+
+context_files:
+  - frontend/src/lib/api/session.ts (current)
+
+instructions: |
+  1. Add ProvisioningEvent interface:
+     ```typescript
+     export interface ProvisioningEvent {
+       step: string;
+       status: "running" | "complete" | "failed";
+       message: string;
+       detail?: string;
+       data?: {
+         api_key?: string;
+         vyos_version?: string;
+         ssh_public_key?: string;
+         ssh_encrypted_private_key?: string;
+         ssh_key_nonce?: string;
+       };
+     }
+     ```
+
+  2. Simplify InstanceCreateRequest — remove provision_ssh_username and provision_ssh_password
+     fields. The create call no longer handles provisioning. Keep all other fields.
+
+  3. Update `createInstance` return type — remove the provisioning union:
+     ```typescript
+     async createInstance(data: InstanceCreateRequest): Promise<Instance> {
+       return apiClient.post<Instance>("/session/instances", data);
+     }
+     ```
+
+  4. Replace the existing `provisionInstance` method with an SSE streaming version:
+     ```typescript
+     /**
+      * Provision an instance via SSH with real-time progress streaming.
+      * Returns a cleanup function to abort the stream.
+      */
+     provisionInstance(
+       instanceId: string,
+       sshUsername: string,
+       sshPassword: string,
+       onEvent: (event: ProvisioningEvent) => void,
+       onError: (error: string) => void,
+       onComplete: () => void,
+     ): () => void {
+       const controller = new AbortController();
+
+       (async () => {
+         try {
+           const response = await fetch(`/api/session/instances/${instanceId}/provision`, {
+             method: "POST",
+             credentials: "include",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ ssh_username: sshUsername, ssh_password: sshPassword }),
+             signal: controller.signal,
+           });
+
+           if (!response.ok) {
+             const errorText = await response.text();
+             try {
+               const errorData = JSON.parse(errorText);
+               onError(errorData.detail || errorData.error || `HTTP ${response.status}`);
+             } catch {
+               onError(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+             }
+             return;
+           }
+
+           const reader = response.body?.getReader();
+           if (!reader) {
+             onError("No response body");
+             return;
+           }
+
+           const decoder = new TextDecoder();
+           let buffer = "";
+
+           while (true) {
+             const { done, value } = await reader.read();
+             if (done) break;
+
+             buffer += decoder.decode(value, { stream: true });
+
+             // Parse SSE events from buffer
+             const lines = buffer.split("\n");
+             buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+             let currentData = "";
+             for (const line of lines) {
+               if (line.startsWith("data: ")) {
+                 currentData += line.slice(6);
+               } else if (line === "" && currentData) {
+                 // Empty line = end of event
+                 try {
+                   const event = JSON.parse(currentData) as ProvisioningEvent;
+                   onEvent(event);
+                 } catch {
+                   // Ignore malformed events
+                 }
+                 currentData = "";
+               }
+             }
+           }
+
+           onComplete();
+         } catch (err) {
+           if (controller.signal.aborted) return;
+           onError(err instanceof Error ? err.message : "Connection failed");
+         }
+       })();
+
+       return () => controller.abort();
+     }
+     ```
+
+  5. Keep the ProvisioningResult interface for now (might be used elsewhere).
+
+acceptance_criteria:
+  - ProvisioningEvent interface is exported
+  - InstanceCreateRequest no longer has provision_ssh_username/provision_ssh_password
+  - createInstance returns Promise<Instance> (no provisioning union)
+  - provisionInstance uses fetch POST to read SSE stream
+  - provisionInstance accepts callbacks: onEvent, onError, onComplete
+  - provisionInstance returns a cleanup/abort function
+  - SSE parsing correctly handles multi-line buffered reads
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

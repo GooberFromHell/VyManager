@@ -1,0 +1,231 @@
+id: "task-005"
+title: "Create file browser page and UI components"
+phase: produce
+execution_phase: 3
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-002", "task-003", "task-004"]
+blocks: ["task-006"]
+parallel_with: []
+
+files:
+  create:
+    - "frontend/src/app/(default)/(app)/system/file-browser/page.tsx"
+    - "frontend/src/components/file-browser/FileBrowserContent.tsx"
+    - "frontend/src/components/file-browser/FilePreviewModal.tsx"
+    - "frontend/src/components/file-browser/UploadFileModal.tsx"
+    - "frontend/src/components/file-browser/CreateDirectoryModal.tsx"
+    - "frontend/src/components/file-browser/DeleteConfirmModal.tsx"
+    - "frontend/src/components/file-browser/RenameModal.tsx"
+  modify:
+    - "frontend/src/components/layout/Sidebar.tsx"
+
+context_files:
+  - "frontend/src/app/(default)/(app)/system/services/ntp/page.tsx"
+  - "frontend/src/app/(default)/(app)/system/terminal/page.tsx"
+  - "frontend/src/components/services/ntp/CreateNTPServerModal.tsx"
+  - "frontend/src/components/services/ntp/EditNTPSettingsModal.tsx"
+  - "frontend/src/components/session/ImportCSVModal.tsx"
+  - "frontend/src/components/ui/page-header.tsx"
+  - "frontend/src/components/ui/breadcrumb.tsx"
+  - "frontend/src/components/ui/table.tsx"
+  - "frontend/src/components/ui/empty-state.tsx"
+  - "frontend/src/components/ui/error-alert.tsx"
+  - "frontend/src/components/ui/dialog.tsx"
+  - "frontend/src/components/ui/scroll-area.tsx"
+  - "frontend/src/components/ui/fieldset.tsx"
+  - "frontend/src/components/layout/Sidebar.tsx"
+  - "frontend/src/lib/api/file-browser.ts"
+  - "frontend/src/lib/api/types/file-browser.ts"
+  - "frontend/src/lib/api/user-management.ts"
+
+instructions: |
+  Build the file browser UI. This is the largest task — a full page with directory navigation,
+  file table, and multiple modals. Follow existing patterns closely.
+
+  ## 1. Page: frontend/src/app/(default)/(app)/system/file-browser/page.tsx
+
+  Simple page wrapper following the NTP page pattern:
+  ```tsx
+  "use client";
+
+  import FileBrowserContent from "@/components/file-browser/FileBrowserContent";
+
+  export default function FileBrowserPage() {
+    return <FileBrowserContent />;
+  }
+  ```
+
+  ## 2. Main Component: frontend/src/components/file-browser/FileBrowserContent.tsx
+
+  This is the core component. It manages:
+  - Current path state
+  - Directory listing data (loading, error, entries)
+  - Modal open/close states
+  - Permission checks
+
+  ### Layout Structure:
+  ```
+  <div className="space-y-6 p-6">
+    <PageHeader
+      title="File Browser"
+      description="Browse and manage files on the VyOS device"
+      actions={
+        // Only show if canWrite:
+        <div className="flex gap-2">
+          <Button onClick={openUploadModal}><Upload /> Upload</Button>
+          <Button onClick={openMkdirModal} variant="outline"><FolderPlus /> New Folder</Button>
+        </div>
+      }
+    />
+
+    <!-- Breadcrumb path navigation -->
+    <div className="flex items-center gap-2 text-sm">
+      <!-- Clickable path segments. Clicking any segment navigates to that directory. -->
+      <!-- Use the Breadcrumb component from ui/ -->
+      <!-- Root "/" is always the first segment -->
+    </div>
+
+    <!-- File table -->
+    <div className="rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead className="w-[100px]">Size</TableHead>
+            <TableHead className="w-[100px]">Permissions</TableHead>
+            <TableHead className="w-[180px]">Modified</TableHead>
+            {canWrite && <TableHead className="w-[120px] text-right">Actions</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <!-- ".." entry if not at root — clicking navigates to parent -->
+          <!-- File entries: clicking a directory navigates into it -->
+          <!-- File entries: clicking a file opens preview modal -->
+          <!-- Action buttons: Download, Rename, Delete -->
+        </TableBody>
+      </Table>
+    </div>
+
+    <!-- Modals -->
+    <FilePreviewModal ... />
+    <UploadFileModal ... />
+    <CreateDirectoryModal ... />
+    <DeleteConfirmModal ... />
+    <RenameModal ... />
+  </div>
+  ```
+
+  ### Data Flow:
+  - `useCallback` for `loadDirectory(path)` that calls `fileBrowserService.listDirectory(path)`
+  - `useEffect` to load on mount and when path changes
+  - Loading state: show skeleton rows in the table
+  - Error state: show ErrorAlert
+  - Empty state: show EmptyState with "This directory is empty"
+  - Permission check: `const { canRead, canWrite } = usePermissions()` with `FeatureGroup.FILE_BROWSER`
+
+  ### File Icons (use lucide-react):
+  - Directory: `<Folder className="h-4 w-4 text-blue-400" />`
+  - File: `<File className="h-4 w-4 text-muted-foreground" />`
+  - Symlink: `<FileSymlink className="h-4 w-4 text-yellow-400" />`
+
+  ### File Size Formatting:
+  Create a helper function `formatFileSize(bytes)` that returns human-readable sizes (B, KB, MB, GB).
+
+  ### Download Handler:
+  ```tsx
+  const handleDownload = async (filePath: string) => {
+    try {
+      const { blob, filename } = await fileBrowserService.downloadFile(filePath);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      // Show toast error
+    }
+  };
+  ```
+
+  ## 3. FilePreviewModal
+  - Props: `open`, `onOpenChange`, `filePath` (string | null)
+  - On open, calls `fileBrowserService.readFile(filePath)`
+  - Loading state with Loader2 spinner
+  - If binary or truncated, show a message and a Download button
+  - If text, display in a `<pre><code>` block with `font-mono text-sm` inside a ScrollArea
+  - Show file path and size in the header
+  - Footer: Close button + Download button
+
+  ## 4. UploadFileModal
+  - Props: `open`, `onOpenChange`, `currentPath`, `onSuccess`
+  - File input (`<input type="file">`) — single file only
+  - Shows selected file name and size
+  - On submit, calls `fileBrowserService.uploadFile(currentPath, file)`
+  - Loading state on submit button
+  - Error display using destructive alert pattern
+  - On success, call `onSuccess()` and close
+
+  ## 5. CreateDirectoryModal
+  - Props: `open`, `onOpenChange`, `currentPath`, `onSuccess`
+  - Single text input for directory name
+  - Constructs full path: `currentPath + "/" + name`
+  - Calls `fileBrowserService.createDirectory(fullPath)`
+  - Standard modal pattern
+
+  ## 6. DeleteConfirmModal
+  - Props: `open`, `onOpenChange`, `itemPath`, `itemType` ("file" | "directory"), `onSuccess`
+  - AlertDialog pattern — "Are you sure?" with destructive action
+  - Shows the path being deleted
+  - Warns that directory must be empty if deleting a directory
+  - Calls `fileBrowserService.deleteItem(itemPath)`
+
+  ## 7. RenameModal
+  - Props: `open`, `onOpenChange`, `currentPath` (full path of item), `onSuccess`
+  - Pre-fills input with current filename (basename of currentPath)
+  - Constructs new path using parent directory + new name
+  - Calls `fileBrowserService.rename(currentPath, newPath)`
+
+  ## 8. Sidebar Navigation: frontend/src/components/layout/Sidebar.tsx
+
+  Add a File Browser navigation entry. Look at the existing sidebar structure and find
+  the System section. Add File Browser as a sibling to Terminal, in the System tools area.
+  Use the `FolderOpen` icon from lucide-react.
+
+  ```tsx
+  {
+    title: "File Browser",
+    href: "/system/file-browser",
+    icon: FolderOpen,
+    requiredPermission: FeatureGroup.FILE_BROWSER,
+  }
+  ```
+
+  Make sure to import `FolderOpen` from lucide-react and `FeatureGroup` from the user-management module.
+
+acceptance_criteria:
+  - "File exists: frontend/src/app/(default)/(app)/system/file-browser/page.tsx"
+  - "File exists: frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "File exists: frontend/src/components/file-browser/FilePreviewModal.tsx"
+  - "File exists: frontend/src/components/file-browser/UploadFileModal.tsx"
+  - "File exists: frontend/src/components/file-browser/CreateDirectoryModal.tsx"
+  - "File exists: frontend/src/components/file-browser/DeleteConfirmModal.tsx"
+  - "File exists: frontend/src/components/file-browser/RenameModal.tsx"
+  - "Grep match: 'file-browser' in frontend/src/components/layout/Sidebar.tsx"
+  - "Grep match: 'FolderOpen' in frontend/src/components/layout/Sidebar.tsx"
+  - "Grep match: 'FILE_BROWSER' in frontend/src/components/layout/Sidebar.tsx"
+  - "Grep match: 'FileBrowserContent' in frontend/src/app/(default)/(app)/system/file-browser/page.tsx"
+  - "Grep match: 'fileBrowserService' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "Grep match: 'usePermissions' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

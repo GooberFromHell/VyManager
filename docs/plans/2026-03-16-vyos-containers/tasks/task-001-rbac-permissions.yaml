@@ -1,0 +1,77 @@
+id: "task-001"
+title: "Add CONTAINER to FeatureGroup and RBAC permissions"
+phase: produce
+execution_phase: 1
+agent: "general-purpose"
+status: not_started
+depends_on: []
+blocks: ["task-004"]
+parallel_with: ["task-002"]
+
+files:
+  create: []
+  modify:
+    - "backend/rbac_permissions.py"
+    - "frontend/src/lib/api/user-management.ts"
+
+context_files:
+  - "backend/rbac_permissions.py"
+  - "frontend/src/lib/api/user-management.ts"
+
+instructions: |
+  Add CONTAINER permission to both backend and frontend FeatureGroup enums and all role permission maps.
+
+  ## Backend: backend/rbac_permissions.py
+
+  1. Add to FeatureGroup enum (after CONNTRACK_SYNC, before SYSTEM):
+     ```python
+     CONTAINER = "CONTAINER"
+     ```
+
+  2. Add to BUILT_IN_PERMISSIONS for ADMIN role (after CONNTRACK_SYNC line):
+     ```python
+     FeatureGroup.CONTAINER: PermissionLevel.WRITE,
+     ```
+
+  3. Add to BUILT_IN_PERMISSIONS for OPERATOR role (after CONNTRACK_SYNC line):
+     ```python
+     FeatureGroup.CONTAINER: PermissionLevel.WRITE,
+     ```
+
+  4. Add to BUILT_IN_PERMISSIONS for VIEWER role (after CONNTRACK_SYNC line):
+     ```python
+     FeatureGroup.CONTAINER: PermissionLevel.READ,
+     ```
+
+  5. Add FeatureGroup.CONTAINER to the `all_features` list in get_user_permissions() (the site ADMIN block, after CONNTRACK_SYNC):
+     ```python
+     FeatureGroup.CONTAINER,
+     ```
+
+  6. Add FeatureGroup.CONTAINER to the `vyos_features` list in get_user_permissions() (the instance ADMIN block, after CONNTRACK_SYNC):
+     ```python
+     FeatureGroup.CONTAINER,
+     ```
+
+  ## Frontend: frontend/src/lib/api/user-management.ts
+
+  1. Add to the FeatureGroup enum (after CONNTRACK_SYNC, before SYSTEM):
+     ```typescript
+     CONTAINER = "CONTAINER",
+     ```
+
+acceptance_criteria:
+  - "Grep match: 'CONTAINER = \"CONTAINER\"' in backend/rbac_permissions.py"
+  - "Grep match: 'FeatureGroup.CONTAINER: PermissionLevel.WRITE' in backend/rbac_permissions.py (at least 2 occurrences)"
+  - "Grep match: 'FeatureGroup.CONTAINER: PermissionLevel.READ' in backend/rbac_permissions.py"
+  - "Grep match: 'CONTAINER = \"CONTAINER\"' in frontend/src/lib/api/user-management.ts"
+  - "Grep match: 'FeatureGroup.CONTAINER' in backend/rbac_permissions.py (at least 6 occurrences - enum + 3 roles + 2 feature lists)"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

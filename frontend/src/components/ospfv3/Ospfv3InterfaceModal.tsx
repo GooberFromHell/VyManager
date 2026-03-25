@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -193,11 +193,13 @@ export function Ospfv3InterfaceModal({
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 pb-2">
-            {/* Basic Settings */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="ospfv3-iface-name">Interface</Label>
+          <div className="space-y-4 pb-2">
+            <Fieldset>
+              <FormField
+                label="Interface"
+                htmlFor="ospfv3-iface-name"
+                required={!isEditMode}
+              >
                 <Select value={name} onValueChange={setName} disabled={isEditMode}>
                   <SelectTrigger id="ospfv3-iface-name" className={isEditMode ? "bg-muted" : ""}>
                     <SelectValue placeholder="Select an interface" />
@@ -208,23 +210,25 @@ export function Ospfv3InterfaceModal({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="ospfv3-iface-area">Area</Label>
+              <FormField
+                label="Area"
+                htmlFor="ospfv3-iface-area"
+                description="Assign this interface to an OSPFv3 area."
+              >
                 <Input
                   id="ospfv3-iface-area"
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   placeholder="e.g. 0.0.0.0 or 0"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Assign this interface to an OSPFv3 area.
-                </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="ospfv3-iface-network">Network Type</Label>
+              <FormField
+                label="Network Type"
+                htmlFor="ospfv3-iface-network"
+              >
                 <Select value={network} onValueChange={setNetwork}>
                   <SelectTrigger id="ospfv3-iface-network">
                     <SelectValue placeholder="Default" />
@@ -235,15 +239,14 @@ export function Ospfv3InterfaceModal({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
 
-            {/* Cost & Priority */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Cost & Priority</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Cost and Priority">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-cost">Cost</Label>
+                <FormField label="Cost" htmlFor="ospfv3-iface-cost">
                   <Input
                     id="ospfv3-iface-cost"
                     type="number"
@@ -253,9 +256,8 @@ export function Ospfv3InterfaceModal({
                     min={1}
                     max={65535}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-priority">Priority</Label>
+                </FormField>
+                <FormField label="Priority" htmlFor="ospfv3-iface-priority">
                   <Input
                     id="ospfv3-iface-priority"
                     type="number"
@@ -265,9 +267,8 @@ export function Ospfv3InterfaceModal({
                     min={0}
                     max={255}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-ifmtu">Interface MTU</Label>
+                </FormField>
+                <FormField label="Interface MTU" htmlFor="ospfv3-iface-ifmtu">
                   <Input
                     id="ospfv3-iface-ifmtu"
                     type="number"
@@ -275,9 +276,8 @@ export function Ospfv3InterfaceModal({
                     onChange={(e) => setIfmtu(e.target.value)}
                     placeholder="IPv6 MTU (bytes)"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-instance-id">Instance ID</Label>
+                </FormField>
+                <FormField label="Instance ID" htmlFor="ospfv3-iface-instance-id">
                   <Input
                     id="ospfv3-iface-instance-id"
                     type="number"
@@ -287,16 +287,15 @@ export function Ospfv3InterfaceModal({
                     min={0}
                     max={255}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            {/* Timers */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Timers</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Timers">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-hello">Hello Interval</Label>
+                <FormField label="Hello Interval" htmlFor="ospfv3-iface-hello">
                   <Input
                     id="ospfv3-iface-hello"
                     type="number"
@@ -304,9 +303,8 @@ export function Ospfv3InterfaceModal({
                     onChange={(e) => setHelloInterval(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-dead">Dead Interval</Label>
+                </FormField>
+                <FormField label="Dead Interval" htmlFor="ospfv3-iface-dead">
                   <Input
                     id="ospfv3-iface-dead"
                     type="number"
@@ -314,9 +312,8 @@ export function Ospfv3InterfaceModal({
                     onChange={(e) => setDeadInterval(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-retransmit">Retransmit Interval</Label>
+                </FormField>
+                <FormField label="Retransmit Interval" htmlFor="ospfv3-iface-retransmit">
                   <Input
                     id="ospfv3-iface-retransmit"
                     type="number"
@@ -324,9 +321,8 @@ export function Ospfv3InterfaceModal({
                     onChange={(e) => setRetransmitInterval(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospfv3-iface-transmit-delay">Transmit Delay</Label>
+                </FormField>
+                <FormField label="Transmit Delay" htmlFor="ospfv3-iface-transmit-delay">
                   <Input
                     id="ospfv3-iface-transmit-delay"
                     type="number"
@@ -334,62 +330,55 @@ export function Ospfv3InterfaceModal({
                     onChange={(e) => setTransmitDelay(e.target.value)}
                     placeholder="seconds"
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            {/* Options */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">Options</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Options">
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-3 rounded-lg border p-3">
+                <FormField label="Passive" htmlFor="ospfv3-iface-passive" horizontal>
                   <Checkbox
                     id="ospfv3-iface-passive"
                     checked={passive}
                     onCheckedChange={(checked) => setPassive(checked === true)}
                   />
-                  <Label htmlFor="ospfv3-iface-passive" className="cursor-pointer text-sm">
-                    Passive
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 rounded-lg border p-3">
+                </FormField>
+                <FormField label="MTU Ignore" htmlFor="ospfv3-iface-mtu-ignore" horizontal>
                   <Checkbox
                     id="ospfv3-iface-mtu-ignore"
                     checked={mtuIgnore}
                     onCheckedChange={(checked) => setMtuIgnore(checked === true)}
                   />
-                  <Label htmlFor="ospfv3-iface-mtu-ignore" className="cursor-pointer text-sm">
-                    MTU Ignore
-                  </Label>
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            {/* BFD */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium">BFD (Bidirectional Forwarding Detection)</h4>
-              <div className="flex items-center space-x-3 rounded-lg border p-3">
+            <FieldsetDivider />
+
+            <Fieldset label="BFD (Bidirectional Forwarding Detection)">
+              <FormField label="Enable BFD" htmlFor="ospfv3-iface-bfd" horizontal>
                 <Checkbox
                   id="ospfv3-iface-bfd"
                   checked={bfd}
                   onCheckedChange={(checked) => setBfd(checked === true)}
                 />
-                <Label htmlFor="ospfv3-iface-bfd" className="cursor-pointer text-sm">
-                  Enable BFD
-                </Label>
-              </div>
+              </FormField>
               {bfd && (
-                <div className="space-y-2 pl-4 border-l-2 border-muted">
-                  <Label htmlFor="ospfv3-iface-bfd-profile">BFD Profile</Label>
+                <FormField
+                  label="BFD Profile"
+                  htmlFor="ospfv3-iface-bfd-profile"
+                >
                   <Input
                     id="ospfv3-iface-bfd-profile"
                     value={bfdProfile}
                     onChange={(e) => setBfdProfile(e.target.value)}
                     placeholder="Profile name (optional)"
                   />
-                </div>
+                </FormField>
               )}
-            </div>
+            </Fieldset>
           </div>
         </ScrollArea>
 

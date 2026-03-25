@@ -32,6 +32,18 @@ from .system import SystemPerformanceBatchBuilder, SystemBatchBuilder
 from .high_availability import HighAvailabilityBatchBuilder
 from .load_balancing import LoadBalancingBatchBuilder
 from .isis import IsisBatchBuilder
+from .ntp import NTPBatchBuilder
+from .dns_forwarding import DNSForwardingBatchBuilder
+from .ssh import SSHBatchBuilder
+from .dhcp_relay import DHCPRelayBatchBuilder
+from .lldp import LLDPBatchBuilder
+from .dhcpv6_server import DHCPv6ServerBatchBuilder
+from .snmp import SNMPBatchBuilder
+from .tftp_server import TFTPServerBatchBuilder
+from .broadcast_relay import BroadcastRelayBatchBuilder
+from .router_advert import RouterAdvertBatchBuilder
+from .conntrack_sync import ConntrackSyncBatchBuilder
+from .container import ContainerBatchBuilder
 
 # Directly use the self-contained builders
 EthernetBatchBuilder = EthernetInterfaceBuilderMixin
@@ -75,4 +87,16 @@ __all__ = [
     "HighAvailabilityBatchBuilder",
     "LoadBalancingBatchBuilder",
     "IsisBatchBuilder",
+    "NTPBatchBuilder",
+    "DNSForwardingBatchBuilder",
+    "SSHBatchBuilder",
+    "DHCPRelayBatchBuilder",
+    "LLDPBatchBuilder",
+    "DHCPv6ServerBatchBuilder",
+    "SNMPBatchBuilder",
+    "TFTPServerBatchBuilder",
+    "BroadcastRelayBatchBuilder",
+    "RouterAdvertBatchBuilder",
+    "ConntrackSyncBatchBuilder",
+    "ContainerBatchBuilder",
 ]

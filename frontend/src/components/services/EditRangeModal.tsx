@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Network, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { dhcpService, type DHCPRange } from "@/lib/api/dhcp";
@@ -141,7 +141,7 @@ export function EditRangeModal({
 
           {/* Range ID (read-only) */}
           <div className="space-y-2">
-            <Label>Range ID</Label>
+            <p className="text-sm font-medium">Range ID</p>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="font-mono">
                 {range.range_id}
@@ -150,8 +150,11 @@ export function EditRangeModal({
           </div>
 
           {/* Start IP */}
-          <div className="space-y-2">
-            <Label htmlFor="start-ip">Start IP Address</Label>
+          <FormField
+            label="Start IP Address"
+            htmlFor="start-ip"
+            description="The first IP address in the range"
+          >
             <Input
               id="start-ip"
               placeholder="e.g., 192.168.1.100"
@@ -159,14 +162,14 @@ export function EditRangeModal({
               onChange={(e) => setStartIp(e.target.value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              The first IP address in the range
-            </p>
-          </div>
+          </FormField>
 
           {/* Stop IP */}
-          <div className="space-y-2">
-            <Label htmlFor="stop-ip">Stop IP Address</Label>
+          <FormField
+            label="Stop IP Address"
+            htmlFor="stop-ip"
+            description="The last IP address in the range"
+          >
             <Input
               id="stop-ip"
               placeholder="e.g., 192.168.1.200"
@@ -174,10 +177,7 @@ export function EditRangeModal({
               onChange={(e) => setStopIp(e.target.value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              The last IP address in the range
-            </p>
-          </div>
+          </FormField>
 
           {/* Error Display */}
           {error && (

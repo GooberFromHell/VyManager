@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { prefixListService, type PrefixListCapabilitiesResponse } from "@/lib/api/prefix-list";
 
 interface CreatePrefixListModalProps {
@@ -75,7 +75,6 @@ export function CreatePrefixListModal({ open, onOpenChange, onSuccess, listType,
     } else {
       // IPv6 validation (basic)
       if (isNaN(prefixLength) || prefixLength < 0 || prefixLength > 128) return false;
-      // More detailed IPv6 validation could be added here
     }
 
     return true;
@@ -193,121 +192,130 @@ export function CreatePrefixListModal({ open, onOpenChange, onSuccess, listType,
 
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="list-name">Prefix List Name *</Label>
-              <Input
-                id="list-name"
-                value={listName}
-                onChange={(e) => setListName(e.target.value)}
-                placeholder="e.g., MY-PREFIXES"
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter a unique name for the prefix list
-              </p>
-            </div>
+            <Fieldset label="Prefix List">
+              <FormField
+                label="Prefix List Name"
+                htmlFor="list-name"
+                description="Enter a unique name for the prefix list"
+                required
+              >
+                <Input
+                  id="list-name"
+                  value={listName}
+                  onChange={(e) => setListName(e.target.value)}
+                  placeholder="e.g., MY-PREFIXES"
+                  disabled={loading}
+                />
+              </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="list-description">Description</Label>
-              <Input
-                id="list-description"
-                value={listDescription}
-                onChange={(e) => setListDescription(e.target.value)}
-                placeholder="Enter prefix list description (optional)"
-                disabled={loading}
-              />
-            </div>
+              <FormField label="Description" htmlFor="list-description">
+                <Input
+                  id="list-description"
+                  value={listDescription}
+                  onChange={(e) => setListDescription(e.target.value)}
+                  placeholder="Enter prefix list description (optional)"
+                  disabled={loading}
+                />
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           {/* First Rule Tab */}
-          <TabsContent value="rule" className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rule-number">Rule Number</Label>
-                <Input
-                  id="rule-number"
-                  type="number"
-                  value={ruleNumber}
-                  disabled
-                  className="bg-muted"
-                />
-                <p className="text-xs text-muted-foreground">Starting at 100</p>
+          <TabsContent value="rule" className="space-y-5 mt-4">
+            <Fieldset label="Rule Info">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="Rule Number"
+                  htmlFor="rule-number"
+                  description="Starting at 100"
+                >
+                  <Input
+                    id="rule-number"
+                    type="number"
+                    value={ruleNumber}
+                    disabled
+                    className="bg-muted"
+                  />
+                </FormField>
+
+                <FormField label="Action" htmlFor="action" required>
+                  <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
+                    <SelectTrigger id="action">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="permit">Permit</SelectItem>
+                      <SelectItem value="deny">Deny</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="action">Action *</Label>
-                <Select value={action} onValueChange={(v) => setAction(v as "permit" | "deny")} disabled={loading}>
-                  <SelectTrigger id="action">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="permit">Permit</SelectItem>
-                    <SelectItem value="deny">Deny</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="rule-description">Rule Description</Label>
-              <Input
-                id="rule-description"
-                value={ruleDescription}
-                onChange={(e) => setRuleDescription(e.target.value)}
-                placeholder="Enter rule description (optional)"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="prefix">Prefix (CIDR) *</Label>
-              <Input
-                id="prefix"
-                value={prefix}
-                onChange={(e) => setPrefix(e.target.value)}
-                placeholder={listType === "ipv4" ? "e.g., 192.168.1.0/24" : "e.g., 2001:db8::/32"}
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter prefix in CIDR notation
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ge">GE (Greater-than-or-equal)</Label>
+              <FormField label="Rule Description" htmlFor="rule-description">
                 <Input
-                  id="ge"
-                  type="number"
-                  value={ge}
-                  onChange={(e) => setGe(e.target.value)}
-                  placeholder="Optional"
+                  id="rule-description"
+                  value={ruleDescription}
+                  onChange={(e) => setRuleDescription(e.target.value)}
+                  placeholder="Enter rule description (optional)"
                   disabled={loading}
-                  min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
-                  max={listType === "ipv4" ? 32 : 128}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Minimum prefix length to match
-                </p>
-              </div>
+              </FormField>
+            </Fieldset>
 
-              <div className="space-y-2">
-                <Label htmlFor="le">LE (Less-than-or-equal)</Label>
+            <FieldsetDivider />
+
+            <Fieldset label="Match Conditions">
+              <FormField
+                label="Prefix (CIDR)"
+                htmlFor="prefix"
+                description="Enter prefix in CIDR notation"
+                required
+              >
                 <Input
-                  id="le"
-                  type="number"
-                  value={le}
-                  onChange={(e) => setLe(e.target.value)}
-                  placeholder="Optional"
+                  id="prefix"
+                  value={prefix}
+                  onChange={(e) => setPrefix(e.target.value)}
+                  placeholder={listType === "ipv4" ? "e.g., 192.168.1.0/24" : "e.g., 2001:db8::/32"}
                   disabled={loading}
-                  min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
-                  max={listType === "ipv4" ? 32 : 128}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Maximum prefix length to match
-                </p>
+              </FormField>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="GE (Greater-than-or-equal)"
+                  htmlFor="ge"
+                  description="Minimum prefix length to match"
+                >
+                  <Input
+                    id="ge"
+                    type="number"
+                    value={ge}
+                    onChange={(e) => setGe(e.target.value)}
+                    placeholder="Optional"
+                    disabled={loading}
+                    min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
+                    max={listType === "ipv4" ? 32 : 128}
+                  />
+                </FormField>
+
+                <FormField
+                  label="LE (Less-than-or-equal)"
+                  htmlFor="le"
+                  description="Maximum prefix length to match"
+                >
+                  <Input
+                    id="le"
+                    type="number"
+                    value={le}
+                    onChange={(e) => setLe(e.target.value)}
+                    placeholder="Optional"
+                    disabled={loading}
+                    min={prefix ? parseInt(prefix.split('/')[1] || "0", 10) : 0}
+                    max={listType === "ipv4" ? 32 : 128}
+                  />
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
             <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
               <div className="flex gap-2">

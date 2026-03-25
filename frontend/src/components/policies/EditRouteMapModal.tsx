@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle } from "lucide-react";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { routeMapService } from "@/lib/api/route-map";
 import type { RouteMap } from "@/lib/api/route-map";
 
@@ -63,24 +63,24 @@ export function EditRouteMapModal({ open, onOpenChange, onSuccess, routeMap }: E
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Route-Map Name</Label>
-            <Input value={routeMap.name} disabled className="bg-muted" />
-            <p className="text-xs text-muted-foreground">
+          <Fieldset>
+            <FormField label="Route-Map Name" htmlFor="route-map-name">
+              <Input id="route-map-name" value={routeMap.name} disabled className="bg-muted" />
+            </FormField>
+            <p className="text-xs text-muted-foreground -mt-1">
               Name cannot be changed. Delete and recreate to change name.
             </p>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Optional description for this route-map"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
+            <FormField label="Description" htmlFor="description">
+              <Textarea
+                id="description"
+                placeholder="Optional description for this route-map"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
+            </FormField>
+          </Fieldset>
 
           <div className="bg-muted/50 border rounded-lg p-3">
             <p className="text-sm text-muted-foreground">

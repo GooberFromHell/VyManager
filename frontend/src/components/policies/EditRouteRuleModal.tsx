@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -559,54 +559,44 @@ export function EditRouteRuleModal({
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Rule Number</Label>
+              <FormField label="Rule Number" htmlFor="edit-rule-number" description="Rule number cannot be changed">
                 <Input
+                  id="edit-rule-number"
                   value={rule?.rule_number}
                   disabled
                   className="bg-muted"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Rule number cannot be changed
-                </p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+              <FormField label="Description" htmlFor="description">
                 <Input
-                  id="description"
-                  placeholder="Rule description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  disabled={loading}
+                id="description"
+                placeholder="Rule description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
                 />
-              </div>
+              </FormField>
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
+              <FormField label="Disable this rule" htmlFor="disable" horizontal>
                 <Checkbox
-                  id="disable"
-                  checked={disable}
-                  onCheckedChange={(checked) => setDisable(checked as boolean)}
-                  disabled={loading}
+                id="disable"
+                checked={disable}
+                onCheckedChange={(checked) => setDisable(checked as boolean)}
+                disabled={loading}
                 />
-                <Label htmlFor="disable" className="text-sm font-normal cursor-pointer">
-                  Disable this rule
-                </Label>
-              </div>
+              </FormField>
 
-              <div className="flex items-center space-x-2">
+              <FormField label="Enable logging for this rule" htmlFor="log" horizontal>
                 <Checkbox
-                  id="log"
-                  checked={log}
-                  onCheckedChange={(checked) => setLog(checked as boolean)}
-                  disabled={loading}
+                id="log"
+                checked={log}
+                onCheckedChange={(checked) => setLog(checked as boolean)}
+                disabled={loading}
                 />
-                <Label htmlFor="log" className="text-sm font-normal cursor-pointer">
-                  Enable logging for this rule
-                </Label>
-              </div>
+              </FormField>
             </div>
           </TabsContent>
 
@@ -616,93 +606,89 @@ export function EditRouteRuleModal({
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Address Matching</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sourceAddress">Source Address</Label>
+                <FormField label="Source Address" htmlFor="sourceAddress">
                   <Input
-                    id="sourceAddress"
-                    placeholder={policyType === "route6" ? "2001:db8::/32" : "192.168.1.0/24"}
-                    value={sourceAddress}
-                    onChange={(e) => setSourceAddress(e.target.value)}
-                    disabled={loading}
+                  id="sourceAddress"
+                  placeholder={policyType === "route6" ? "2001:db8::/32" : "192.168.1.0/24"}
+                  value={sourceAddress}
+                  onChange={(e) => setSourceAddress(e.target.value)}
+                  disabled={loading}
                   />
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sourceAddressInvert"
-                      checked={sourceAddressInvert}
-                      onCheckedChange={(checked) => setSourceAddressInvert(checked as boolean)}
-                      disabled={loading}
-                    />
-                    <Label htmlFor="sourceAddressInvert" className="text-sm font-normal cursor-pointer">
-                      Invert match
-                    </Label>
+                  <Checkbox
+                  id="sourceAddressInvert"
+                  checked={sourceAddressInvert}
+                  onCheckedChange={(checked) => setSourceAddressInvert(checked as boolean)}
+                  disabled={loading}
+                  />
+                  <label htmlFor="sourceAddressInvert" className="text-sm font-normal cursor-pointer">
+                  Invert match
+                  </label>
                   </div>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="destAddress">Destination Address</Label>
+                <FormField label="Destination Address" htmlFor="destAddress">
                   <Input
-                    id="destAddress"
-                    placeholder={policyType === "route6" ? "fd00::/8" : "10.0.0.0/8"}
-                    value={destAddress}
-                    onChange={(e) => setDestAddress(e.target.value)}
-                    disabled={loading}
+                  id="destAddress"
+                  placeholder={policyType === "route6" ? "fd00::/8" : "10.0.0.0/8"}
+                  value={destAddress}
+                  onChange={(e) => setDestAddress(e.target.value)}
+                  disabled={loading}
                   />
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="destAddressInvert"
-                      checked={destAddressInvert}
-                      onCheckedChange={(checked) => setDestAddressInvert(checked as boolean)}
-                      disabled={loading}
-                    />
-                    <Label htmlFor="destAddressInvert" className="text-sm font-normal cursor-pointer">
-                      Invert match
-                    </Label>
+                  <Checkbox
+                  id="destAddressInvert"
+                  checked={destAddressInvert}
+                  onCheckedChange={(checked) => setDestAddressInvert(checked as boolean)}
+                  disabled={loading}
+                  />
+                  <label htmlFor="destAddressInvert" className="text-sm font-normal cursor-pointer">
+                  Invert match
+                  </label>
                   </div>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="sourceMac">Source MAC Address</Label>
+                <FormField label="Source MAC Address" htmlFor="sourceMac">
                   <Input
-                    id="sourceMac"
-                    placeholder="00:11:22:33:44:55"
-                    value={sourceMac}
-                    onChange={(e) => setSourceMac(e.target.value)}
-                    disabled={loading}
+                  id="sourceMac"
+                  placeholder="00:11:22:33:44:55"
+                  value={sourceMac}
+                  onChange={(e) => setSourceMac(e.target.value)}
+                  disabled={loading}
                   />
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sourceMacInvert"
-                      checked={sourceMacInvert}
-                      onCheckedChange={(checked) => setSourceMacInvert(checked as boolean)}
-                      disabled={loading}
-                    />
-                    <Label htmlFor="sourceMacInvert" className="text-sm font-normal cursor-pointer">
-                      Invert match
-                    </Label>
+                  <Checkbox
+                  id="sourceMacInvert"
+                  checked={sourceMacInvert}
+                  onCheckedChange={(checked) => setSourceMacInvert(checked as boolean)}
+                  disabled={loading}
+                  />
+                  <label htmlFor="sourceMacInvert" className="text-sm font-normal cursor-pointer">
+                  Invert match
+                  </label>
                   </div>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="destMac">Destination MAC Address</Label>
+                <FormField label="Destination MAC Address" htmlFor="destMac">
                   <Input
-                    id="destMac"
-                    placeholder="00:11:22:33:44:66"
-                    value={destMac}
-                    onChange={(e) => setDestMac(e.target.value)}
-                    disabled={loading}
+                  id="destMac"
+                  placeholder="00:11:22:33:44:66"
+                  value={destMac}
+                  onChange={(e) => setDestMac(e.target.value)}
+                  disabled={loading}
                   />
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="destMacInvert"
-                      checked={destMacInvert}
-                      onCheckedChange={(checked) => setDestMacInvert(checked as boolean)}
-                      disabled={loading}
-                    />
-                    <Label htmlFor="destMacInvert" className="text-sm font-normal cursor-pointer">
-                      Invert match
-                    </Label>
+                  <Checkbox
+                  id="destMacInvert"
+                  checked={destMacInvert}
+                  onCheckedChange={(checked) => setDestMacInvert(checked as boolean)}
+                  disabled={loading}
+                  />
+                  <label htmlFor="destMacInvert" className="text-sm font-normal cursor-pointer">
+                  Invert match
+                  </label>
                   </div>
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -713,22 +699,22 @@ export function EditRouteRuleModal({
                 {/* Source Groups */}
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-sm font-medium mb-2 block">Source Address/Domain Group (choose one)</Label>
+                    <p className="text-sm font-medium mb-2">Source Address/Domain Group (choose one)</p>
                     <RadioGroup value={sourceAddressDomainType} onValueChange={(value) => {
                       setSourceAddressDomainType(value);
                       setSourceAddressDomainValue("");
                     }} disabled={loading}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="none" id="edit-src-ad-none" />
-                        <Label htmlFor="edit-src-ad-none" className="font-normal cursor-pointer">None</Label>
+                        <label htmlFor="edit-src-ad-none" className="font-normal cursor-pointer">None</label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="address" id="edit-src-address" />
-                        <Label htmlFor="edit-src-address" className="font-normal cursor-pointer">Address Group</Label>
+                        <label htmlFor="edit-src-address" className="font-normal cursor-pointer">Address Group</label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="domain" id="edit-src-domain" />
-                        <Label htmlFor="edit-src-domain" className="font-normal cursor-pointer">Domain Group</Label>
+                        <label htmlFor="edit-src-domain" className="font-normal cursor-pointer">Domain Group</label>
                       </div>
                     </RadioGroup>
 
@@ -754,61 +740,59 @@ export function EditRouteRuleModal({
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-sourceMacGroup">Source MAC Group (optional)</Label>
+                  <FormField label="Source MAC Group (optional)" htmlFor="edit-sourceMacGroup">
                     <Select value={sourceMacGroup} onValueChange={setSourceMacGroup} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getGroupsByType("mac-group").map((g) => (
-                          <SelectItem key={g.name} value={g.name}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {getGroupsByType("mac-group").map((g) => (
+                    <SelectItem key={g.name} value={g.name}>
+                    {g.name}
+                    </SelectItem>
+                    ))}
+                    </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-sourcePortGroup">Source Port Group (optional)</Label>
+                  <FormField label="Source Port Group (optional)" htmlFor="edit-sourcePortGroup">
                     <Select value={sourcePortGroup} onValueChange={setSourcePortGroup} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getGroupsByType("port-group").map((g) => (
-                          <SelectItem key={g.name} value={g.name}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {getGroupsByType("port-group").map((g) => (
+                    <SelectItem key={g.name} value={g.name}>
+                    {g.name}
+                    </SelectItem>
+                    ))}
+                    </SelectContent>
                     </Select>
                     {sourcePortGroup && (
-                      <p className="text-xs text-muted-foreground">Protocol will be restricted to TCP/UDP</p>
+                    <p className="text-xs text-muted-foreground">Protocol will be restricted to TCP/UDP</p>
                     )}
-                  </div>
+                  </FormField>
                 </div>
 
                 {/* Destination Groups */}
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-sm font-medium mb-2 block">Destination Address/Domain Group (choose one)</Label>
+                    <p className="text-sm font-medium mb-2">Destination Address/Domain Group (choose one)</p>
                     <RadioGroup value={destAddressDomainType} onValueChange={(value) => {
                       setDestAddressDomainType(value);
                       setDestAddressDomainValue("");
                     }} disabled={loading}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="none" id="edit-dst-ad-none" />
-                        <Label htmlFor="edit-dst-ad-none" className="font-normal cursor-pointer">None</Label>
+                        <label htmlFor="edit-dst-ad-none" className="font-normal cursor-pointer">None</label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="address" id="edit-dst-address" />
-                        <Label htmlFor="edit-dst-address" className="font-normal cursor-pointer">Address Group</Label>
+                        <label htmlFor="edit-dst-address" className="font-normal cursor-pointer">Address Group</label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="domain" id="edit-dst-domain" />
-                        <Label htmlFor="edit-dst-domain" className="font-normal cursor-pointer">Domain Group</Label>
+                        <label htmlFor="edit-dst-domain" className="font-normal cursor-pointer">Domain Group</label>
                       </div>
                     </RadioGroup>
 
@@ -834,40 +818,38 @@ export function EditRouteRuleModal({
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-destMacGroup">Destination MAC Group (optional)</Label>
+                  <FormField label="Destination MAC Group (optional)" htmlFor="edit-destMacGroup">
                     <Select value={destMacGroup} onValueChange={setDestMacGroup} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getGroupsByType("mac-group").map((g) => (
-                          <SelectItem key={g.name} value={g.name}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {getGroupsByType("mac-group").map((g) => (
+                    <SelectItem key={g.name} value={g.name}>
+                    {g.name}
+                    </SelectItem>
+                    ))}
+                    </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-destPortGroup">Destination Port Group (optional)</Label>
+                  <FormField label="Destination Port Group (optional)" htmlFor="edit-destPortGroup">
                     <Select value={destPortGroup} onValueChange={setDestPortGroup} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getGroupsByType("port-group").map((g) => (
-                          <SelectItem key={g.name} value={g.name}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {getGroupsByType("port-group").map((g) => (
+                    <SelectItem key={g.name} value={g.name}>
+                    {g.name}
+                    </SelectItem>
+                    ))}
+                    </SelectContent>
                     </Select>
                     {destPortGroup && (
-                      <p className="text-xs text-muted-foreground">Protocol will be restricted to TCP/UDP</p>
+                    <p className="text-xs text-muted-foreground">Protocol will be restricted to TCP/UDP</p>
                     )}
-                  </div>
+                  </FormField>
                 </div>
               </div>
             </div>
@@ -876,53 +858,50 @@ export function EditRouteRuleModal({
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Port & Protocol</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sourcePort">Source Port</Label>
+                <FormField label="Source Port" htmlFor="sourcePort">
                   <Input
-                    id="sourcePort"
-                    placeholder="80 or 80,443 or 8000-9000"
-                    value={sourcePort}
-                    onChange={(e) => setSourcePort(e.target.value)}
-                    disabled={loading}
+                  id="sourcePort"
+                  placeholder="80 or 80,443 or 8000-9000"
+                  value={sourcePort}
+                  onChange={(e) => setSourcePort(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="destPort">Destination Port</Label>
+                <FormField label="Destination Port" htmlFor="destPort">
                   <Input
-                    id="destPort"
-                    placeholder="80 or 80,443 or 8000-9000"
-                    value={destPort}
-                    onChange={(e) => setDestPort(e.target.value)}
-                    disabled={loading}
+                  id="destPort"
+                  placeholder="80 or 80,443 or 8000-9000"
+                  value={destPort}
+                  onChange={(e) => setDestPort(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="protocol">Protocol</Label>
+                <FormField label="Protocol" htmlFor="protocol">
                   <Select value={protocol} onValueChange={setProtocol} disabled={loading}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All protocols" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(sourcePort || destPort || sourcePortGroup || destPortGroup ?
-                        ["tcp", "udp", "tcp_udp"] :
-                        PROTOCOLS
-                      ).map((p) => (
-                        <SelectItem key={p} value={p}>
-                          {p.toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                  <SelectTrigger>
+                  <SelectValue placeholder="All protocols" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  {(sourcePort || destPort || sourcePortGroup || destPortGroup ?
+                  ["tcp", "udp", "tcp_udp"] :
+                  PROTOCOLS
+                  ).map((p) => (
+                  <SelectItem key={p} value={p}>
+                  {p.toUpperCase()}
+                  </SelectItem>
+                  ))}
+                  </SelectContent>
                   </Select>
                   {(sourcePort || destPort || sourcePortGroup || destPortGroup) && (
-                    <p className="text-xs text-muted-foreground">Protocol restricted to TCP/UDP when using ports</p>
+                  <p className="text-xs text-muted-foreground">Protocol restricted to TCP/UDP when using ports</p>
                   )}
-                </div>
+                </FormField>
 
                 {protocol === "tcp" && (
                   <div className="space-y-2">
-                    <Label>TCP Flags</Label>
+                    <p className="text-sm font-semibold text-foreground">TCP Flags</p>
                     <div className="flex flex-wrap gap-2">
                       {TCP_FLAGS.map((flag) => (
                         <div key={flag} className="flex items-center space-x-2">
@@ -932,9 +911,9 @@ export function EditRouteRuleModal({
                             onCheckedChange={() => toggleTcpFlag(flag)}
                             disabled={loading}
                           />
-                          <Label htmlFor={`flag-${flag}`} className="text-sm font-normal cursor-pointer">
+                          <label htmlFor={`flag-${flag}`} className="text-sm font-normal cursor-pointer">
                             {flag.toUpperCase()}
-                          </Label>
+                          </label>
                         </div>
                       ))}
                     </div>
@@ -948,43 +927,40 @@ export function EditRouteRuleModal({
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm">ICMP Matching (IPv4 only)</h3>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpType">ICMP Type</Label>
+                  <FormField label="ICMP Type" htmlFor="icmpType">
                     <Input
-                      id="icmpType"
-                      placeholder="0-255"
-                      value={icmpType}
-                      onChange={(e) => setIcmpType(e.target.value)}
-                      disabled={loading}
+                    id="icmpType"
+                    placeholder="0-255"
+                    value={icmpType}
+                    onChange={(e) => setIcmpType(e.target.value)}
+                    disabled={loading}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpTypeName">ICMP Type Name</Label>
+                  <FormField label="ICMP Type Name" htmlFor="icmpTypeName">
                     <Select value={icmpTypeName} onValueChange={setIcmpTypeName} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ICMP_TYPE_NAMES.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {ICMP_TYPE_NAMES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                    {t}
+                    </SelectItem>
+                    ))}
+                    </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpCode">ICMP Code</Label>
+                  <FormField label="ICMP Code" htmlFor="icmpCode">
                     <Input
-                      id="icmpCode"
-                      placeholder="0-255"
-                      value={icmpCode}
-                      onChange={(e) => setIcmpCode(e.target.value)}
-                      disabled={loading}
+                    id="icmpCode"
+                    placeholder="0-255"
+                    value={icmpCode}
+                    onChange={(e) => setIcmpCode(e.target.value)}
+                    disabled={loading}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -993,43 +969,40 @@ export function EditRouteRuleModal({
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm">ICMPv6 Matching (IPv6 only)</h3>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpv6Type">ICMPv6 Type</Label>
+                  <FormField label="ICMPv6 Type" htmlFor="icmpv6Type">
                     <Input
-                      id="icmpv6Type"
-                      placeholder="0-255"
-                      value={icmpv6Type}
-                      onChange={(e) => setIcmpv6Type(e.target.value)}
-                      disabled={loading}
+                    id="icmpv6Type"
+                    placeholder="0-255"
+                    value={icmpv6Type}
+                    onChange={(e) => setIcmpv6Type(e.target.value)}
+                    disabled={loading}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpv6TypeName">ICMPv6 Type Name</Label>
+                  <FormField label="ICMPv6 Type Name" htmlFor="icmpv6TypeName">
                     <Select value={icmpv6TypeName} onValueChange={setIcmpv6TypeName} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ICMPV6_TYPE_NAMES.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {ICMPV6_TYPE_NAMES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                    {t}
+                    </SelectItem>
+                    ))}
+                    </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpv6Code">ICMPv6 Code</Label>
+                  <FormField label="ICMPv6 Code" htmlFor="icmpv6Code">
                     <Input
-                      id="icmpv6Code"
-                      placeholder="0-255"
-                      value={icmpv6Code}
-                      onChange={(e) => setIcmpv6Code(e.target.value)}
-                      disabled={loading}
+                    id="icmpv6Code"
+                    placeholder="0-255"
+                    value={icmpv6Code}
+                    onChange={(e) => setIcmpv6Code(e.target.value)}
+                    disabled={loading}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -1039,92 +1012,81 @@ export function EditRouteRuleModal({
               <h3 className="font-semibold text-sm">Packet Characteristics</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Fragment Matching</Label>
+                  <p className="text-sm font-semibold text-foreground">Fragment Matching</p>
                   <div className="flex gap-4">
-                    <div className="flex items-center space-x-2">
+                    <FormField label="Match fragments" htmlFor="fragment-match" horizontal>
                       <Checkbox
-                        id="fragment-match"
-                        checked={fragment === true}
-                        onCheckedChange={(checked) => setFragment(checked ? true : null)}
-                        disabled={loading}
+                      id="fragment-match"
+                      checked={fragment === true}
+                      onCheckedChange={(checked) => setFragment(checked ? true : null)}
+                      disabled={loading}
                       />
-                      <Label htmlFor="fragment-match" className="text-sm font-normal cursor-pointer">
-                        Match fragments
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Exclude fragments" htmlFor="fragment-exclude" horizontal>
                       <Checkbox
-                        id="fragment-exclude"
-                        checked={fragment === false}
-                        onCheckedChange={(checked) => setFragment(checked ? false : null)}
-                        disabled={loading}
+                      id="fragment-exclude"
+                      checked={fragment === false}
+                      onCheckedChange={(checked) => setFragment(checked ? false : null)}
+                      disabled={loading}
                       />
-                      <Label htmlFor="fragment-exclude" className="text-sm font-normal cursor-pointer">
-                        Exclude fragments
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="packetType">Packet Type</Label>
+                <FormField label="Packet Type" htmlFor="packetType">
                   <Select value={packetType} onValueChange={setPacketType} disabled={loading}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PACKET_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                  <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  {PACKET_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                  {t}
+                  </SelectItem>
+                  ))}
+                  </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="packetLength">Packet Length</Label>
+                <FormField label="Packet Length" htmlFor="packetLength">
                   <Input
-                    id="packetLength"
-                    placeholder="64 or 64-128"
-                    value={packetLength}
-                    onChange={(e) => setPacketLength(e.target.value)}
-                    disabled={loading}
+                  id="packetLength"
+                  placeholder="64 or 64-128"
+                  value={packetLength}
+                  onChange={(e) => setPacketLength(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="packetLengthExclude">Packet Length (Exclude)</Label>
+                <FormField label="Packet Length (Exclude)" htmlFor="packetLengthExclude">
                   <Input
-                    id="packetLengthExclude"
-                    placeholder="64 or 64-128"
-                    value={packetLengthExclude}
-                    onChange={(e) => setPacketLengthExclude(e.target.value)}
-                    disabled={loading}
+                  id="packetLengthExclude"
+                  placeholder="64 or 64-128"
+                  value={packetLengthExclude}
+                  onChange={(e) => setPacketLengthExclude(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dscp">DSCP</Label>
+                <FormField label="DSCP" htmlFor="dscp">
                   <Input
-                    id="dscp"
-                    placeholder="0-63 or range 0-10"
-                    value={dscp}
-                    onChange={(e) => setDscp(e.target.value)}
-                    disabled={loading}
+                  id="dscp"
+                  placeholder="0-63 or range 0-10"
+                  value={dscp}
+                  onChange={(e) => setDscp(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dscpExclude">DSCP (Exclude)</Label>
+                <FormField label="DSCP (Exclude)" htmlFor="dscpExclude">
                   <Input
-                    id="dscpExclude"
-                    placeholder="0-63 or range 0-10"
-                    value={dscpExclude}
-                    onChange={(e) => setDscpExclude(e.target.value)}
-                    disabled={loading}
+                  id="dscpExclude"
+                  placeholder="0-63 or range 0-10"
+                  value={dscpExclude}
+                  onChange={(e) => setDscpExclude(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -1133,7 +1095,7 @@ export function EditRouteRuleModal({
               <h3 className="font-semibold text-sm">Connection State & Marks</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Connection State</Label>
+                  <p className="text-sm font-semibold text-foreground">Connection State</p>
                   <div className="flex flex-wrap gap-2">
                     {CONNECTION_STATES.map((state) => (
                       <div key={state} className="flex items-center space-x-2">
@@ -1143,63 +1105,55 @@ export function EditRouteRuleModal({
                           onCheckedChange={() => toggleConnectionState(state)}
                           disabled={loading}
                         />
-                        <Label htmlFor={`state-${state}`} className="text-sm font-normal cursor-pointer">
+                        <label htmlFor={`state-${state}`} className="text-sm font-normal cursor-pointer">
                           {state}
-                        </Label>
+                        </label>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>IPsec Status</Label>
+                  <p className="text-sm font-semibold text-foreground">IPsec Status</p>
                   <div className="flex gap-4">
-                    <div className="flex items-center space-x-2">
+                    <FormField label="Match IPsec" htmlFor="ipsec-match" horizontal>
                       <Checkbox
-                        id="ipsec-match"
-                        checked={ipsec === true}
-                        onCheckedChange={(checked) => setIpsec(checked ? true : null)}
-                        disabled={loading}
+                      id="ipsec-match"
+                      checked={ipsec === true}
+                      onCheckedChange={(checked) => setIpsec(checked ? true : null)}
+                      disabled={loading}
                       />
-                      <Label htmlFor="ipsec-match" className="text-sm font-normal cursor-pointer">
-                        Match IPsec
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </FormField>
+                    <FormField label="Exclude IPsec" htmlFor="ipsec-exclude" horizontal>
                       <Checkbox
-                        id="ipsec-exclude"
-                        checked={ipsec === false}
-                        onCheckedChange={(checked) => setIpsec(checked ? false : null)}
-                        disabled={loading}
+                      id="ipsec-exclude"
+                      checked={ipsec === false}
+                      onCheckedChange={(checked) => setIpsec(checked ? false : null)}
+                      disabled={loading}
                       />
-                      <Label htmlFor="ipsec-exclude" className="text-sm font-normal cursor-pointer">
-                        Exclude IPsec
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="connectionMark">Connection Mark</Label>
+                <FormField label="Connection Mark" htmlFor="connectionMark">
                   <Input
-                    id="connectionMark"
-                    placeholder="0-2147483647"
-                    value={connectionMark}
-                    onChange={(e) => setConnectionMark(e.target.value)}
-                    disabled={loading}
+                  id="connectionMark"
+                  placeholder="0-2147483647"
+                  value={connectionMark}
+                  onChange={(e) => setConnectionMark(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="mark">Mark</Label>
+                <FormField label="Mark" htmlFor="mark">
                   <Input
-                    id="mark"
-                    placeholder="0-2147483647"
-                    value={mark}
-                    onChange={(e) => setMark(e.target.value)}
-                    disabled={loading}
+                  id="mark"
+                  placeholder="0-2147483647"
+                  value={mark}
+                  onChange={(e) => setMark(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -1208,32 +1162,30 @@ export function EditRouteRuleModal({
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm">TTL (IPv4 only)</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="ttlOperator">TTL Operator</Label>
+                  <FormField label="TTL Operator" htmlFor="ttlOperator">
                     <Select value={ttlOperator} onValueChange={setTtlOperator} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="eq">Equal to (eq)</SelectItem>
-                        <SelectItem value="gt">Greater than (gt)</SelectItem>
-                        <SelectItem value="lt">Less than (lt)</SelectItem>
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="eq">Equal to (eq)</SelectItem>
+                    <SelectItem value="gt">Greater than (gt)</SelectItem>
+                    <SelectItem value="lt">Less than (lt)</SelectItem>
+                    </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ttlValue">TTL Value</Label>
+                  </FormField>
+                  <FormField label="TTL Value" htmlFor="ttlValue">
                     <Input
-                      id="ttlValue"
-                      type="number"
-                      min="0"
-                      max="255"
-                      placeholder="0-255"
-                      value={ttlValue}
-                      onChange={(e) => setTtlValue(e.target.value)}
-                      disabled={loading || !ttlOperator}
+                    id="ttlValue"
+                    type="number"
+                    min="0"
+                    max="255"
+                    placeholder="0-255"
+                    value={ttlValue}
+                    onChange={(e) => setTtlValue(e.target.value)}
+                    disabled={loading || !ttlOperator}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -1242,32 +1194,30 @@ export function EditRouteRuleModal({
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm">Hop Limit (IPv6 only)</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="hopLimitOperator">Hop Limit Operator</Label>
+                  <FormField label="Hop Limit Operator" htmlFor="hopLimitOperator">
                     <Select value={hopLimitOperator} onValueChange={setHopLimitOperator} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="eq">Equal to (eq)</SelectItem>
-                        <SelectItem value="gt">Greater than (gt)</SelectItem>
-                        <SelectItem value="lt">Less than (lt)</SelectItem>
-                      </SelectContent>
+                    <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="eq">Equal to (eq)</SelectItem>
+                    <SelectItem value="gt">Greater than (gt)</SelectItem>
+                    <SelectItem value="lt">Less than (lt)</SelectItem>
+                    </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="hopLimitValue">Hop Limit Value</Label>
+                  </FormField>
+                  <FormField label="Hop Limit Value" htmlFor="hopLimitValue">
                     <Input
-                      id="hopLimitValue"
-                      type="number"
-                      min="0"
-                      max="255"
-                      placeholder="0-255"
-                      value={hopLimitValue}
-                      onChange={(e) => setHopLimitValue(e.target.value)}
-                      disabled={loading || !hopLimitOperator}
+                    id="hopLimitValue"
+                    type="number"
+                    min="0"
+                    max="255"
+                    placeholder="0-255"
+                    value={hopLimitValue}
+                    onChange={(e) => setHopLimitValue(e.target.value)}
+                    disabled={loading || !hopLimitOperator}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -1276,20 +1226,18 @@ export function EditRouteRuleModal({
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Time-based Matching</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="monthdays">Month Days</Label>
+                <FormField label="Month Days" htmlFor="monthdays" description="Example: 1,15,30">
                   <Input
-                    id="monthdays"
-                    placeholder="1-31 (comma-separated)"
-                    value={monthdays}
-                    onChange={(e) => setMonthdays(e.target.value)}
-                    disabled={loading}
+                  id="monthdays"
+                  placeholder="1-31 (comma-separated)"
+                  value={monthdays}
+                  onChange={(e) => setMonthdays(e.target.value)}
+                  disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">Example: 1,15,30</p>
-                </div>
+                </FormField>
 
                 <div className="space-y-2">
-                  <Label>Weekdays</Label>
+                  <p className="text-sm font-semibold text-foreground">Weekdays</p>
                   <div className="flex flex-wrap gap-2">
                     {WEEKDAYS.map((day) => (
                       <div key={day} className="flex items-center space-x-2">
@@ -1299,69 +1247,62 @@ export function EditRouteRuleModal({
                           onCheckedChange={() => toggleWeekday(day)}
                           disabled={loading}
                         />
-                        <Label htmlFor={`day-${day}`} className="text-sm font-normal cursor-pointer">
+                        <label htmlFor={`day-${day}`} className="text-sm font-normal cursor-pointer">
                           {day.substring(0, 3)}
-                        </Label>
+                        </label>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
+                <FormField label="Start Date" htmlFor="startDate">
                   <Input
-                    id="startDate"
-                    placeholder="YYYY-MM-DD"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    disabled={loading}
+                  id="startDate"
+                  placeholder="YYYY-MM-DD"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="stopDate">Stop Date</Label>
+                <FormField label="Stop Date" htmlFor="stopDate">
                   <Input
-                    id="stopDate"
-                    placeholder="YYYY-MM-DD"
-                    value={stopDate}
-                    onChange={(e) => setStopDate(e.target.value)}
-                    disabled={loading}
+                  id="stopDate"
+                  placeholder="YYYY-MM-DD"
+                  value={stopDate}
+                  onChange={(e) => setStopDate(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="startTime">Start Time</Label>
+                <FormField label="Start Time" htmlFor="startTime">
                   <Input
-                    id="startTime"
-                    placeholder="HH:MM:SS"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    disabled={loading}
+                  id="startTime"
+                  placeholder="HH:MM:SS"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="stopTime">Stop Time</Label>
+                <FormField label="Stop Time" htmlFor="stopTime">
                   <Input
-                    id="stopTime"
-                    placeholder="HH:MM:SS"
-                    value={stopTime}
-                    onChange={(e) => setStopTime(e.target.value)}
-                    disabled={loading}
+                  id="stopTime"
+                  placeholder="HH:MM:SS"
+                  value={stopTime}
+                  onChange={(e) => setStopTime(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="flex items-center space-x-2">
+                <FormField label="Use UTC time" htmlFor="utc" horizontal>
                   <Checkbox
-                    id="utc"
-                    checked={utc}
-                    onCheckedChange={(checked) => setUtc(checked as boolean)}
-                    disabled={loading}
+                  id="utc"
+                  checked={utc}
+                  onCheckedChange={(checked) => setUtc(checked as boolean)}
+                  disabled={loading}
                   />
-                  <Label htmlFor="utc" className="text-sm font-normal cursor-pointer">
-                    Use UTC time
-                  </Label>
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -1369,55 +1310,51 @@ export function EditRouteRuleModal({
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Rate Limiting</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="limitBurst">Limit Burst</Label>
+                <FormField label="Limit Burst" htmlFor="limitBurst">
                   <Input
-                    id="limitBurst"
-                    placeholder="Number of packets"
-                    value={limitBurst}
-                    onChange={(e) => setLimitBurst(e.target.value)}
-                    disabled={loading}
+                  id="limitBurst"
+                  placeholder="Number of packets"
+                  value={limitBurst}
+                  onChange={(e) => setLimitBurst(e.target.value)}
+                  disabled={loading}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Maximum burst before rate limiting applies
+                  Maximum burst before rate limiting applies
                   </p>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="limitRate">Limit Rate</Label>
+                <FormField label="Limit Rate" htmlFor="limitRate">
                   <Input
-                    id="limitRate"
-                    placeholder="packets/second, packets/minute, etc."
-                    value={limitRate}
-                    onChange={(e) => setLimitRate(e.target.value)}
-                    disabled={loading}
+                  id="limitRate"
+                  placeholder="packets/second, packets/minute, etc."
+                  value={limitRate}
+                  onChange={(e) => setLimitRate(e.target.value)}
+                  disabled={loading}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Example: 10/second, 100/minute
+                  Example: 10/second, 100/minute
                   </p>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="recentCount">Recent Count</Label>
+                <FormField label="Recent Count" htmlFor="recentCount">
                   <Input
-                    id="recentCount"
-                    placeholder="Number of packets"
-                    value={recentCount}
-                    onChange={(e) => setRecentCount(e.target.value)}
-                    disabled={loading}
+                  id="recentCount"
+                  placeholder="Number of packets"
+                  value={recentCount}
+                  onChange={(e) => setRecentCount(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="recentTime">Recent Time</Label>
+                <FormField label="Recent Time" htmlFor="recentTime">
                   <Input
-                    id="recentTime"
-                    placeholder="Seconds"
-                    value={recentTime}
-                    onChange={(e) => setRecentTime(e.target.value)}
-                    disabled={loading}
+                  id="recentTime"
+                  placeholder="Seconds"
+                  value={recentTime}
+                  onChange={(e) => setRecentTime(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
           </TabsContent>
@@ -1425,54 +1362,48 @@ export function EditRouteRuleModal({
           {/* Set Actions Tab */}
           <TabsContent value="set" className="space-y-6">
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
+              <FormField label="Drop matching packets" htmlFor="actionDrop" horizontal>
                 <Checkbox
-                  id="actionDrop"
-                  checked={actionDrop}
-                  onCheckedChange={(checked) => setActionDrop(checked as boolean)}
-                  disabled={loading}
+                id="actionDrop"
+                checked={actionDrop}
+                onCheckedChange={(checked) => setActionDrop(checked as boolean)}
+                disabled={loading}
                 />
-                <Label htmlFor="actionDrop" className="text-sm font-normal cursor-pointer">
-                  Drop matching packets
-                </Label>
-              </div>
+              </FormField>
             </div>
 
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Packet Marking</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="actionConnectionMark">Connection Mark</Label>
+                <FormField label="Connection Mark" htmlFor="actionConnectionMark">
                   <Input
-                    id="actionConnectionMark"
-                    placeholder="0-2147483647"
-                    value={actionConnectionMark}
-                    onChange={(e) => setActionConnectionMark(e.target.value)}
-                    disabled={loading}
+                  id="actionConnectionMark"
+                  placeholder="0-2147483647"
+                  value={actionConnectionMark}
+                  onChange={(e) => setActionConnectionMark(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="actionMark">Mark</Label>
+                <FormField label="Mark" htmlFor="actionMark">
                   <Input
-                    id="actionMark"
-                    placeholder="0-2147483647"
-                    value={actionMark}
-                    onChange={(e) => setActionMark(e.target.value)}
-                    disabled={loading}
+                  id="actionMark"
+                  placeholder="0-2147483647"
+                  value={actionMark}
+                  onChange={(e) => setActionMark(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="actionDscp">DSCP</Label>
+                <FormField label="DSCP" htmlFor="actionDscp">
                   <Input
-                    id="actionDscp"
-                    placeholder="0-63"
-                    value={actionDscp}
-                    onChange={(e) => setActionDscp(e.target.value)}
-                    disabled={loading}
+                  id="actionDscp"
+                  placeholder="0-63"
+                  value={actionDscp}
+                  onChange={(e) => setActionDscp(e.target.value)}
+                  disabled={loading}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -1480,22 +1411,22 @@ export function EditRouteRuleModal({
               <h3 className="font-semibold text-sm">Routing</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium mb-2 block">Routing Table</Label>
+                  <p className="text-sm font-medium mb-2">Routing Table</p>
                   <RadioGroup value={actionTableMode} onValueChange={(value: any) => {
                     setActionTableMode(value);
                     if (value !== "custom") setActionTable("");
                   }} disabled={loading}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="none" id="edit-table-none" />
-                      <Label htmlFor="edit-table-none" className="font-normal cursor-pointer">None</Label>
+                      <label htmlFor="edit-table-none" className="font-normal cursor-pointer">None</label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="main" id="edit-table-main" />
-                      <Label htmlFor="edit-table-main" className="font-normal cursor-pointer">Main table</Label>
+                      <label htmlFor="edit-table-main" className="font-normal cursor-pointer">Main table</label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="custom" id="edit-table-custom" />
-                      <Label htmlFor="edit-table-custom" className="font-normal cursor-pointer">Custom table</Label>
+                      <label htmlFor="edit-table-custom" className="font-normal cursor-pointer">Custom table</label>
                     </div>
                   </RadioGroup>
                   {actionTableMode === "custom" && (
@@ -1511,19 +1442,18 @@ export function EditRouteRuleModal({
                 </div>
 
                 {capabilities?.features.vrf_routing?.supported && (
-                  <div className="space-y-2">
-                    <Label htmlFor="actionVrf">VRF</Label>
+                  <FormField label="VRF" htmlFor="actionVrf">
                     <Input
-                      id="actionVrf"
-                      placeholder="VRF name"
-                      value={actionVrf}
-                      onChange={(e) => setActionVrf(e.target.value)}
-                      disabled={loading}
+                    id="actionVrf"
+                    placeholder="VRF name"
+                    value={actionVrf}
+                    onChange={(e) => setActionVrf(e.target.value)}
+                    disabled={loading}
                     />
                     <p className="text-xs text-muted-foreground">
-                      VRF routing (VyOS 1.5+ only)
+                    VRF routing (VyOS 1.5+ only)
                     </p>
-                  </div>
+                  </FormField>
                 )}
               </div>
             </div>
@@ -1531,19 +1461,18 @@ export function EditRouteRuleModal({
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">TCP Options</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="actionTcpMss">TCP MSS</Label>
+                <FormField label="TCP MSS" htmlFor="actionTcpMss">
                   <Input
-                    id="actionTcpMss"
-                    placeholder="500-1460 or 'clamp-mss-to-pmtu'"
-                    value={actionTcpMss}
-                    onChange={(e) => setActionTcpMss(e.target.value)}
-                    disabled={loading}
+                  id="actionTcpMss"
+                  placeholder="500-1460 or 'clamp-mss-to-pmtu'"
+                  value={actionTcpMss}
+                  onChange={(e) => setActionTcpMss(e.target.value)}
+                  disabled={loading}
                   />
                   <p className="text-xs text-muted-foreground">
-                    TCP Maximum Segment Size
+                  TCP Maximum Segment Size
                   </p>
-                </div>
+                </FormField>
               </div>
             </div>
           </TabsContent>

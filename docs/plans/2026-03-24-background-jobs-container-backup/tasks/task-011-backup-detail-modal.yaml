@@ -1,0 +1,181 @@
+id: task-011-backup-detail-modal
+title: "Create BackupDetailModal for viewing full instance backup results with container details"
+archetype: custom
+phase: 3
+depends_on: [task-008]
+parallel_with: [task-010]
+agent: general-purpose
+status: not_started
+
+files:
+  create:
+    - "frontend/src/components/management/BackupDetailModal.tsx"
+  modify:
+    - "frontend/src/components/management/JobCard.tsx"
+
+context_files:
+  - ".derpo/architecture.md"
+  - ".derpo/pattern-snippets/frontend-modal.tsx"
+  - "frontend/src/lib/api/types/background-jobs.ts"
+  - "frontend/src/components/management/JobCard.tsx"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Create the BackupDetailModal that shows the full InstanceBackupResult for a completed
+  backup job, including container backup details with a tree layout.
+
+  ## Step 1: Read reference files
+  - Read `.derpo/pattern-snippets/frontend-modal.tsx` for the Dialog pattern.
+  - Read `frontend/src/lib/api/types/background-jobs.ts` for the data types.
+  - Read `frontend/src/components/management/JobCard.tsx` to understand how to integrate
+    the "View Details" button.
+
+  ## Step 2: Create BackupDetailModal
+  Create `frontend/src/components/management/BackupDetailModal.tsx`:
+
+  ```typescript
+  "use client";
+
+  import { useState } from "react";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";
+  import { Badge } from "@/components/ui/badge";
+  import { Button } from "@/components/ui/button";
+  import { ScrollArea } from "@/components/ui/scroll-area";
+  import {
+    CheckCircle2,
+    XCircle,
+    AlertTriangle,
+    ChevronDown,
+    ChevronRight,
+    Container,
+    HardDrive,
+    Image as ImageIcon,
+    Activity,
+    Code,
+  } from "lucide-react";
+  import { cn } from "@/lib/utils";
+  import type {
+    InstanceBackupResult,
+    ContainerFullBackup,
+    VolumeBackupData,
+  } from "@/lib/api/types/background-jobs";
+  ```
+
+  Props interface:
+  ```typescript
+  interface BackupDetailModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    instanceName: string;
+    siteName: string;
+    result: InstanceBackupResult;
+  }
+  ```
+
+  The modal content should have:
+
+  ### Header section
+  - Title: "Instance Backup — {instanceName} ({siteName})"
+  - Status badge (SUCCESS/PARTIAL/FAILED) with appropriate color
+
+  ### Summary section
+  - Config status: checkmark icon + "VyOS config captured — {N} set commands"
+    (count lines in `result.config_commands`).
+  - If config is null/failed: X icon + error message.
+
+  ### Container section (only if `result.containers` is not null and has items)
+  - Header: "Containers ({count}):"
+  - Tree layout with connecting lines (use CSS border-left for tree lines):
+
+  For each container in `result.containers`, render a row:
+  ```
+  [Container icon] {container_name}
+    [check/x] config    [check/x] image digest pinned    [check/x] volume info    [Running/Stopped badge]
+  ```
+
+  Specifics per container:
+  - **Config**: Always a checkmark (config_commands are always present).
+  - **Image digest**: Checkmark if `image_manifest.image_digest` is not null,
+    X if `image_manifest.error` exists.
+  - **Volume info**: For each volume, show source_path and size.
+    Checkmark if `data_base64` exists, X if `error` exists,
+    show size in human-readable format (KB/MB/GB).
+  - **Runtime status**: Badge showing "Running" (green) or "Stopped" (gray) based
+    on `runtime_status.running`.
+
+  Each container row should be expandable (click to toggle). When expanded, show:
+  - The raw `config_commands` text in a monospace code block.
+  - Volume details: source path, size, error if any.
+  - Image manifest: image_ref, image_digest.
+
+  ### Container errors section
+  If `result.container_backup_errors` has entries, show a yellow warning section:
+  ```
+  [AlertTriangle icon] Container Backup Warnings:
+  - warning 1
+  - warning 2
+  ```
+
+  ## Step 3: State management
+  Use a `Set<string>` state for tracking which containers are expanded:
+  ```typescript
+  const [expandedContainers, setExpandedContainers] = useState<Set<string>>(new Set());
+
+  const toggleContainer = (name: string) => {
+    setExpandedContainers((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
+  ```
+
+  ## Step 4: Helper functions
+  - `formatBytes(bytes: number | null)` — convert bytes to human-readable (B/KB/MB/GB).
+  - Status icon helper — returns CheckCircle2 (green), XCircle (red), or AlertTriangle (yellow).
+
+  ## Step 5: Update JobCard.tsx
+  Add a "View Details" button to JobCard that opens the BackupDetailModal:
+
+  1. Add state for the modal: `const [detailOpen, setDetailOpen] = useState(false);`
+  2. Add a "View Details" button that shows when job status is "success" or "partial"
+     and `job.result` is not null.
+  3. Render `<BackupDetailModal>` at the bottom of the JobCard component, passing the
+     job's result data.
+
+  ## Important notes
+  - The Dialog should be large — use `className="max-w-3xl"` on DialogContent.
+  - Use `ScrollArea` for the content area since backups with many containers could be long.
+  - Monospace code blocks should use `font-mono text-xs bg-muted rounded-md p-3 overflow-x-auto`.
+  - Tree lines can be achieved with `border-l-2 border-border ml-4 pl-4`.
+  - Use the `Container` icon from lucide-react for container items.
+
+acceptance_criteria:
+  - "BackupDetailModal.tsx exists with Dialog-based modal structure"
+  - "Modal displays instance name, site name, and overall status badge"
+  - "Config summary shows command count from config_commands"
+  - "Container tree layout shows each container with config/digest/volume/runtime status"
+  - "Status indicators use color-coded icons (green check, red X, yellow warning)"
+  - "Container rows are expandable to show raw config commands and volume details"
+  - "Volume sizes are displayed in human-readable format (KB/MB/GB)"
+  - "Container backup errors/warnings are shown in a yellow warning section"
+  - "JobCard.tsx has a 'View Details' button for success/partial jobs"
+  - "BackupDetailModal is rendered inside JobCard when detail is toggled"
+  - "formatBytes helper correctly formats byte sizes"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

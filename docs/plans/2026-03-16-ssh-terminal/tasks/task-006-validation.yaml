@@ -1,0 +1,61 @@
+id: "task-006"
+title: "Validate TypeScript compilation and linting"
+phase: observe
+execution_phase: 3
+agent: "general-purpose"
+status: not_started
+depends_on: ["task-005"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify: []
+
+context_files: []
+
+instructions: |
+  Run validation checks for the SSH terminal feature.
+
+  ## Steps:
+
+  1. TypeScript type check:
+     ```bash
+     cd frontend && npx tsc --noEmit
+     ```
+
+  2. ESLint:
+     ```bash
+     cd frontend && npm run lint
+     ```
+
+  3. Verify all expected files exist:
+     - backend/ws_auth.py
+     - backend/routers/terminal/__init__.py
+     - backend/routers/terminal/terminal.py
+     - frontend/src/lib/api/terminal.ts
+     - frontend/src/hooks/useTerminalWebSocket.ts
+     - frontend/src/components/terminal/SSHTerminal.tsx
+     - frontend/src/app/(default)/(app)/system/terminal/page.tsx
+
+  4. Verify registrations:
+     - terminal_router in backend/app.py
+     - /vyos/terminal/ws/shell in backend/middleware/auth.py PUBLIC_PATHS
+     - /system/terminal in Sidebar.tsx
+     - authenticate_websocket imported in monitoring.py (from ws_auth)
+
+  5. Fix any TypeScript or lint errors in the new files.
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit (no new errors)"
+  - "All 7 new files exist"
+  - "All registration points verified"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

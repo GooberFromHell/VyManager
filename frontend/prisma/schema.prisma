@@ -155,7 +155,9 @@ model Site {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  instances Instance[]
+  instances   Instance[]
+  proxyHostId String?
+  proxyHost   Instance?  @relation("SiteProxyHost", fields: [proxyHostId], references: [id], onDelete: SetNull)
 
   @@map("sites")
 }
@@ -188,6 +190,13 @@ model Instance {
   sshKeyNonce        String?
   sshKeyConfigured   Boolean  @default(false)
 
+  // Prometheus monitoring
+  prometheusEnabled    Boolean  @default(false)
+  prometheusPort       Int      @default(9273)
+  prometheusAuth       Boolean  @default(false)
+  prometheusUsername   String?
+  prometheusPassword  String?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -195,6 +204,7 @@ model Instance {
   site              Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
   activeSessions    ActiveSession[]
   userInstanceRoles UserInstanceRole[]
+  proxiedSites      Site[]             @relation("SiteProxyHost")
 
   @@unique([siteId, name])
   @@index([siteId])
@@ -342,4 +352,34 @@ model UserFeaturePermission {
   @@unique([userInstanceRoleId, feature])
   @@index([userInstanceRoleId])
   @@map("user_feature_permissions")
+}
+
+// ============================================================================
+// Background Jobs
+// ============================================================================
+
+model BackgroundJob {
+  id               String    @id @default(cuid())
+  triggerId        String
+  jobType          String
+  instanceId       String
+  instanceName     String
+  siteId           String
+  siteName         String
+  userId           String
+  status           String    @default("queued")
+  progress         Int       @default(0)
+  createdAt        DateTime  @default(now())
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  result           Json?
+  log              Json      @default("[]")
+  error            String?   @db.Text
+  cancelRequested  Boolean   @default(false)
+
+  @@index([userId])
+  @@index([triggerId])
+  @@index([instanceId])
+  @@index([status])
+  @@map("background_jobs")
 }

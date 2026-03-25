@@ -1,0 +1,113 @@
+id: "task-004"
+title: "Broadcast Relay — Backend mapper, builder, router"
+phase: produce
+agent: python-pro
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-002", "task-003", "task-005"]
+
+files:
+  create:
+    - "backend/vyos_mappers/broadcast_relay/__init__.py"
+    - "backend/vyos_mappers/broadcast_relay/broadcast_relay.py"
+    - "backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/__init__.py"
+    - "backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/v1_4.py"
+    - "backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/v1_5.py"
+    - "backend/vyos_builders/broadcast_relay/__init__.py"
+    - "backend/vyos_builders/broadcast_relay/broadcast_relay.py"
+    - "backend/routers/broadcast_relay/__init__.py"
+    - "backend/routers/broadcast_relay/broadcast_relay.py"
+  modify: []
+
+context_files:
+  - "backend/vyos_mappers/ntp/ntp.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/__init__.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/v1_4.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/v1_5.py"
+  - "backend/vyos_mappers/base.py"
+  - "backend/vyos_builders/ntp/ntp.py"
+  - "backend/routers/ntp/ntp.py"
+  - "backend/routers/dns_forwarding/dns_forwarding.py"
+
+instructions: |
+  Create Broadcast Relay backend. This is a collection-based service (relay instances by numeric ID).
+  Use NTP as the primary reference, DNS Forwarding router for collection config parsing patterns.
+
+  ## VyOS CLI Command Tree
+  ```
+  set service broadcast-relay
+    id <1-99>                  # relay instance number (collection key)
+      description <text>
+      interface <name>         # multi-value
+      address <ip>             # destination broadcast address
+      port <1-65535>           # UDP port to relay
+      disable                  # flag
+  ```
+
+  Config path: `full_config["service"]["broadcast-relay"]["id"]` → dict keyed by relay ID
+
+  No significant v1.4 vs v1.5 differences — stable across versions.
+
+  ## Step 1: Mapper (backend/vyos_mappers/broadcast_relay/broadcast_relay.py)
+
+  Create `BroadcastRelayMapper(BaseFeatureMapper)`:
+  - `get_id(relay_id)` → `["service", "broadcast-relay", "id", relay_id]`
+  - `get_description(relay_id, desc)` → `["service", "broadcast-relay", "id", relay_id, "description", desc]`
+  - `get_interface(relay_id, iface)` → `["service", "broadcast-relay", "id", relay_id, "interface", iface]`
+  - `get_address(relay_id, addr)` → `["service", "broadcast-relay", "id", relay_id, "address", addr]`
+  - `get_port(relay_id, port)` → `["service", "broadcast-relay", "id", relay_id, "port", port]`
+  - `get_disable(relay_id)` → `["service", "broadcast-relay", "id", relay_id, "disable"]`
+  - Corresponding `_path` methods for delete operations
+
+  Version mappers: Both v1.4 and v1.5 are identical (no version-specific features).
+  Still create the full _versions/ structure for consistency.
+
+  ## Step 2: Builder (backend/vyos_builders/broadcast_relay/broadcast_relay.py)
+
+  Create `BroadcastRelayBatchBuilder`:
+  - mapper_key = "broadcast_relay"
+  - Feature methods (relay_id is first param for most):
+    - set_id(relay_id), delete_id(relay_id)
+    - set_description(relay_id, desc), delete_description(relay_id)
+    - set_interface(relay_id, iface), delete_interface(relay_id, iface)
+    - set_address(relay_id, addr), delete_address(relay_id)
+    - set_port(relay_id, port), delete_port(relay_id)
+    - set_disable(relay_id), delete_disable(relay_id)
+  - get_capabilities(): return version info, no special feature flags
+
+  ## Step 3: Router (backend/routers/broadcast_relay/broadcast_relay.py)
+
+  - `router = APIRouter(prefix="/vyos/broadcast-relay", tags=["broadcast-relay"])`
+  - Pydantic models:
+    - `BroadcastRelayInstance`: id (str), description (Optional[str]), interfaces (List[str]),
+      address (Optional[str]), port (Optional[str]), disabled (bool)
+    - `BroadcastRelayConfigResponse`: relays (List[BroadcastRelayInstance])
+    - `BroadcastRelayBatchOperation`: op (str), value (Optional[str])
+    - `BroadcastRelayBatchRequest`: item_name (Optional[str]), operations (List[...])
+  - GET /config: Parse full_config["service"]["broadcast-relay"]["id"] dict.
+    Each key is a relay ID, value is a dict with description, interface (may be str or list),
+    address, port, disable. Handle gracefully if "broadcast-relay" or "id" key doesn't exist.
+  - GET /capabilities, POST /batch: standard patterns
+  - POST /batch MUST call ensure_snapshot_before_change()
+  - Use FeatureGroup.BROADCAST_RELAY for permissions
+
+acceptance_criteria:
+  - "File exists: backend/vyos_mappers/broadcast_relay/broadcast_relay.py"
+  - "File exists: backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/v1_4.py"
+  - "File exists: backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/v1_5.py"
+  - "File exists: backend/vyos_mappers/broadcast_relay/broadcast_relay_versions/__init__.py"
+  - "File exists: backend/vyos_builders/broadcast_relay/broadcast_relay.py"
+  - "File exists: backend/routers/broadcast_relay/broadcast_relay.py"
+  - "Grep match: 'BroadcastRelayMapper' in backend/vyos_mappers/broadcast_relay/broadcast_relay.py"
+  - "Grep match: 'BroadcastRelayBatchBuilder' in backend/vyos_builders/broadcast_relay/broadcast_relay.py"
+  - "Grep match: 'ensure_snapshot_before_change' in backend/routers/broadcast_relay/broadcast_relay.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

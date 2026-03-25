@@ -21,8 +21,8 @@ from pydantic import BaseModel, Field
 from monitoring_commands import build_command, get_available_commands
 from rbac_permissions import FeatureGroup, check_permission, PermissionLevel
 from fastapi_permissions import require_read_permission, require_super_admin
-from session_cookie import verify_session_cookie
 from ssh_key_manager import decrypt_private_key, generate_keypair
+from ws_auth import authenticate_websocket
 
 router = APIRouter(prefix="/vyos/monitoring", tags=["monitoring"])
 
@@ -217,6 +217,97 @@ async def get_monitoring_status(request: Request):
     return MonitoringStatusResponse(configured=bool(instance["sshKeyConfigured"]))
 
 
+@router.post("/ssh-test", response_model=GenericResponse)
+async def test_ssh_connection(request: Request):
+    """
+    Test SSH connectivity to the active instance using the stored key.
+    If the connection succeeds, auto-marks sshKeyConfigured = true.
+    This handles the case where users set up SSH keys outside VyManager's UI.
+    """
+    await require_read_permission(request, FeatureGroup.MONITORING)
+    db_pool = _get_db_pool(request)
+    user_id = request.state.user_id
+
+    async with db_pool.acquire() as conn:
+        active = await conn.fetchrow(
+            'SELECT "instanceId" FROM active_sessions WHERE "userId" = $1',
+            user_id,
+        )
+        if not active:
+            raise HTTPException(status_code=404, detail="No active instance")
+
+        instance = await conn.fetchrow(
+            """
+            SELECT id, host, "sshPort", "sshUsername", "sshEncryptedPrivKey",
+                   "sshKeyNonce", "sshKeyConfigured"
+            FROM instances WHERE id = $1
+            """,
+            active["instanceId"],
+        )
+
+    if not instance:
+        raise HTTPException(status_code=404, detail="Instance not found")
+
+    if not instance["sshEncryptedPrivKey"] or not instance["sshKeyNonce"]:
+        raise HTTPException(
+            status_code=400,
+            detail="No SSH key generated for this instance. Generate one first via Sites > Edit Instance > SSH.",
+        )
+
+    # Decrypt private key
+    try:
+        private_key_pem = decrypt_private_key(
+            instance["sshEncryptedPrivKey"],
+            instance["sshKeyNonce"],
+        )
+        private_key = asyncssh.import_private_key(private_key_pem.decode("utf-8"))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to decrypt SSH key: {str(e)}",
+        )
+
+    ssh_username = instance["sshUsername"] or "vyos"
+
+    # Attempt SSH connection
+    try:
+        ssh_conn = await asyncio.wait_for(
+            asyncssh.connect(
+                instance["host"],
+                port=instance["sshPort"],
+                username=ssh_username,
+                client_keys=[private_key],
+                known_hosts=None,
+            ),
+            timeout=10,
+        )
+        ssh_conn.close()
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"SSH connection to {instance['host']}:{instance['sshPort']} timed out.",
+        )
+    except (OSError, asyncssh.Error) as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"SSH connection failed: {str(e)}",
+        )
+
+    # Connection succeeded — auto-mark as configured
+    if not instance["sshKeyConfigured"]:
+        async with db_pool.acquire() as conn:
+            await conn.execute(
+                """
+                UPDATE instances
+                SET "sshKeyConfigured" = true, "updatedAt" = NOW()
+                WHERE id = $1
+                """,
+                instance["id"],
+            )
+
+    return GenericResponse(success=True, message="SSH connection successful. Monitoring is now enabled.")
+
+
 @router.get("/commands", response_model=CommandsListResponse)
 async def list_commands(request: Request):
     """List available monitoring commands."""
@@ -243,7 +334,7 @@ async def websocket_monitor(websocket: WebSocket):
     await websocket.accept()
 
     # Authenticate via session cookie
-    user_info = await _authenticate_websocket(websocket)
+    user_info = await authenticate_websocket(websocket)
     if not user_info:
         return
 
@@ -491,71 +582,3 @@ def _get_db_pool(request: Request) -> asyncpg.Pool:
     return db_pool
 
 
-async def _authenticate_websocket(websocket: WebSocket) -> Optional[dict]:
-    """
-    Authenticate WebSocket connection using session cookie.
-    Returns user_info dict or None if auth fails.
-    """
-    db_pool = getattr(websocket.app.state, "db_pool", None)
-    if not db_pool:
-        await websocket.send_json({"type": "error", "data": "Database not available"})
-        await websocket.close()
-        return None
-
-    cookies = websocket.cookies
-    session_token = cookies.get("better-auth.session_token") or cookies.get(
-        "__Secure-better-auth.session_token"
-    )
-
-    if not session_token:
-        await websocket.send_json({"type": "error", "data": "Not authenticated"})
-        await websocket.close()
-        return None
-
-    token_id = verify_session_cookie(session_token)
-    if not token_id:
-        await websocket.send_json({"type": "error", "data": "Invalid session token"})
-        await websocket.close()
-        return None
-
-    async with db_pool.acquire() as conn:
-        session = await conn.fetchrow(
-            """
-            SELECT s.id, s."userId", s."expiresAt", u.email, u.name
-            FROM sessions s
-            JOIN users u ON s."userId" = u.id
-            WHERE s.token = $1
-            """,
-            token_id,
-        )
-
-        if not session:
-            await websocket.send_json({"type": "error", "data": "Session not found"})
-            await websocket.close()
-            return None
-
-        if session["expiresAt"] < datetime.utcnow():
-            await websocket.send_json({"type": "error", "data": "Session expired"})
-            await websocket.close()
-            return None
-
-        active = await conn.fetchrow(
-            """
-            SELECT "instanceId" FROM active_sessions WHERE "userId" = $1
-            """,
-            session["userId"],
-        )
-
-        if not active:
-            await websocket.send_json({
-                "type": "error",
-                "data": "No active instance. Connect to an instance first.",
-            })
-            await websocket.close()
-            return None
-
-        return {
-            "user_id": session["userId"],
-            "instance_id": active["instanceId"],
-            "email": session["email"],
-        }

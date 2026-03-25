@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,22 +51,20 @@ function TargetedNeighborSection({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Enable toggle */}
-      <div className="flex items-center gap-3">
+    <Fieldset>
+      <FormField
+        label={`Enable ${label} Targeted Neighbors`}
+        htmlFor={`targeted-enable-${label}`}
+        horizontal
+      >
         <Checkbox
           id={`targeted-enable-${label}`}
           checked={value.enable}
           onCheckedChange={(checked) => onChange({ ...value, enable: checked === true })}
         />
-        <Label htmlFor={`targeted-enable-${label}`} className="cursor-pointer">
-          Enable {label} Targeted Neighbors
-        </Label>
-      </div>
+      </FormField>
 
-      {/* Address chip list */}
-      <div className="space-y-2">
-        <Label>Addresses</Label>
+      <FormField label="Addresses">
         <div className="flex flex-wrap gap-2 min-h-[36px] p-2 border rounded-md bg-muted/30">
           {value.addresses.map((addr) => (
             <Badge key={addr} variant="secondary" className="gap-1 font-mono text-xs">
@@ -84,7 +82,7 @@ function TargetedNeighborSection({
             <span className="text-xs text-muted-foreground self-center">No addresses</span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-2">
           <Input
             value={newAddress}
             onChange={(e) => setNewAddress(e.target.value)}
@@ -95,12 +93,13 @@ function TargetedNeighborSection({
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+      </FormField>
 
-      {/* Hello Holdtime */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor={`targeted-holdtime-${label}`}>Hello Holdtime (seconds)</Label>
+        <FormField
+          label="Hello Holdtime (seconds)"
+          htmlFor={`targeted-holdtime-${label}`}
+        >
           <Input
             id={`targeted-holdtime-${label}`}
             type="number"
@@ -114,10 +113,12 @@ function TargetedNeighborSection({
             }
             placeholder="Default"
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-2">
-          <Label htmlFor={`targeted-interval-${label}`}>Hello Interval (seconds)</Label>
+        <FormField
+          label="Hello Interval (seconds)"
+          htmlFor={`targeted-interval-${label}`}
+        >
           <Input
             id={`targeted-interval-${label}`}
             type="number"
@@ -131,9 +132,9 @@ function TargetedNeighborSection({
             }
             placeholder="Default"
           />
-        </div>
+        </FormField>
       </div>
-    </div>
+    </Fieldset>
   );
 }
 

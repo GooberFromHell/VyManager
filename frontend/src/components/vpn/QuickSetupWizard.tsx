@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { Progress } from "@/components/ui/progress";
 import {
   AlertCircle,
@@ -451,110 +451,100 @@ PersistentKeepalive = 25`;
         {/* Server Step */}
         {step === "server" && (
           <div className="space-y-4 py-2">
-            {/* Interface Name */}
-            <div className="space-y-2">
-              <Label htmlFor="wizard-interface">Interface Name</Label>
-              <Input
-                id="wizard-interface"
-                value={interfaceName}
-                onChange={(e) => setInterfaceName(e.target.value)}
-                placeholder="wg0"
-              />
-            </div>
-
-            {/* Server Address */}
-            <div className="space-y-2">
-              <Label htmlFor="wizard-server-addr">VPN Network Address</Label>
-              <Input
-                id="wizard-server-addr"
-                value={serverAddress}
-                onChange={(e) => setServerAddress(e.target.value)}
-                placeholder="10.10.0.1/24"
-              />
-              <p className="text-xs text-muted-foreground">
-                The server's address on the VPN network. Use a private range.
-              </p>
-            </div>
-
-            {/* Listen Port */}
-            <div className="space-y-2">
-              <Label htmlFor="wizard-port">Listen Port</Label>
-              <Input
-                id="wizard-port"
-                type="number"
-                value={listenPort}
-                onChange={(e) => setListenPort(e.target.value)}
-                placeholder="51820"
-              />
-            </div>
-
-            {/* Create Client Option */}
-            <div className="flex items-center space-x-2 rounded-lg border p-3">
-              <Checkbox
-                id="wizard-create-client"
-                checked={createClient}
-                onCheckedChange={(checked) => setCreateClient(checked === true)}
-              />
-              <div className="flex-1">
-                <Label htmlFor="wizard-create-client" className="cursor-pointer">
-                  Create a client configuration
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Generate a config file and QR code for your first device.
-                </p>
-              </div>
-            </div>
-
-            {/* Public Endpoint (only if creating client) */}
-            {createClient && (
-              <div className="space-y-2">
-                <Label htmlFor="wizard-endpoint">
-                  Public Endpoint (for clients)
-                </Label>
+            <Fieldset>
+              <FormField label="Interface Name" htmlFor="wizard-interface">
                 <Input
-                  id="wizard-endpoint"
-                  value={publicEndpoint}
-                  onChange={(e) => setPublicEndpoint(e.target.value)}
-                  placeholder="vpn.example.com or your public IP"
+                  id="wizard-interface"
+                  value={interfaceName}
+                  onChange={(e) => setInterfaceName(e.target.value)}
+                  placeholder="wg0"
                 />
-                <p className="text-xs text-muted-foreground">
-                  The public IP or hostname clients will connect to.
-                </p>
-              </div>
-            )}
+              </FormField>
+
+              <FormField
+                label="VPN Network Address"
+                htmlFor="wizard-server-addr"
+                description="The server's address on the VPN network. Use a private range."
+              >
+                <Input
+                  id="wizard-server-addr"
+                  value={serverAddress}
+                  onChange={(e) => setServerAddress(e.target.value)}
+                  placeholder="10.10.0.1/24"
+                />
+              </FormField>
+
+              <FormField label="Listen Port" htmlFor="wizard-port">
+                <Input
+                  id="wizard-port"
+                  type="number"
+                  value={listenPort}
+                  onChange={(e) => setListenPort(e.target.value)}
+                  placeholder="51820"
+                />
+              </FormField>
+
+              <FormField
+                label="Create a client configuration"
+                htmlFor="wizard-create-client"
+                description="Generate a config file and QR code for your first device."
+                horizontal
+              >
+                <Checkbox
+                  id="wizard-create-client"
+                  checked={createClient}
+                  onCheckedChange={(checked) => setCreateClient(checked === true)}
+                />
+              </FormField>
+
+              {createClient && (
+                <FormField
+                  label="Public Endpoint (for clients)"
+                  htmlFor="wizard-endpoint"
+                  description="The public IP or hostname clients will connect to."
+                >
+                  <Input
+                    id="wizard-endpoint"
+                    value={publicEndpoint}
+                    onChange={(e) => setPublicEndpoint(e.target.value)}
+                    placeholder="vpn.example.com or your public IP"
+                  />
+                </FormField>
+              )}
+            </Fieldset>
           </div>
         )}
 
         {/* Client Step */}
         {step === "client" && (
           <div className="space-y-4 py-2">
-            {/* Client Name */}
-            <div className="space-y-2">
-              <Label htmlFor="wizard-client-name">Client Name</Label>
-              <Input
-                id="wizard-client-name"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="my-phone"
-              />
-              <p className="text-xs text-muted-foreground">
-                A friendly name for this client device.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Client Name"
+                htmlFor="wizard-client-name"
+                description="A friendly name for this client device."
+              >
+                <Input
+                  id="wizard-client-name"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="my-phone"
+                />
+              </FormField>
 
-            {/* Client Address */}
-            <div className="space-y-2">
-              <Label htmlFor="wizard-client-addr">Client IP Address</Label>
-              <Input
-                id="wizard-client-addr"
-                value={clientAddress}
-                onChange={(e) => setClientAddress(e.target.value)}
-                placeholder="10.10.0.2/32"
-              />
-              <p className="text-xs text-muted-foreground">
-                The IP address to assign to this client on the VPN.
-              </p>
-            </div>
+              <FormField
+                label="Client IP Address"
+                htmlFor="wizard-client-addr"
+                description="The IP address to assign to this client on the VPN."
+              >
+                <Input
+                  id="wizard-client-addr"
+                  value={clientAddress}
+                  onChange={(e) => setClientAddress(e.target.value)}
+                  placeholder="10.10.0.2/32"
+                />
+              </FormField>
+            </Fieldset>
 
             <div className="rounded-lg bg-muted/50 border p-3">
               <p className="text-sm text-muted-foreground">

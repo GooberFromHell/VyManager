@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Search } from "lucide-react";
 
 interface CountrySelectProps {
@@ -293,8 +293,7 @@ export function CountrySelect({ value, onChange, label, id }: CountrySelectProps
   const selectedCountry = COUNTRIES.find((c) => c.code === value.toUpperCase());
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+    <FormField label={label} htmlFor={id}>
       <Select value={value.toUpperCase()} onValueChange={onChange}>
         <SelectTrigger id={id}>
           <SelectValue placeholder="Select country">
@@ -330,6 +329,6 @@ export function CountrySelect({ value, onChange, label, id }: CountrySelectProps
           </div>
         </SelectContent>
       </Select>
-    </div>
+    </FormField>
   );
 }

@@ -11,10 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -292,161 +291,161 @@ export function IsisInterfaceModal({
 
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>Interface <span className="text-destructive">*</span></Label>
-              {isEdit ? (
-                <div className="h-9 flex items-center px-3 rounded-md border border-input bg-muted text-sm font-mono">
-                  {name}
-                </div>
-              ) : (
-                <Select value={name} onValueChange={setName} disabled={interfacesLoading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={interfacesLoading ? "Loading interfaces..." : "Select interface"} />
+            <Fieldset>
+              <FormField label="Interface" htmlFor="isis-iface-name" required={!isEdit}>
+                {isEdit ? (
+                  <div className="h-9 flex items-center px-3 rounded-md border border-input bg-muted text-sm font-mono">
+                    {name}
+                  </div>
+                ) : (
+                  <Select value={name} onValueChange={setName} disabled={interfacesLoading}>
+                    <SelectTrigger id="isis-iface-name">
+                      <SelectValue placeholder={interfacesLoading ? "Loading interfaces..." : "Select interface"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {interfaceNames.map((iface) => (
+                        <SelectItem key={iface} value={iface} className="font-mono">
+                          {iface}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </FormField>
+
+              <FormField label="Circuit Type" htmlFor="isis-iface-circuit-type">
+                <Select value={circuitType} onValueChange={setCircuitType}>
+                  <SelectTrigger id="isis-iface-circuit-type">
+                    <SelectValue placeholder="Inherit from level" />
                   </SelectTrigger>
                   <SelectContent>
-                    {interfaceNames.map((iface) => (
-                      <SelectItem key={iface} value={iface} className="font-mono">
-                        {iface}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="level-1">Level 1 Only</SelectItem>
+                    <SelectItem value="level-2">Level 2 Only</SelectItem>
+                    <SelectItem value="level-1-2">Level 1 and 2</SelectItem>
                   </SelectContent>
                 </Select>
+              </FormField>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Metric" htmlFor="isis-iface-metric">
+                  <Input
+                    id="isis-iface-metric"
+                    type="number"
+                    value={metric}
+                    onChange={(e) => setMetric(e.target.value)}
+                    placeholder="Default"
+                    min={1}
+                    max={16777214}
+                  />
+                </FormField>
+                <FormField label="Priority (DR election)" htmlFor="isis-iface-priority">
+                  <Input
+                    id="isis-iface-priority"
+                    type="number"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                    placeholder="Default (64)"
+                    min={0}
+                    max={127}
+                  />
+                </FormField>
+              </div>
+            </Fieldset>
+
+            <FieldsetDivider />
+
+            <Fieldset label="Options">
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Passive (suppress hellos)" htmlFor="isis-iface-passive" horizontal>
+                  <Checkbox id="isis-iface-passive" checked={passive} onCheckedChange={(c) => setPassive(!!c)} />
+                </FormField>
+                <FormField label="Point-to-Point" htmlFor="isis-iface-p2p" horizontal>
+                  <Checkbox id="isis-iface-p2p" checked={pointToPoint} onCheckedChange={(c) => setPointToPoint(!!c)} />
+                </FormField>
+                <FormField label="BFD" htmlFor="isis-iface-bfd" horizontal>
+                  <Checkbox id="isis-iface-bfd" checked={bfd} onCheckedChange={(c) => setBfd(!!c)} />
+                </FormField>
+                <FormField label="Hello Padding" htmlFor="isis-iface-hello-padding" horizontal>
+                  <Checkbox id="isis-iface-hello-padding" checked={helloPadding} onCheckedChange={(c) => setHelloPadding(!!c)} />
+                </FormField>
+              </div>
+
+              {bfd && (
+                <FormField label="BFD Profile" htmlFor="isis-iface-bfd-profile">
+                  <Input
+                    id="isis-iface-bfd-profile"
+                    value={bfdProfile}
+                    onChange={(e) => setBfdProfile(e.target.value)}
+                    placeholder="Optional BFD profile name"
+                  />
+                </FormField>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Circuit Type</Label>
-              <Select value={circuitType} onValueChange={setCircuitType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Inherit from level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="level-1">Level 1 Only</SelectItem>
-                  <SelectItem value="level-2">Level 2 Only</SelectItem>
-                  <SelectItem value="level-1-2">Level 1 and 2</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Metric</Label>
-                <Input
-                  type="number"
-                  value={metric}
-                  onChange={(e) => setMetric(e.target.value)}
-                  placeholder="Default"
-                  min={1}
-                  max={16777214}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Priority (DR election)</Label>
-                <Input
-                  type="number"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  placeholder="Default (64)"
-                  min={0}
-                  max={127}
-                />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2">
-                <Checkbox id="passive" checked={passive} onCheckedChange={(c) => setPassive(!!c)} />
-                <Label htmlFor="passive">Passive (suppress hellos)</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="p2p" checked={pointToPoint} onCheckedChange={(c) => setPointToPoint(!!c)} />
-                <Label htmlFor="p2p">Point-to-Point</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="bfd" checked={bfd} onCheckedChange={(c) => setBfd(!!c)} />
-                <Label htmlFor="bfd">BFD</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="hello-padding" checked={helloPadding} onCheckedChange={(c) => setHelloPadding(!!c)} />
-                <Label htmlFor="hello-padding">Hello Padding</Label>
-              </div>
-            </div>
-
-            {bfd && (
-              <div className="space-y-2">
-                <Label>BFD Profile</Label>
-                <Input
-                  value={bfdProfile}
-                  onChange={(e) => setBfdProfile(e.target.value)}
-                  placeholder="Optional BFD profile name"
-                />
-              </div>
-            )}
+            </Fieldset>
           </TabsContent>
 
           {/* Timers Tab */}
           <TabsContent value="timers" className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Hello Interval (s)</Label>
-                <Input
-                  type="number"
-                  value={helloInterval}
-                  onChange={(e) => setHelloInterval(e.target.value)}
-                  placeholder="Default (3)"
-                  min={1}
-                  max={600}
-                />
+            <Fieldset label="Timers">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Hello Interval (s)" htmlFor="isis-timer-hello">
+                  <Input
+                    id="isis-timer-hello"
+                    type="number"
+                    value={helloInterval}
+                    onChange={(e) => setHelloInterval(e.target.value)}
+                    placeholder="Default (3)"
+                    min={1}
+                    max={600}
+                  />
+                </FormField>
+                <FormField label="Hello Multiplier" htmlFor="isis-timer-hello-mult">
+                  <Input
+                    id="isis-timer-hello-mult"
+                    type="number"
+                    value={helloMultiplier}
+                    onChange={(e) => setHelloMultiplier(e.target.value)}
+                    placeholder="Default (10)"
+                    min={2}
+                    max={100}
+                  />
+                </FormField>
+                <FormField label="PSNP Interval (ms)" htmlFor="isis-timer-psnp">
+                  <Input
+                    id="isis-timer-psnp"
+                    type="number"
+                    value={psnpInterval}
+                    onChange={(e) => setPsnpInterval(e.target.value)}
+                    placeholder="Default (2000)"
+                    min={100}
+                    max={60000}
+                  />
+                </FormField>
+                <FormField label="LDP Sync Holddown (s)" htmlFor="isis-timer-ldp-holddown">
+                  <Input
+                    id="isis-timer-ldp-holddown"
+                    type="number"
+                    value={ldpSyncHolddown}
+                    onChange={(e) => setLdpSyncHolddown(e.target.value)}
+                    placeholder="Disabled"
+                    min={1}
+                    max={10000}
+                  />
+                </FormField>
               </div>
-              <div className="space-y-2">
-                <Label>Hello Multiplier</Label>
-                <Input
-                  type="number"
-                  value={helloMultiplier}
-                  onChange={(e) => setHelloMultiplier(e.target.value)}
-                  placeholder="Default (10)"
-                  min={2}
-                  max={100}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>PSNP Interval (ms)</Label>
-                <Input
-                  type="number"
-                  value={psnpInterval}
-                  onChange={(e) => setPsnpInterval(e.target.value)}
-                  placeholder="Default (2000)"
-                  min={100}
-                  max={60000}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>LDP Sync Holddown (s)</Label>
-                <Input
-                  type="number"
-                  value={ldpSyncHolddown}
-                  onChange={(e) => setLdpSyncHolddown(e.target.value)}
-                  placeholder="Disabled"
-                  min={1}
-                  max={10000}
-                />
-              </div>
-            </div>
+            </Fieldset>
 
-            <Separator />
+            <FieldsetDivider />
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2">
-                <Checkbox id="no-3way" checked={noThreeWayHandshake} onCheckedChange={(c) => setNoThreeWayHandshake(!!c)} />
-                <Label htmlFor="no-3way">Disable 3-Way Handshake</Label>
+            <Fieldset label="Options">
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Disable 3-Way Handshake" htmlFor="isis-timer-no-3way" horizontal>
+                  <Checkbox id="isis-timer-no-3way" checked={noThreeWayHandshake} onCheckedChange={(c) => setNoThreeWayHandshake(!!c)} />
+                </FormField>
+                <FormField label="Disable LDP Sync" htmlFor="isis-timer-ldp-sync-disable" horizontal>
+                  <Checkbox id="isis-timer-ldp-sync-disable" checked={ldpSyncDisable} onCheckedChange={(c) => setLdpSyncDisable(!!c)} />
+                </FormField>
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox id="ldp-sync-disable" checked={ldpSyncDisable} onCheckedChange={(c) => setLdpSyncDisable(!!c)} />
-                <Label htmlFor="ldp-sync-disable">Disable LDP Sync</Label>
-              </div>
-            </div>
+            </Fieldset>
           </TabsContent>
 
           {/* Authentication Tab */}
@@ -454,143 +453,116 @@ export function IsisInterfaceModal({
             <p className="text-sm text-muted-foreground">
               Configure IS-IS authentication for this interface. Only one type can be active at a time.
             </p>
-            <div className="space-y-2">
-              <Label>MD5 Password</Label>
-              <Input
-                type="password"
-                value={passwordMd5}
-                onChange={(e) => setPasswordMd5(e.target.value)}
-                placeholder="MD5 authentication password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Plaintext Password</Label>
-              <Input
-                type="password"
-                value={passwordPlaintext}
-                onChange={(e) => setPasswordPlaintext(e.target.value)}
-                placeholder="Plaintext authentication password"
-              />
-            </div>
+            <Fieldset>
+              <FormField label="MD5 Password" htmlFor="isis-auth-md5">
+                <Input
+                  id="isis-auth-md5"
+                  type="password"
+                  value={passwordMd5}
+                  onChange={(e) => setPasswordMd5(e.target.value)}
+                  placeholder="MD5 authentication password"
+                />
+              </FormField>
+              <FormField label="Plaintext Password" htmlFor="isis-auth-plaintext">
+                <Input
+                  id="isis-auth-plaintext"
+                  type="password"
+                  value={passwordPlaintext}
+                  onChange={(e) => setPasswordPlaintext(e.target.value)}
+                  placeholder="Plaintext authentication password"
+                />
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           {/* Fast Reroute Tab */}
           <TabsContent value="frr" className="space-y-4 mt-4">
             {/* LFA */}
-            <div>
-              <h4 className="text-sm font-medium mb-3">LFA (Loop-Free Alternate)</h4>
-              <div className="space-y-2 pl-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox id="lfa-l1" checked={lfaLevel1} onCheckedChange={(c) => setLfaLevel1(!!c)} />
-                  <Label htmlFor="lfa-l1">Enable LFA — Level 1</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox id="lfa-l2" checked={lfaLevel2} onCheckedChange={(c) => setLfaLevel2(!!c)} />
-                  <Label htmlFor="lfa-l2">Enable LFA — Level 2</Label>
-                </div>
-              </div>
-            </div>
+            <Fieldset label="LFA (Loop-Free Alternate)">
+              <FormField label="Enable LFA — Level 1" htmlFor="lfa-l1" horizontal>
+                <Checkbox id="lfa-l1" checked={lfaLevel1} onCheckedChange={(c) => setLfaLevel1(!!c)} />
+              </FormField>
+              <FormField label="Enable LFA — Level 2" htmlFor="lfa-l2" horizontal>
+                <Checkbox id="lfa-l2" checked={lfaLevel2} onCheckedChange={(c) => setLfaLevel2(!!c)} />
+              </FormField>
+            </Fieldset>
 
             {/* TI-LFA (v1.5 only) */}
             {isV15 && (
               <>
-                <Separator />
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <h4 className="text-sm font-medium">TI-LFA (Topology Independent LFA)</h4>
-                  </div>
-                  <div className="space-y-2 pl-4">
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="tilfa-l1" checked={tiLfaLevel1} onCheckedChange={(c) => setTiLfaLevel1(!!c)} />
-                      <Label htmlFor="tilfa-l1">Enable TI-LFA — Level 1</Label>
+                <FieldsetDivider />
+                <Fieldset label="TI-LFA (Topology Independent LFA)">
+                  <FormField label="Enable TI-LFA — Level 1" htmlFor="tilfa-l1" horizontal>
+                    <Checkbox id="tilfa-l1" checked={tiLfaLevel1} onCheckedChange={(c) => setTiLfaLevel1(!!c)} />
+                  </FormField>
+                  {tiLfaLevel1 && (
+                    <div className="pl-6 space-y-2">
+                      <FormField label="Node Protection" htmlFor="tilfa-l1-np" horizontal>
+                        <Checkbox id="tilfa-l1-np" checked={tiLfaLevel1NodeProtection} onCheckedChange={(c) => setTiLfaLevel1NodeProtection(!!c)} />
+                      </FormField>
+                      <FormField label="Link Fallback" htmlFor="tilfa-l1-lf" horizontal>
+                        <Checkbox id="tilfa-l1-lf" checked={tiLfaLevel1LinkFallback} onCheckedChange={(c) => setTiLfaLevel1LinkFallback(!!c)} />
+                      </FormField>
                     </div>
-                    {tiLfaLevel1 && (
-                      <div className="pl-6 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Checkbox id="tilfa-l1-np" checked={tiLfaLevel1NodeProtection} onCheckedChange={(c) => setTiLfaLevel1NodeProtection(!!c)} />
-                          <Label htmlFor="tilfa-l1-np">Node Protection</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Checkbox id="tilfa-l1-lf" checked={tiLfaLevel1LinkFallback} onCheckedChange={(c) => setTiLfaLevel1LinkFallback(!!c)} />
-                          <Label htmlFor="tilfa-l1-lf">Link Fallback</Label>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="tilfa-l2" checked={tiLfaLevel2} onCheckedChange={(c) => setTiLfaLevel2(!!c)} />
-                      <Label htmlFor="tilfa-l2">Enable TI-LFA — Level 2</Label>
+                  )}
+                  <FormField label="Enable TI-LFA — Level 2" htmlFor="tilfa-l2" horizontal>
+                    <Checkbox id="tilfa-l2" checked={tiLfaLevel2} onCheckedChange={(c) => setTiLfaLevel2(!!c)} />
+                  </FormField>
+                  {tiLfaLevel2 && (
+                    <div className="pl-6 space-y-2">
+                      <FormField label="Node Protection" htmlFor="tilfa-l2-np" horizontal>
+                        <Checkbox id="tilfa-l2-np" checked={tiLfaLevel2NodeProtection} onCheckedChange={(c) => setTiLfaLevel2NodeProtection(!!c)} />
+                      </FormField>
+                      <FormField label="Link Fallback" htmlFor="tilfa-l2-lf" horizontal>
+                        <Checkbox id="tilfa-l2-lf" checked={tiLfaLevel2LinkFallback} onCheckedChange={(c) => setTiLfaLevel2LinkFallback(!!c)} />
+                      </FormField>
                     </div>
-                    {tiLfaLevel2 && (
-                      <div className="pl-6 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Checkbox id="tilfa-l2-np" checked={tiLfaLevel2NodeProtection} onCheckedChange={(c) => setTiLfaLevel2NodeProtection(!!c)} />
-                          <Label htmlFor="tilfa-l2-np">Node Protection</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Checkbox id="tilfa-l2-lf" checked={tiLfaLevel2LinkFallback} onCheckedChange={(c) => setTiLfaLevel2LinkFallback(!!c)} />
-                          <Label htmlFor="tilfa-l2-lf">Link Fallback</Label>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  )}
+                </Fieldset>
 
-                <Separator />
+                <FieldsetDivider />
 
                 {/* Remote LFA */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <h4 className="text-sm font-medium">Remote LFA</h4>
-                  </div>
-                  <div className="space-y-3 pl-4">
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="rlfa-l1" checked={remoteLfaLevel1} onCheckedChange={(c) => setRemoteLfaLevel1(!!c)} />
-                      <Label htmlFor="rlfa-l1">Enable Remote LFA — Level 1</Label>
+                <Fieldset label="Remote LFA">
+                  <FormField label="Enable Remote LFA — Level 1" htmlFor="rlfa-l1" horizontal>
+                    <Checkbox id="rlfa-l1" checked={remoteLfaLevel1} onCheckedChange={(c) => setRemoteLfaLevel1(!!c)} />
+                  </FormField>
+                  {remoteLfaLevel1 && (
+                    <div className="pl-6 grid grid-cols-2 gap-3">
+                      <FormField label="Max Metric" htmlFor="rlfa-l1-max-metric">
+                        <Input
+                          id="rlfa-l1-max-metric"
+                          type="number"
+                          value={remoteLfaLevel1MaxMetric}
+                          onChange={(e) => setRemoteLfaLevel1MaxMetric(e.target.value)}
+                          placeholder="Unlimited"
+                        />
+                      </FormField>
+                      <FormField label="MPLS LDP Tunnel" htmlFor="rlfa-l1-ldp" horizontal>
+                        <Checkbox id="rlfa-l1-ldp" checked={remoteLfaLevel1TunnelMplsLdp} onCheckedChange={(c) => setRemoteLfaLevel1TunnelMplsLdp(!!c)} />
+                      </FormField>
                     </div>
-                    {remoteLfaLevel1 && (
-                      <div className="pl-6 grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Max Metric</Label>
-                          <Input
-                            type="number"
-                            value={remoteLfaLevel1MaxMetric}
-                            onChange={(e) => setRemoteLfaLevel1MaxMetric(e.target.value)}
-                            placeholder="Unlimited"
-                          />
-                        </div>
-                        <div className="flex items-end pb-1">
-                          <div className="flex items-center gap-2">
-                            <Checkbox id="rlfa-l1-ldp" checked={remoteLfaLevel1TunnelMplsLdp} onCheckedChange={(c) => setRemoteLfaLevel1TunnelMplsLdp(!!c)} />
-                            <Label htmlFor="rlfa-l1-ldp">MPLS LDP Tunnel</Label>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="rlfa-l2" checked={remoteLfaLevel2} onCheckedChange={(c) => setRemoteLfaLevel2(!!c)} />
-                      <Label htmlFor="rlfa-l2">Enable Remote LFA — Level 2</Label>
+                  )}
+                  <FormField label="Enable Remote LFA — Level 2" htmlFor="rlfa-l2" horizontal>
+                    <Checkbox id="rlfa-l2" checked={remoteLfaLevel2} onCheckedChange={(c) => setRemoteLfaLevel2(!!c)} />
+                  </FormField>
+                  {remoteLfaLevel2 && (
+                    <div className="pl-6 grid grid-cols-2 gap-3">
+                      <FormField label="Max Metric" htmlFor="rlfa-l2-max-metric">
+                        <Input
+                          id="rlfa-l2-max-metric"
+                          type="number"
+                          value={remoteLfaLevel2MaxMetric}
+                          onChange={(e) => setRemoteLfaLevel2MaxMetric(e.target.value)}
+                          placeholder="Unlimited"
+                        />
+                      </FormField>
+                      <FormField label="MPLS LDP Tunnel" htmlFor="rlfa-l2-ldp" horizontal>
+                        <Checkbox id="rlfa-l2-ldp" checked={remoteLfaLevel2TunnelMplsLdp} onCheckedChange={(c) => setRemoteLfaLevel2TunnelMplsLdp(!!c)} />
+                      </FormField>
                     </div>
-                    {remoteLfaLevel2 && (
-                      <div className="pl-6 grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Max Metric</Label>
-                          <Input
-                            type="number"
-                            value={remoteLfaLevel2MaxMetric}
-                            onChange={(e) => setRemoteLfaLevel2MaxMetric(e.target.value)}
-                            placeholder="Unlimited"
-                          />
-                        </div>
-                        <div className="flex items-end pb-1">
-                          <div className="flex items-center gap-2">
-                            <Checkbox id="rlfa-l2-ldp" checked={remoteLfaLevel2TunnelMplsLdp} onCheckedChange={(c) => setRemoteLfaLevel2TunnelMplsLdp(!!c)} />
-                            <Label htmlFor="rlfa-l2-ldp">MPLS LDP Tunnel</Label>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  )}
+                </Fieldset>
               </>
             )}
 

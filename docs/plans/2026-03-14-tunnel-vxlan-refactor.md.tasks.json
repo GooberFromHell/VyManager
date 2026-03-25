@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-14-tunnel-vxlan-refactor.md",
+  "tasks": [
+    {"id": 0, "nativeId": 27, "subject": "Task 0: Add ensure_snapshot_before_change to Ethernet", "status": "pending"},
+    {"id": 1, "nativeId": 28, "subject": "Task 1: Add convenience methods to tunnel service", "status": "pending", "blockedBy": [0]},
+    {"id": 2, "nativeId": 29, "subject": "Task 2: Add convenience methods to VXLAN service", "status": "pending", "blockedBy": [0]},
+    {"id": 3, "nativeId": 30, "subject": "Task 3: Update TunnelModal to use semantic methods", "status": "pending", "blockedBy": [1]},
+    {"id": 4, "nativeId": 31, "subject": "Task 4: Update VxlanModal to use semantic methods", "status": "pending", "blockedBy": [2]},
+    {"id": 5, "nativeId": 32, "subject": "Task 5: Final verification", "status": "pending", "blockedBy": [3, 4]}
+  ],
+  "lastUpdated": "2026-03-14T14:00:00Z"
+}

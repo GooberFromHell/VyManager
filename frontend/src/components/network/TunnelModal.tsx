@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -313,10 +313,11 @@ export function TunnelModal({
         return;
       }
 
-      await tunnelService.batchConfigure({
-        interface: mode === "create" ? interfaceName.trim() : tunnel!.name,
-        operations,
-      });
+      if (mode === "create") {
+        await tunnelService.createInterface(interfaceName.trim(), operations);
+      } else {
+        await tunnelService.updateInterface(tunnel!.name, operations);
+      }
 
       // Refresh config cache
       await tunnelService.refreshConfig();
@@ -365,168 +366,158 @@ export function TunnelModal({
 
             {/* General Tab */}
             <TabsContent value="general" className="space-y-4">
-              {mode === "create" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="tunnel-name">
-                    Interface Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="tunnel-name"
-                    placeholder="tun0"
-                    value={interfaceName}
-                    onChange={(e) => setInterfaceName(e.target.value)}
-                    required
-                  />
-                  <p className="text-xs text-zinc-500">
-                    Use the format tun0, tun1, etc.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="tunnel-name">Interface Name</Label>
-                  <Input
-                    id="tunnel-name"
-                    value={interfaceName}
-                    disabled
-                    className="font-mono"
-                  />
-                </div>
-              )}
+              <Fieldset label="Identity">
+                {mode === "create" ? (
+                  <FormField label="Interface Name" htmlFor="tunnel-name" description="Use the format tun0, tun1, etc." required>
+                    <Input
+                      id="tunnel-name"
+                      placeholder="tun0"
+                      value={interfaceName}
+                      onChange={(e) => setInterfaceName(e.target.value)}
+                      required
+                    />
+                  </FormField>
+                ) : (
+                  <FormField label="Interface Name" htmlFor="tunnel-name">
+                    <Input
+                      id="tunnel-name"
+                      value={interfaceName}
+                      disabled
+                      className="font-mono bg-muted/50"
+                    />
+                  </FormField>
+                )}
 
-              {mode === "create" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="encapsulation">
-                    Encapsulation <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={encapsulation || "placeholder"}
-                    onValueChange={(v) =>
-                      setEncapsulation(
-                        v === "placeholder" ? "" : (v as TunnelEncapsulation)
-                      )
-                    }
-                  >
-                    <SelectTrigger id="encapsulation">
-                      <SelectValue placeholder="Select encapsulation type" />
+                {mode === "create" ? (
+                  <FormField label="Encapsulation" htmlFor="encapsulation" required>
+                    <Select
+                      value={encapsulation || "placeholder"}
+                      onValueChange={(v) =>
+                        setEncapsulation(
+                          v === "placeholder" ? "" : (v as TunnelEncapsulation)
+                        )
+                      }
+                    >
+                      <SelectTrigger id="encapsulation">
+                        <SelectValue placeholder="Select encapsulation type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="placeholder" disabled>
+                          Select encapsulation type
+                        </SelectItem>
+                        {(
+                          capabilities?.encapsulation_types || [
+                            "gre",
+                            "gretap",
+                            "ipip",
+                            "sit",
+                            "erspan",
+                          ]
+                        ).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                ) : (
+                  <FormField label="Encapsulation" htmlFor="encapsulation">
+                    <Input
+                      id="encapsulation"
+                      value={encapsulation ? encapsulation.toUpperCase() : "N/A"}
+                      disabled
+                      className="font-mono bg-muted/50"
+                    />
+                  </FormField>
+                )}
+              </Fieldset>
+
+              <FieldsetDivider />
+
+              <Fieldset label="Endpoints">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="Source Address" htmlFor="source-address">
+                    <Input
+                      id="source-address"
+                      placeholder="192.168.1.1"
+                      value={sourceAddress}
+                      onChange={(e) => setSourceAddress(e.target.value)}
+                    />
+                  </FormField>
+
+                  <FormField label="Remote" htmlFor="remote">
+                    <Input
+                      id="remote"
+                      placeholder="10.0.0.2"
+                      value={remote}
+                      onChange={(e) => setRemote(e.target.value)}
+                    />
+                  </FormField>
+                </div>
+
+                <FormField label="Source Interface" htmlFor="source-interface" description="Physical interface to use as the tunnel source">
+                  <Select value={sourceInterface} onValueChange={setSourceInterface}>
+                    <SelectTrigger id="source-interface">
+                      <SelectValue placeholder="Select interface" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="placeholder" disabled>
-                        Select encapsulation type
-                      </SelectItem>
-                      {(
-                        capabilities?.encapsulation_types || [
-                          "gre",
-                          "gretap",
-                          "ipip",
-                          "sit",
-                          "erspan",
-                        ]
-                      ).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type.toUpperCase()}
+                      {availableInterfaces.map((iface) => (
+                        <SelectItem key={iface} value={iface}>
+                          {iface}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="encapsulation">Encapsulation</Label>
-                  <Input
-                    id="encapsulation"
-                    value={encapsulation ? encapsulation.toUpperCase() : "N/A"}
-                    disabled
-                    className="font-mono"
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="source-address">Source Address</Label>
-                  <Input
-                    id="source-address"
-                    placeholder="192.168.1.1"
-                    value={sourceAddress}
-                    onChange={(e) => setSourceAddress(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="remote">Remote</Label>
-                  <Input
-                    id="remote"
-                    placeholder="10.0.0.2"
-                    value={remote}
-                    onChange={(e) => setRemote(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="source-interface">Source Interface</Label>
-                <Select value={sourceInterface} onValueChange={setSourceInterface}>
-                  <SelectTrigger id="source-interface">
-                    <SelectValue placeholder="Select interface" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableInterfaces.map((iface) => (
-                      <SelectItem key={iface} value={iface}>
-                        {iface}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-zinc-500">
-                  Physical interface to use as the tunnel source
-                </p>
-              </div>
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
             {/* Addresses Tab */}
             <TabsContent value="addresses" className="space-y-4">
-              <div className="space-y-2">
-                <Label>IP Addresses</Label>
-                {addresses.length === 0 && (
-                  <p className="text-sm text-zinc-500">
-                    No addresses configured. Click &quot;Add Address&quot; to add one.
-                  </p>
-                )}
-                {addresses.map((address, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder="10.0.0.1/30 or 2001:db8::1/64"
-                      value={address}
-                      onChange={(e) => handleAddressChange(index, e.target.value)}
-                    />
+              <Fieldset label="IP Addresses">
+                <FormField label="Addresses">
+                  <div className="space-y-2">
+                    {addresses.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        No addresses configured. Click &quot;Add Address&quot; to add one.
+                      </p>
+                    )}
+                    {addresses.map((address, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          placeholder="10.0.0.1/30 or 2001:db8::1/64"
+                          value={address}
+                          onChange={(e) => handleAddressChange(index, e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveAddress(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRemoveAddress(index)}
+                      onClick={handleAddAddress}
                     >
-                      <X className="h-4 w-4" />
+                      Add Address
                     </Button>
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddAddress}
-                >
-                  Add Address
-                </Button>
-              </div>
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
             {/* Parameters Tab */}
             <TabsContent value="parameters" className="space-y-4">
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold">IP Parameters</h3>
+              <Fieldset label="IP Parameters">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="ttl">TTL</Label>
+                  <FormField label="TTL" htmlFor="ttl">
                     <Input
                       id="ttl"
                       type="number"
@@ -534,107 +525,101 @@ export function TunnelModal({
                       value={ttl}
                       onChange={(e) => setTtl(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tos">TOS</Label>
+                  </FormField>
+                  <FormField label="TOS" htmlFor="tos" description={'Type of Service value or "inherit"'}>
                     <Input
                       id="tos"
                       placeholder="inherit"
                       value={tos}
                       onChange={(e) => setTos(e.target.value)}
                     />
-                    <p className="text-xs text-zinc-500">
-                      Type of Service value or &quot;inherit&quot;
-                    </p>
-                  </div>
+                  </FormField>
                 </div>
-              </div>
+              </Fieldset>
 
               {/* GRE Key — only visible for gre/gretap */}
               {(encapsulation === "gre" || encapsulation === "gretap") && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">GRE Settings</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="gre-key">GRE Key</Label>
-                    <Input
-                      id="gre-key"
-                      placeholder="0"
-                      value={greKey}
-                      onChange={(e) => setGreKey(e.target.value)}
-                    />
-                    <p className="text-xs text-zinc-500">
-                      GRE key for tunnel identification
-                    </p>
-                  </div>
-                </div>
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="GRE Settings">
+                    <FormField label="GRE Key" htmlFor="gre-key" description="GRE key for tunnel identification">
+                      <Input
+                        id="gre-key"
+                        placeholder="0"
+                        value={greKey}
+                        onChange={(e) => setGreKey(e.target.value)}
+                      />
+                    </FormField>
+                  </Fieldset>
+                </>
               )}
 
               {/* ERSPAN fields — only visible for erspan */}
               {encapsulation === "erspan" && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">ERSPAN Settings</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="erspan-direction">Direction</Label>
-                      <Select
-                        value={erspanDirection || "placeholder"}
-                        onValueChange={(v) =>
-                          setErspanDirection(
-                            v === "placeholder"
-                              ? ""
-                              : (v as "ingress" | "egress")
-                          )
-                        }
-                      >
-                        <SelectTrigger id="erspan-direction">
-                          <SelectValue placeholder="Select direction" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="placeholder" disabled>
-                            Select direction
-                          </SelectItem>
-                          <SelectItem value="ingress">Ingress</SelectItem>
-                          <SelectItem value="egress">Egress</SelectItem>
-                        </SelectContent>
-                      </Select>
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="ERSPAN Settings">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField label="Direction" htmlFor="erspan-direction">
+                        <Select
+                          value={erspanDirection || "placeholder"}
+                          onValueChange={(v) =>
+                            setErspanDirection(
+                              v === "placeholder"
+                                ? ""
+                                : (v as "ingress" | "egress")
+                            )
+                          }
+                        >
+                          <SelectTrigger id="erspan-direction">
+                            <SelectValue placeholder="Select direction" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="placeholder" disabled>
+                              Select direction
+                            </SelectItem>
+                            <SelectItem value="ingress">Ingress</SelectItem>
+                            <SelectItem value="egress">Egress</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormField>
+                      <FormField label="Version" htmlFor="erspan-version">
+                        <Select
+                          value={erspanVersion || "placeholder"}
+                          onValueChange={(v) =>
+                            setErspanVersion(v === "placeholder" ? "" : v)
+                          }
+                        >
+                          <SelectTrigger id="erspan-version">
+                            <SelectValue placeholder="Select version" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="placeholder" disabled>
+                              Select version
+                            </SelectItem>
+                            <SelectItem value="1">Version 1</SelectItem>
+                            <SelectItem value="2">Version 2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormField>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="erspan-version">Version</Label>
-                      <Select
-                        value={erspanVersion || "placeholder"}
-                        onValueChange={(v) =>
-                          setErspanVersion(v === "placeholder" ? "" : v)
-                        }
-                      >
-                        <SelectTrigger id="erspan-version">
-                          <SelectValue placeholder="Select version" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="placeholder" disabled>
-                            Select version
-                          </SelectItem>
-                          <SelectItem value="1">Version 1</SelectItem>
-                          <SelectItem value="2">Version 2</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="erspan-idx">Index</Label>
-                    <Input
-                      id="erspan-idx"
-                      type="number"
-                      placeholder="1"
-                      value={erspanIdx}
-                      onChange={(e) => setErspanIdx(e.target.value)}
-                    />
-                  </div>
-                </div>
+                    <FormField label="Index" htmlFor="erspan-idx">
+                      <Input
+                        id="erspan-idx"
+                        type="number"
+                        placeholder="1"
+                        value={erspanIdx}
+                        onChange={(e) => setErspanIdx(e.target.value)}
+                      />
+                    </FormField>
+                  </Fieldset>
+                </>
               )}
 
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold">Multicast</h3>
-                <div className="flex items-center space-x-2">
+              <FieldsetDivider />
+
+              <Fieldset label="Multicast">
+                <FormField label="Enable multicast on this tunnel" htmlFor="enable-multicast" horizontal>
                   <Checkbox
                     id="enable-multicast"
                     checked={enableMulticast}
@@ -642,58 +627,59 @@ export function TunnelModal({
                       setEnableMulticast(checked as boolean)
                     }
                   />
-                  <Label htmlFor="enable-multicast" className="cursor-pointer">
-                    Enable multicast on this tunnel
-                  </Label>
-                </div>
-              </div>
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
             {/* Common Tab */}
             <TabsContent value="common" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="GRE tunnel to datacenter"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="mtu">MTU</Label>
-                  <Input
-                    id="mtu"
-                    type="number"
-                    placeholder="1476"
-                    value={mtu}
-                    onChange={(e) => setMtu(e.target.value)}
+              <Fieldset label="General">
+                <FormField label="Description" htmlFor="description">
+                  <Textarea
+                    id="description"
+                    placeholder="GRE tunnel to datacenter"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="vrf">VRF</Label>
-                  <Input
-                    id="vrf"
-                    placeholder="MGMT"
-                    value={vrf}
-                    onChange={(e) => setVrf(e.target.value)}
-                  />
-                </div>
-              </div>
+                </FormField>
+              </Fieldset>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="disable"
-                  checked={disabled}
-                  onCheckedChange={(checked) => setDisabled(checked as boolean)}
-                />
-                <Label htmlFor="disable" className="cursor-pointer">
-                  Administratively disable interface
-                </Label>
-              </div>
+              <FieldsetDivider />
+
+              <Fieldset label="Interface Settings">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="MTU" htmlFor="mtu">
+                    <Input
+                      id="mtu"
+                      type="number"
+                      placeholder="1476"
+                      value={mtu}
+                      onChange={(e) => setMtu(e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="VRF" htmlFor="vrf">
+                    <Input
+                      id="vrf"
+                      placeholder="MGMT"
+                      value={vrf}
+                      onChange={(e) => setVrf(e.target.value)}
+                    />
+                  </FormField>
+                </div>
+              </Fieldset>
+
+              <FieldsetDivider />
+
+              <Fieldset>
+                <FormField label="Administratively Disable Interface" htmlFor="disable" horizontal>
+                  <Checkbox
+                    id="disable"
+                    checked={disabled}
+                    onCheckedChange={(checked) => setDisabled(checked as boolean)}
+                  />
+                </FormField>
+              </Fieldset>
             </TabsContent>
           </Tabs>
 

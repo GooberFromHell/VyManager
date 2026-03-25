@@ -1,0 +1,208 @@
+id: "task-004"
+title: "Add auto-provisioning UI to CreateInstanceModal"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:react-specialist"
+status: not_started
+
+depends_on: ["task-003"]
+blocks: ["task-005"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "frontend/src/components/sites/CreateInstanceModal.tsx"
+
+context_files:
+  - "frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "frontend/src/lib/api/session.ts"
+  - "frontend/src/components/ui/collapsible.tsx"
+  - "frontend/src/components/ui/fieldset.tsx"
+  - "frontend/src/components/ui/input.tsx"
+
+instructions: |
+  Add an auto-provisioning section to the CreateInstanceModal that allows users to
+  optionally provide SSH credentials to auto-configure API key and SSH keys on the VyOS device.
+
+  ## 1. Read the current CreateInstanceModal
+
+  Read `frontend/src/components/sites/CreateInstanceModal.tsx` completely to understand:
+  - The existing tab structure (Basic Info, Connection, SSH/Monitoring tabs)
+  - The form state variables
+  - The validation logic (especially around `apiKey` being required)
+  - The submit handler
+
+  ## 2. Add new state variables
+
+  Add these state variables alongside the existing ones:
+  ```typescript
+  const [provisionEnabled, setProvisionEnabled] = useState(false);
+  const [provisionSshUsername, setProvisionSshUsername] = useState("vyos");
+  const [provisionSshPassword, setProvisionSshPassword] = useState("");
+  const [provisioningStatus, setProvisioningStatus] = useState<string | null>(null);
+  ```
+
+  ## 3. Add auto-provisioning collapsible section in the Connection tab
+
+  In the Connection tab (the tab that contains host, port, protocol, API key fields),
+  add a collapsible section BELOW the API Key field:
+
+  ```tsx
+  <Collapsible open={provisionEnabled} onOpenChange={setProvisionEnabled}>
+    <CollapsibleTrigger asChild>
+      <Button variant="ghost" className="w-full justify-between px-0 font-normal">
+        <span className="text-sm text-muted-foreground">
+          Auto-Provisioning (Optional)
+        </span>
+        <ChevronDown className={cn("h-4 w-4 transition-transform", provisionEnabled && "rotate-180")} />
+      </Button>
+    </CollapsibleTrigger>
+    <CollapsibleContent className="space-y-3 pt-2">
+      <p className="text-xs text-muted-foreground">
+        Provide SSH credentials to automatically configure the API key and SSH keys on the VyOS device.
+        Credentials are used only during setup and are never stored.
+      </p>
+      <Fieldset legend="SSH Username">
+        <Input
+          value={provisionSshUsername}
+          onChange={(e) => setProvisionSshUsername(e.target.value)}
+          placeholder="vyos"
+        />
+      </Fieldset>
+      <Fieldset legend="SSH Password">
+        <Input
+          type="password"
+          value={provisionSshPassword}
+          onChange={(e) => setProvisionSshPassword(e.target.value)}
+          placeholder="Enter SSH password"
+        />
+      </Fieldset>
+    </CollapsibleContent>
+  </Collapsible>
+  ```
+
+  Make sure to import `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` from `@/components/ui/collapsible`
+  and `ChevronDown` from `lucide-react`, and `cn` from the utility (check existing imports for the pattern).
+
+  ## 4. Modify API Key validation
+
+  The current validation (around line 90-93) requires API key:
+  ```typescript
+  if (!apiKey.trim()) {
+    setError("API Key is required");
+    return;
+  }
+  ```
+
+  Change this to be conditional on provisioning:
+  ```typescript
+  if (!provisionEnabled && !apiKey.trim()) {
+    setError("API Key is required (or enable auto-provisioning)");
+    return;
+  }
+  ```
+
+  Also validate provisioning fields when enabled:
+  ```typescript
+  if (provisionEnabled) {
+    if (!provisionSshUsername.trim()) {
+      setError("SSH username is required for auto-provisioning");
+      return;
+    }
+    if (!provisionSshPassword.trim()) {
+      setError("SSH password is required for auto-provisioning");
+      return;
+    }
+  }
+  ```
+
+  ## 5. Modify the API Key input field
+
+  When provisioning is enabled, show the API Key field as optional with a placeholder:
+  - Add a note below or as placeholder: "Will be auto-generated" when provisionEnabled is true
+  - Don't disable the field — let users optionally provide their own even with provisioning
+
+  ## 6. Modify the submit handler
+
+  In the `handleSubmit` function, include provisioning fields in the request:
+  ```typescript
+  const payload: any = {
+    // ... existing fields ...
+    api_key: apiKey.trim() || undefined,
+    // ... existing fields ...
+  };
+
+  if (provisionEnabled) {
+    payload.provision_ssh_username = provisionSshUsername.trim();
+    payload.provision_ssh_password = provisionSshPassword;
+  }
+  ```
+
+  ## 7. Update loading state for provisioning
+
+  When provisioning is enabled, update the loading message:
+  ```typescript
+  {loading ? (provisionEnabled ? "Provisioning..." : "Creating...") : "Create Instance"}
+  ```
+
+  ## 8. Handle provisioning result in the response
+
+  After the create call succeeds, check if there's a provisioning result:
+  ```typescript
+  const result = await sessionService.createInstance(payload);
+
+  if (result.provisioning) {
+    if (result.provisioning.success) {
+      // All good — close and refresh
+      handleClose();
+      onSuccess();
+    } else {
+      // Partial failure — instance was created but provisioning had issues
+      // Show the error but still call onSuccess to refresh the list
+      setError(
+        `Instance created, but auto-provisioning had issues: ${result.provisioning.error || "Unknown error"}. ` +
+        `You may need to configure the API key and SSH keys manually.`
+      );
+      onSuccess(); // Refresh the list since instance was created
+    }
+  } else {
+    // No provisioning — standard flow
+    handleClose();
+    onSuccess();
+  }
+  ```
+
+  ## 9. Reset provisioning state on close
+
+  Add to the `resetForm` function:
+  ```typescript
+  setProvisionEnabled(false);
+  setProvisionSshUsername("vyos");
+  setProvisionSshPassword("");
+  setProvisioningStatus(null);
+  ```
+
+  ## Important notes
+  - Follow the EXACT code style of the existing modal (indentation, naming conventions, component usage)
+  - Do NOT restructure or refactor any existing code — only add to it
+  - Make sure to use the exact import paths already used in the file
+  - The Collapsible section should be visually subordinate to the main form — use muted colors
+  - Keep the password field as `type="password"` for security
+
+acceptance_criteria:
+  - "Grep match: 'provisionEnabled' in frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "Grep match: 'provisionSshUsername' in frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "Grep match: 'provisionSshPassword' in frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "Grep match: 'Auto-Provisioning' in frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "Grep match: 'provision_ssh_username' in frontend/src/components/sites/CreateInstanceModal.tsx"
+  - "Grep match: 'Collapsible' in frontend/src/components/sites/CreateInstanceModal.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

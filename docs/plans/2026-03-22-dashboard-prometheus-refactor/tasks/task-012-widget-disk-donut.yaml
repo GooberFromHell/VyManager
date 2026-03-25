@@ -1,0 +1,66 @@
+id: "task-012"
+title: "Create PrometheusDiskDonut widget"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005", "task-006", "task-008"]
+blocks: ["task-015"]
+parallel_with: ["task-010", "task-011", "task-013", "task-014"]
+
+files:
+  create:
+    - "frontend/src/components/dashboard/widgets/PrometheusDiskDonut.tsx"
+  modify:
+    - "frontend/src/components/dashboard/widget-registry.ts"
+
+context_files:
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/dashboard/WidgetShell.tsx"
+  - "frontend/src/hooks/usePrometheusData.ts"
+
+instructions: |
+  Create a donut chart widget showing disk partition usage.
+
+  ## Component: PrometheusDiskDonut.tsx
+
+  - Subscribe to: `disk_used_percent` or `disk_used` + `disk_total` from Prometheus
+  - Use Recharts PieChart with innerRadius (donut style)
+  - One segment per partition, colored by usage level:
+    - Green: 0-60%
+    - Yellow: 60-80%
+    - Red: 80-100%
+  - Center of donut: total disk usage percentage
+  - Legend below showing partition mount points with used/total
+  - Compact layout for span=3, height=1
+
+  Config: specific partitions to include/exclude, refresh interval
+
+  ## Register
+
+  ```typescript
+  registerWidget({
+    type: "prometheus-disk-donut",
+    name: "Disk Usage",
+    description: "Donut chart showing disk partition usage",
+    icon: HardDrive,
+    component: PrometheusDiskDonut,
+    defaultConfig: { refreshInterval: 30000 },
+    defaultSpan: 4,
+    defaultHeight: 1,
+    dataSource: "prometheus",
+  });
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/widgets/PrometheusDiskDonut.tsx"
+  - "Grep match: 'prometheus-disk-donut' in frontend/src/components/dashboard/widget-registry.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

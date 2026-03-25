@@ -1,0 +1,211 @@
+id: "002"
+title: "Update session router with SSE provisioning endpoint"
+phase: 1
+status: not_started
+agent_type: general-purpose
+depends_on: ["001"]
+parallel_with: []
+
+description: |
+  Replace the existing JSON-based provision endpoint with an SSE streaming version
+  that uses the new provision_vyos_device_stream generator. Also simplify the
+  InstanceCreateRequest by removing the validator that requires api_key or provisioning
+  credentials, and remove inline provisioning from create_instance.
+
+files:
+  modify:
+    - backend/routers/session/session.py
+
+context_files:
+  - backend/provisioning.py (task-001 output)
+  - backend/routers/session/session.py (current)
+
+instructions: |
+  1. Simplify InstanceCreateRequest:
+     - Remove the `validate_api_key_or_provisioning` model_validator entirely
+     - Keep all existing fields and their defaults (backward compat for EditInstanceModal)
+     - `api_key` remains Optional[str] = None
+     - `vyos_version` change default to "1.5" (instead of required): Field(default="1.5", ...)
+
+  2. Simplify create_instance endpoint (POST /instances):
+     - Remove ALL provisioning logic from create_instance (lines ~1023-1059)
+     - Remove the provisioning_result variable and the if-block that calls provision_vyos_device
+     - Remove the provisioned_ok logic and the provisioning dict from response
+     - Instance is simply created and returned as JSON
+     - The frontend will call the provision endpoint separately after creation
+
+  3. Replace the existing provision_instance endpoint with an SSE version:
+     ```python
+     @router.post("/instances/{instance_id}/provision")
+     async def provision_instance(
+         instance_id: str,
+         request_body: ProvisionRequest,
+         request: Request,
+     ):
+         """
+         Provision a VyOS instance via SSH with real-time progress streaming.
+         Returns an SSE stream with step-by-step status events.
+         """
+         # Auth check (same as current)
+         if not hasattr(request.state, "user") or not request.state.user:
+             raise HTTPException(status_code=401, detail="Not authenticated")
+
+         user = request.state.user
+         user_id = user["id"]
+
+         db_pool: asyncpg.Pool = request.app.state.db_pool
+         if not db_pool:
+             raise HTTPException(status_code=503, detail="Database not available")
+
+         # Pre-validate: check admin role and instance exists BEFORE starting SSE
+         async with db_pool.acquire() as conn:
+             user_role = await conn.fetchval("SELECT role FROM users WHERE id = $1", user_id)
+             if user_role != "ADMIN":
+                 raise HTTPException(status_code=403, detail="Only ADMIN users can provision instances")
+
+             instance = await conn.fetchrow(
+                 'SELECT id, host, "sshPort" FROM instances WHERE id = $1',
+                 instance_id,
+             )
+             if not instance:
+                 raise HTTPException(status_code=404, detail="Instance not found")
+
+         host = instance["host"]
+         ssh_port = instance["sshPort"]
+
+         async def event_generator():
+             import asyncio
+             import json
+             from provisioning import provision_vyos_device_stream, ProvisioningEvent
+
+             def _run_provisioning():
+                 events = []
+                 final_result = None
+                 for event in provision_vyos_device_stream(
+                     host=host,
+                     ssh_port=ssh_port,
+                     ssh_username=request_body.ssh_username,
+                     ssh_password=request_body.ssh_password,
+                 ):
+                     events.append(event)
+                 return events
+
+             # Run synchronous generator in thread, collecting events
+             # Better approach: use a queue to stream events in real-time
+
+             import queue
+             import threading
+
+             event_queue = queue.Queue()
+             final_data = {}
+
+             def _run_in_thread():
+                 try:
+                     for event in provision_vyos_device_stream(
+                         host=host,
+                         ssh_port=ssh_port,
+                         ssh_username=request_body.ssh_username,
+                         ssh_password=request_body.ssh_password,
+                     ):
+                         event_queue.put(event)
+                     event_queue.put(None)  # sentinel
+                 except Exception as e:
+                     from provisioning import ProvisioningEvent
+                     event_queue.put(ProvisioningEvent(
+                         step="error",
+                         status="failed",
+                         message=str(e),
+                     ))
+                     event_queue.put(None)
+
+             thread = threading.Thread(target=_run_in_thread, daemon=True)
+             thread.start()
+
+             while True:
+                 # Poll queue with async-friendly sleep
+                 try:
+                     event = event_queue.get_nowait()
+                 except queue.Empty:
+                     await asyncio.sleep(0.1)
+                     continue
+
+                 if event is None:
+                     break
+
+                 event_data = {
+                     "step": event.step,
+                     "status": event.status,
+                     "message": event.message,
+                 }
+                 if event.detail:
+                     event_data["detail"] = event.detail
+                 if event.data:
+                     event_data["data"] = event.data
+
+                 yield f"event: provision\ndata: {json.dumps(event_data)}\n\n"
+
+                 # On completion, update instance in DB
+                 if event.step == "complete" and event.status == "complete" and event.data:
+                     try:
+                         async with db_pool.acquire() as conn:
+                             await conn.execute(
+                                 """
+                                 UPDATE instances
+                                 SET "apiKey" = $1,
+                                     "sshPublicKey" = $2,
+                                     "sshEncryptedPrivKey" = $3,
+                                     "sshKeyNonce" = $4,
+                                     "sshKeyConfigured" = true,
+                                     "sshUsername" = $5,
+                                     "vyosVersion" = $6,
+                                     "updatedAt" = NOW()
+                                 WHERE id = $7
+                                 """,
+                                 event.data.get("api_key"),
+                                 event.data.get("ssh_public_key"),
+                                 event.data.get("ssh_encrypted_private_key"),
+                                 event.data.get("ssh_key_nonce"),
+                                 request_body.ssh_username,
+                                 event.data.get("vyos_version", "1.5"),
+                                 instance_id,
+                             )
+                             clear_session_cache(instance_id)
+                     except Exception as db_err:
+                         logger.error(f"Failed to update instance after provisioning: {db_err}")
+                         yield f'event: provision\ndata: {json.dumps({"step": "db_update", "status": "failed", "message": "Provisioning succeeded but failed to save credentials to database"})}\n\n'
+
+             thread.join(timeout=5)
+
+         return StreamingResponse(
+             event_generator(),
+             media_type="text/event-stream",
+             headers={
+                 "Cache-Control": "no-cache",
+                 "X-Accel-Buffering": "no",
+             },
+         )
+     ```
+
+  4. Remove the `response_model=ProvisioningResponse` from the provision endpoint signature
+     (it now returns StreamingResponse, not a Pydantic model).
+
+  5. Keep the ProvisioningResponse and ProvisionRequest models (ProvisionRequest is still used).
+
+acceptance_criteria:
+  - InstanceCreateRequest has no model_validator
+  - InstanceCreateRequest.vyos_version defaults to "1.5"
+  - create_instance no longer calls provision_vyos_device
+  - create_instance response no longer includes provisioning field
+  - provision_instance returns StreamingResponse with text/event-stream
+  - Each provisioning step emits an SSE event with step/status/message
+  - On completion, instance is updated in DB with api_key, SSH keys, vyos_version
+  - Auth check happens before SSE stream starts (not inside the generator)
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

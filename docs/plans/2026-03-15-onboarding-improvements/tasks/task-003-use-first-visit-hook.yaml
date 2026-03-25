@@ -1,0 +1,78 @@
+id: "task-003"
+title: "Create useFirstVisit hook for localStorage-backed first-visit tracking"
+phase: produce
+execution_phase: 1
+agent: react-specialist
+status: not_started
+depends_on: []
+blocks: ["task-005"]
+parallel_with: ["task-001", "task-004"]
+
+files:
+  create:
+    - "frontend/src/hooks/useFirstVisit.ts"
+  modify: []
+
+context_files:
+  - "frontend/src/hooks/usePermissions.ts"
+
+instructions: |
+  Create a custom React hook for tracking first-visit state using localStorage.
+
+  File: frontend/src/hooks/useFirstVisit.ts
+
+  ```typescript
+  "use client";
+
+  import { useState, useEffect, useCallback } from "react";
+
+  /**
+   * Track whether a user is visiting a specific feature/page for the first time.
+   * Uses localStorage to persist state across sessions.
+   *
+   * @param key - Unique identifier for the feature (e.g., "services-sidebar", "dashboard-edit")
+   * @returns { isFirstVisit, dismiss } - isFirstVisit is true on first visit, dismiss() marks as visited
+   */
+  export function useFirstVisit(key: string): {
+    isFirstVisit: boolean;
+    dismiss: () => void;
+  } {
+    const storageKey = `vymanager-visited-${key}`;
+    const [isFirstVisit, setIsFirstVisit] = useState(false);
+
+    useEffect(() => {
+      // Only check on client side
+      const visited = localStorage.getItem(storageKey);
+      if (!visited) {
+        setIsFirstVisit(true);
+      }
+    }, [storageKey]);
+
+    const dismiss = useCallback(() => {
+      localStorage.setItem(storageKey, "true");
+      setIsFirstVisit(false);
+    }, [storageKey]);
+
+    return { isFirstVisit, dismiss };
+  }
+  ```
+
+  Key design decisions:
+  - Prefix all keys with "vymanager-visited-" to avoid collisions
+  - Default to false (not first visit) until useEffect confirms — prevents flash of hint content during SSR
+  - dismiss() both updates localStorage AND local state (immediate UI response)
+  - Named export, not default export
+
+acceptance_criteria:
+  - "File exists: frontend/src/hooks/useFirstVisit.ts"
+  - "Grep match: 'useFirstVisit' in frontend/src/hooks/useFirstVisit.ts"
+  - "Grep match: 'localStorage' in frontend/src/hooks/useFirstVisit.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

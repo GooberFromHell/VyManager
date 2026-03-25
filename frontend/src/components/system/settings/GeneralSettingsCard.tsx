@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Edit2, Plus, X } from "lucide-react";
 import {
   systemSettingsService,
@@ -206,8 +206,7 @@ export function GeneralSettingsCard({ config, capabilities, isReadOnly, onRefres
 
         <div className="grid gap-6 sm:grid-cols-2">
           {/* Hostname */}
-          <div className="space-y-2">
-            <Label htmlFor="hostname">Hostname</Label>
+          <FormField label="Hostname" htmlFor="hostname">
             {editing ? (
               <Input
                 id="hostname"
@@ -220,11 +219,10 @@ export function GeneralSettingsCard({ config, capabilities, isReadOnly, onRefres
                 {config.hostname || <span className="text-muted-foreground">Not set</span>}
               </p>
             )}
-          </div>
+          </FormField>
 
           {/* Domain Name */}
-          <div className="space-y-2">
-            <Label htmlFor="domain">Domain Name</Label>
+          <FormField label="Domain Name" htmlFor="domain">
             {editing ? (
               <Input
                 id="domain"
@@ -237,11 +235,10 @@ export function GeneralSettingsCard({ config, capabilities, isReadOnly, onRefres
                 {config.domain_name || <span className="text-muted-foreground">Not set</span>}
               </p>
             )}
-          </div>
+          </FormField>
 
           {/* Timezone */}
-          <div className="space-y-2">
-            <Label htmlFor="timezone">Timezone</Label>
+          <FormField label="Timezone" htmlFor="timezone">
             {editing ? (
               <Select value={timeZone} onValueChange={setTimeZone}>
                 <SelectTrigger id="timezone">
@@ -260,11 +257,10 @@ export function GeneralSettingsCard({ config, capabilities, isReadOnly, onRefres
                 {config.time_zone || <span className="text-muted-foreground">Not set</span>}
               </p>
             )}
-          </div>
+          </FormField>
 
           {/* Performance Profile */}
-          <div className="space-y-2">
-            <Label htmlFor="performance">Performance Profile</Label>
+          <FormField label="Performance Profile" htmlFor="performance">
             {editing ? (
               <Select
                 value={performance || "__none__"}
@@ -288,12 +284,11 @@ export function GeneralSettingsCard({ config, capabilities, isReadOnly, onRefres
                   ?.label || <span className="text-muted-foreground">Default (not set)</span>}
               </p>
             )}
-          </div>
+          </FormField>
         </div>
 
         {/* Name Servers */}
-        <div className="space-y-2">
-          <Label>Name Servers</Label>
+        <FormField label="Name Servers">
           <div className="flex flex-wrap gap-2">
             {(editing ? nameServers : config.name_servers).map((ns) => (
               <Badge key={ns} variant="secondary" className="flex items-center gap-1">
@@ -333,7 +328,7 @@ export function GeneralSettingsCard({ config, capabilities, isReadOnly, onRefres
               </Button>
             </div>
           )}
-        </div>
+        </FormField>
       </CardContent>
     </Card>
   );

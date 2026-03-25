@@ -1,0 +1,127 @@
+id: "task-002"
+title: "TFTP Server — Backend mapper, builder, router"
+phase: produce
+agent: python-pro
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-003", "task-004", "task-005"]
+
+files:
+  create:
+    - "backend/vyos_mappers/tftp_server/__init__.py"
+    - "backend/vyos_mappers/tftp_server/tftp_server.py"
+    - "backend/vyos_mappers/tftp_server/tftp_server_versions/__init__.py"
+    - "backend/vyos_mappers/tftp_server/tftp_server_versions/v1_4.py"
+    - "backend/vyos_mappers/tftp_server/tftp_server_versions/v1_5.py"
+    - "backend/vyos_builders/tftp_server/__init__.py"
+    - "backend/vyos_builders/tftp_server/tftp_server.py"
+    - "backend/routers/tftp_server/__init__.py"
+    - "backend/routers/tftp_server/tftp_server.py"
+  modify: []
+
+context_files:
+  - "backend/vyos_mappers/ntp/ntp.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/__init__.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/v1_4.py"
+  - "backend/vyos_mappers/ntp/ntp_versions/v1_5.py"
+  - "backend/vyos_mappers/base.py"
+  - "backend/vyos_builders/ntp/ntp.py"
+  - "backend/routers/ntp/ntp.py"
+
+instructions: |
+  Create the TFTP Server backend following the NTP service pattern exactly.
+
+  ## VyOS CLI Command Tree
+  ```
+  set service tftp-server
+    directory <path>           # root directory, e.g., /srv/tftp
+    listen-address <ip>        # multi-value
+    port <1-65535>             # default 69
+    allow-upload               # v1.5 only (flag)
+  ```
+
+  Config path in VyOS JSON: `full_config["service"]["tftp-server"]`
+
+  ## Step 1: Mapper (backend/vyos_mappers/tftp_server/tftp_server.py)
+
+  Create `TFTPServerMapper(BaseFeatureMapper)` following the NTP mapper pattern:
+  - `__init__(version)`: select version_mapper (TFTPServerMapperV1_4 or V1_5)
+  - Method pairs (get_X for set, get_X_path for delete):
+    - `get_directory(path)` → `["service", "tftp-server", "directory", path]`
+    - `get_listen_address(address)` → `["service", "tftp-server", "listen-address", address]`
+    - `get_port(port)` → `["service", "tftp-server", "port", port]`
+  - Version-delegated methods:
+    - `has_allow_upload()` → delegates to version_mapper
+    - `get_allow_upload()` → delegates with hasattr check, returns [] if unsupported
+
+  Also create `backend/vyos_mappers/tftp_server/__init__.py` with just the import.
+
+  ## Step 2: Version Overrides
+
+  `v1_4.py`: `TFTPServerMapperV1_4` class
+  - `has_allow_upload() → False`
+
+  `v1_5.py`: `TFTPServerMapperV1_5` class
+  - `has_allow_upload() → True`
+  - `get_allow_upload() → ["service", "tftp-server", "allow-upload"]`
+
+  `__init__.py`: Factory function
+  ```python
+  def get_tftp_server_mapper(version: str):
+      from ..tftp_server import TFTPServerMapper
+      return TFTPServerMapper(version)
+  ```
+
+  ## Step 3: Builder (backend/vyos_builders/tftp_server/tftp_server.py)
+
+  Create `TFTPServerBatchBuilder` following NTP builder pattern:
+  - `__init__(version)`: set mapper_key = "tftp_server"
+  - Core methods: add_set, add_delete, clear, get_operations, is_empty, operation_count
+  - Feature methods (all return self for chaining):
+    - set_directory(path), delete_directory(path)
+    - set_listen_address(address), delete_listen_address(address)
+    - set_port(port), delete_port(port)
+    - set_allow_upload(), delete_allow_upload()
+  - get_capabilities(): return version, feature flags (has_allow_upload), field descriptions
+
+  Also create `backend/vyos_builders/tftp_server/__init__.py` with the import.
+
+  ## Step 4: Router (backend/routers/tftp_server/tftp_server.py)
+
+  Create router following NTP router pattern exactly:
+  - `router = APIRouter(prefix="/vyos/tftp-server", tags=["tftp-server"])`
+  - Pydantic models:
+    - `TFTPServerConfigResponse`: directory (Optional[str]), listen_addresses (List[str]),
+      port (Optional[str]), allow_upload (Optional[bool])
+    - `TFTPServerBatchOperation`: op (str), value (Optional[str])
+    - `TFTPServerBatchRequest`: item_name (Optional[str]), operations (List[TFTPServerBatchOperation])
+  - Three endpoints:
+    1. GET /capabilities — uses TFTPServerBatchBuilder, require_read_permission with FeatureGroup.TFTP_SERVER
+    2. GET /config — parse full_config["service"]["tftp-server"], handle missing keys gracefully
+    3. POST /batch — ensure_snapshot_before_change, reflection-based method calling, _INTERNAL_BUILDER_METHODS block
+
+  IMPORTANT: The batch endpoint MUST call ensure_snapshot_before_change() before executing operations.
+
+  Also create `backend/routers/tftp_server/__init__.py` with the import.
+
+acceptance_criteria:
+  - "File exists: backend/vyos_mappers/tftp_server/tftp_server.py"
+  - "File exists: backend/vyos_mappers/tftp_server/tftp_server_versions/v1_4.py"
+  - "File exists: backend/vyos_mappers/tftp_server/tftp_server_versions/v1_5.py"
+  - "File exists: backend/vyos_mappers/tftp_server/tftp_server_versions/__init__.py"
+  - "File exists: backend/vyos_builders/tftp_server/tftp_server.py"
+  - "File exists: backend/routers/tftp_server/tftp_server.py"
+  - "Grep match: 'TFTPServerMapper' in backend/vyos_mappers/tftp_server/tftp_server.py"
+  - "Grep match: 'TFTPServerBatchBuilder' in backend/vyos_builders/tftp_server/tftp_server.py"
+  - "Grep match: 'ensure_snapshot_before_change' in backend/routers/tftp_server/tftp_server.py"
+  - "Grep match: 'FeatureGroup.TFTP_SERVER' in backend/routers/tftp_server/tftp_server.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

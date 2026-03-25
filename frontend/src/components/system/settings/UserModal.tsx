@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, UserPlus, Edit2 } from "lucide-react";
 import { systemSettingsService, type LoginUser } from "@/lib/api/system-settings";
 
@@ -83,7 +83,7 @@ export function UserModal({ open, onOpenChange, user, onSuccess }: Props) {
       handleClose();
       onSuccess();
     } catch {
-      setError("An unexpected error occurred");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -125,59 +125,56 @@ export function UserModal({ open, onOpenChange, user, onSuccess }: Props) {
             </div>
           )}
 
-          {/* Username — only editable when creating */}
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={isEdit}
-              placeholder="admin"
-              autoComplete="off"
-            />
-          </div>
-
-          {/* Full Name */}
-          <div className="space-y-2">
-            <Label htmlFor="fullname">Full Name (optional)</Label>
-            <Input
-              id="fullname"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Administrator"
-              autoComplete="off"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              {isEdit ? "New Password (leave blank to keep current)" : "Password (optional)"}
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="new-password"
-            />
-          </div>
-
-          {password && (
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+          <Fieldset>
+            {/* Username — only editable when creating */}
+            <FormField label="Username" htmlFor="username">
               <Input
-                id="confirm-password"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isEdit}
+                placeholder="admin"
+                autoComplete="off"
+              />
+            </FormField>
+
+            <FormField label="Full Name (optional)" htmlFor="fullname">
+              <Input
+                id="fullname"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Administrator"
+                autoComplete="off"
+              />
+            </FormField>
+
+            <FormField
+              label={isEdit ? "New Password (leave blank to keep current)" : "Password (optional)"}
+              htmlFor="password"
+            >
+              <Input
+                id="password"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 autoComplete="new-password"
               />
-            </div>
-          )}
+            </FormField>
+
+            {password && (
+              <FormField label="Confirm Password" htmlFor="confirm-password">
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+              </FormField>
+            )}
+          </Fieldset>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>

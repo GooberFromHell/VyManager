@@ -1,0 +1,88 @@
+id: "task-010"
+title: "Create container registry CRUD modals"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-006"]
+blocks: ["task-011"]
+parallel_with: ["task-007", "task-008", "task-009"]
+
+files:
+  create:
+    - "frontend/src/components/containers/CreateContainerRegistryModal.tsx"
+    - "frontend/src/components/containers/EditContainerRegistryModal.tsx"
+    - "frontend/src/components/containers/DeleteContainerRegistryModal.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/components/services/ntp/CreateNTPServerModal.tsx"
+  - "frontend/src/lib/api/types/container.ts"
+  - "frontend/src/lib/api/container.ts"
+  - "frontend/src/components/ui/fieldset.tsx"
+
+instructions: |
+  Create three modals for container registry management. Registries are the simplest entity — URL, auth, disable, insecure.
+
+  ## 1. CreateContainerRegistryModal.tsx
+
+  Props:
+  ```typescript
+  interface CreateContainerRegistryModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSuccess: () => void;
+    capabilities: ContainerCapabilities | null;
+    existingUrls?: string[];
+  }
+  ```
+
+  Form fields:
+  - Registry URL (required, text input, validate no duplicates, placeholder "docker.io")
+  - Username (optional, text)
+  - Password (optional, text input type="password")
+  - Insecure (Checkbox — "Allow insecure connections (no TLS verification)")
+  - Disable (Checkbox)
+
+  Submit:
+  ```typescript
+  const operations = [];
+  if (username && password) {
+    operations.push({ op: "set_registry_auth", value: `${username},${password}` });
+  }
+  if (insecure) operations.push({ op: "set_registry_insecure" });
+  if (disabled) operations.push({ op: "set_registry_disable" });
+  await containerService.createRegistry(registryUrl, operations);
+  await containerService.refreshConfig();
+  ```
+
+  Dialog size: max-w-md
+
+  ## 2. EditContainerRegistryModal.tsx
+
+  Props include `registry: ContainerRegistry`.
+  - Initialize from registry prop
+  - Note: password may not be returned from API (security), show placeholder if empty
+  - Build diff-based operations
+
+  ## 3. DeleteContainerRegistryModal.tsx
+
+  Simple confirmation:
+  - Props: `open`, `onOpenChange`, `onSuccess`, `registryUrl: string`
+  - Show registry URL in destructive warning
+  - On confirm: `containerService.deleteRegistry(registryUrl)`
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/containers/CreateContainerRegistryModal.tsx"
+  - "File exists: frontend/src/components/containers/EditContainerRegistryModal.tsx"
+  - "File exists: frontend/src/components/containers/DeleteContainerRegistryModal.tsx"
+  - "Grep match: 'containerService' in frontend/src/components/containers/CreateContainerRegistryModal.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

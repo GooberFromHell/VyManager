@@ -1,0 +1,167 @@
+id: "task-008"
+title: "Create container CRUD modals (Create/Edit/Delete)"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-006"]
+blocks: ["task-011"]
+parallel_with: ["task-007", "task-009", "task-010"]
+
+files:
+  create:
+    - "frontend/src/components/containers/CreateContainerModal.tsx"
+    - "frontend/src/components/containers/EditContainerModal.tsx"
+    - "frontend/src/components/containers/DeleteContainerModal.tsx"
+  modify: []
+
+context_files:
+  - "frontend/src/components/services/ntp/CreateNTPServerModal.tsx"
+  - "frontend/src/components/services/ntp/EditNTPSettingsModal.tsx"
+  - "frontend/src/components/services/ssh/EditSSHSettingsModal.tsx"
+  - "frontend/src/lib/api/types/container.ts"
+  - "frontend/src/lib/api/container.ts"
+  - "frontend/src/components/ui/fieldset.tsx"
+
+instructions: |
+  Create three container CRUD modals. Containers are the most complex entity with many configurable fields.
+
+  ## 1. CreateContainerModal.tsx
+
+  Props:
+  ```typescript
+  interface CreateContainerModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSuccess: () => void;
+    capabilities: ContainerCapabilities | null;
+    existingNames?: string[];
+    availableNetworks?: string[];
+  }
+  ```
+
+  **Use internal Tabs for sections** (following SSH modal pattern):
+
+  ### General Tab:
+  - Container Name (required, text input, validate no duplicates)
+  - Image (required, text input, placeholder "docker.io/library/nginx:latest")
+  - Description (optional, text input)
+  - Restart Policy (Select: no, on-failure, always)
+  - Host Name (optional)
+  - Entrypoint (optional)
+  - Command (optional)
+  - Arguments (optional)
+  - Disable toggle (Checkbox)
+
+  ### Networking Tab:
+  - Network selection (Select from availableNetworks, can add multiple)
+  - For each selected network: optional address field
+  - Port Mappings (dynamic list):
+    - Name (text), Source Port (text), Destination Port (text), Protocol (Select: tcp/udp)
+    - Add/Remove buttons
+  - Name Servers (dynamic list of text inputs)
+  - Allow Host Networks (Checkbox)
+  - Allow Host PID (Checkbox)
+
+  ### Storage Tab:
+  - Volumes (dynamic list):
+    - Volume Name (text), Source Path (text), Destination Path (text), Mode (Select: rw/ro)
+    - Add/Remove buttons
+  - Tmpfs Mounts (dynamic list, v1.5 only — check capabilities):
+    - Name (text), Destination (text), Size MB (number, optional)
+    - Add/Remove buttons
+
+  ### Environment Tab:
+  - Environment Variables (dynamic list):
+    - Key (text), Value (text)
+    - Add/Remove buttons
+  - Labels (dynamic list):
+    - Key (text), Value (text)
+    - Add/Remove buttons
+  - Capabilities (multi-select or checkboxes):
+    - net-admin, net-bind-service, net-raw, setpcap, sys-admin, sys-time
+
+  ### Advanced Tab:
+  - Memory (number input, MB)
+  - CPU Quota (text input, e.g. "1.5")
+  - UID (number)
+  - GID (number)
+  - Devices (dynamic list):
+    - Device Name, Source Path, Destination Path
+    - Add/Remove buttons
+  - Log Driver (Select: k8s-file, journald, none — v1.5 only)
+  - Sysctl Parameters (dynamic list, v1.5 only):
+    - Parameter (text), Value (text)
+
+  ### Submit logic:
+  Build operations array from all fields:
+  ```typescript
+  const operations: ContainerBatchOperation[] = [];
+  operations.push({ op: "set_container_image", value: image });
+  if (description) operations.push({ op: "set_container_description", value: description });
+  // ... etc for each field
+  // For ports, volumes, env, etc: one operation per item
+  for (const port of ports) {
+    operations.push({ op: "set_container_port", value: `${port.name},${port.source},${port.destination},${port.protocol}` });
+  }
+  ```
+
+  Note: The batch API processes operations sequentially. For compound operations like ports (which set source, destination, protocol separately), the builder's `set_container_port` method handles all three in one call using the item_name as the container name.
+
+  Actually, looking at the batch API pattern more carefully — the builder methods take `(name, ...)` where name comes from `item_name` in the batch request. So operations like set_container_port need the port_name, source, destination, protocol as separate values.
+
+  The batch operations pattern uses `item_name` as the first arg and `operation.value` as the second. For methods that take more args, the builder method signature determines how args are mapped. Looking at the NTP pattern, the router does `method(*args)` with args built from signature inspection.
+
+  For multi-arg builder methods, the value field should contain comma-separated values that the router will split. OR, better approach: send multiple operations for each sub-field:
+  ```typescript
+  // Port mapping
+  operations.push({ op: "set_container_port_source", value: `${portName},${sourcePort}` });
+  // etc.
+  ```
+
+  Actually the cleanest approach: for compound operations, send the sub-operation name and let the builder handle it. The item_name is always the container name.
+
+  Follow the exact pattern from the NTP router for argument mapping.
+
+  ### Modal dialog:
+  - `max-w-2xl` for wider dialog
+  - ScrollArea for content
+  - Cancel and Create buttons in footer
+  - Error display if submission fails
+
+  ## 2. EditContainerModal.tsx
+
+  Similar to CreateContainerModal but:
+  - Props include `container: ContainerEntry` (the container being edited)
+  - Initialize all form state from the container prop in useEffect
+  - Build operations by comparing old state vs new state (set-based diff pattern from SSH modal):
+    - For scalar fields: compare old vs new, add set/delete operations as needed
+    - For list fields (ports, volumes, env, etc.): diff old vs new entries
+
+  ## 3. DeleteContainerModal.tsx
+
+  Simple confirmation dialog:
+  - Props: `open`, `onOpenChange`, `onSuccess`, `containerName: string`
+  - Show container name in destructive warning box
+  - On confirm: `containerService.deleteContainer(containerName)` then `refreshConfig()` then `onSuccess()`
+  - AlertTriangle icon in title
+  - Destructive variant button
+
+  Follow the exact pattern from NTP DeleteNTPServerModal or SNMP delete modal for styling.
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/containers/CreateContainerModal.tsx"
+  - "File exists: frontend/src/components/containers/EditContainerModal.tsx"
+  - "File exists: frontend/src/components/containers/DeleteContainerModal.tsx"
+  - "Grep match: 'containerService' in frontend/src/components/containers/CreateContainerModal.tsx"
+  - "Grep match: 'containerService' in frontend/src/components/containers/EditContainerModal.tsx"
+  - "Grep match: 'containerService' in frontend/src/components/containers/DeleteContainerModal.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

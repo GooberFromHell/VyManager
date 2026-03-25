@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -378,113 +378,105 @@ export function EditBridgeRuleModal({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="action">Action *</Label>
-              <Select value={action} onValueChange={setAction}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="accept">Accept</SelectItem>
-                  <SelectItem value="drop">Drop</SelectItem>
-                  {isV15 && (
-                    <>
-                      <SelectItem value="continue">Continue</SelectItem>
-                      <SelectItem value="jump">Jump</SelectItem>
-                      <SelectItem value="return">Return</SelectItem>
-                      <SelectItem value="queue">Queue</SelectItem>
-                      <SelectItem value="notrack">No Track</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            <Fieldset>
+              <FormField label="Action" htmlFor="action" required>
+                <Select value={action} onValueChange={setAction}>
+                  <SelectTrigger id="action">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="accept">Accept</SelectItem>
+                    <SelectItem value="drop">Drop</SelectItem>
+                    {isV15 && (
+                      <>
+                        <SelectItem value="continue">Continue</SelectItem>
+                        <SelectItem value="jump">Jump</SelectItem>
+                        <SelectItem value="return">Return</SelectItem>
+                        <SelectItem value="queue">Queue</SelectItem>
+                        <SelectItem value="notrack">No Track</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-            {action === "jump" && (
-              <div className="space-y-2">
-                <Label htmlFor="jumpTarget">Jump Target Chain *</Label>
+              {action === "jump" && (
+                <FormField label="Jump Target Chain" htmlFor="jumpTarget" required>
+                  <Input
+                    id="jumpTarget"
+                    placeholder="Custom chain name"
+                    value={jumpTarget}
+                    onChange={(e) => setJumpTarget(e.target.value)}
+                  />
+                </FormField>
+              )}
+
+              {action === "queue" && isV15 && (
+                <FormField label="Queue Number" htmlFor="queue">
+                  <Input
+                    id="queue"
+                    placeholder="Queue number (0-65535)"
+                    value={queue}
+                    onChange={(e) => setQueue(e.target.value)}
+                  />
+                </FormField>
+              )}
+
+              <FormField label="Description" htmlFor="description">
                 <Input
-                  id="jumpTarget"
-                  placeholder="Custom chain name"
-                  value={jumpTarget}
-                  onChange={(e) => setJumpTarget(e.target.value)}
+                  id="description"
+                  placeholder="Rule description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
-              </div>
-            )}
+              </FormField>
 
-            {action === "queue" && isV15 && (
-              <div className="space-y-2">
-                <Label htmlFor="queue">Queue Number</Label>
-                <Input
-                  id="queue"
-                  placeholder="Queue number (0-65535)"
-                  value={queue}
-                  onChange={(e) => setQueue(e.target.value)}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                placeholder="Rule description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
+              <FormField label="Enable Logging" htmlFor="log" horizontal>
                 <Checkbox
                   id="log"
                   checked={log}
                   onCheckedChange={(c) => setLog(c === true)}
                 />
-                <Label htmlFor="log" className="font-normal">Enable logging</Label>
-              </div>
-              <div className="flex items-center gap-2">
+              </FormField>
+
+              <FormField label="Disabled" htmlFor="disabled" horizontal>
                 <Checkbox
                   id="disabled"
                   checked={disabled}
                   onCheckedChange={(c) => setDisabled(c === true)}
                 />
-                <Label htmlFor="disabled" className="font-normal">Disabled</Label>
-              </div>
-            </div>
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           {/* Match Tab - Layer 2 matching */}
           <TabsContent value="match" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">MAC Address</h4>
+            <Fieldset label="MAC Address">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sourceMac">Source MAC</Label>
+                <FormField label="Source MAC" htmlFor="sourceMac">
                   <Input
                     id="sourceMac"
                     placeholder="e.g., 00:11:22:33:44:55"
                     value={sourceMac}
                     onChange={(e) => setSourceMac(e.target.value)}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="destinationMac">Destination MAC</Label>
+                </FormField>
+                <FormField label="Destination MAC" htmlFor="destinationMac">
                   <Input
                     id="destinationMac"
                     placeholder="e.g., 00:11:22:33:44:55"
                     value={destinationMac}
                     onChange={(e) => setDestinationMac(e.target.value)}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">VLAN</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="VLAN">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="vlanId">VLAN ID</Label>
+                <FormField label="VLAN ID" htmlFor="vlanId">
                   <Input
                     id="vlanId"
                     type="number"
@@ -492,9 +484,8 @@ export function EditBridgeRuleModal({
                     value={vlanId}
                     onChange={(e) => setVlanId(e.target.value)}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="vlanPriority">VLAN Priority</Label>
+                </FormField>
+                <FormField label="VLAN Priority" htmlFor="vlanPriority">
                   <Input
                     id="vlanPriority"
                     type="number"
@@ -502,12 +493,13 @@ export function EditBridgeRuleModal({
                     value={vlanPriority}
                     onChange={(e) => setVlanPriorityValue(e.target.value)}
                   />
-                </div>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
 
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Interface</h4>
+            <FieldsetDivider />
+
+            <Fieldset label="Interface">
               {loadingInterfaces ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -515,13 +507,12 @@ export function EditBridgeRuleModal({
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="inboundInterface">Inbound Interface</Label>
+                  <FormField label="Inbound Interface" htmlFor="inboundInterface">
                     <Select
                       value={inboundInterface || "_none_"}
                       onValueChange={(v) => setInboundInterface(v === "_none_" ? "" : v)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="inboundInterface">
                         <SelectValue placeholder="None" />
                       </SelectTrigger>
                       <SelectContent>
@@ -540,14 +531,13 @@ export function EditBridgeRuleModal({
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="outboundInterface">Outbound Interface</Label>
+                  </FormField>
+                  <FormField label="Outbound Interface" htmlFor="outboundInterface">
                     <Select
                       value={outboundInterface || "_none_"}
                       onValueChange={(v) => setOutboundInterface(v === "_none_" ? "" : v)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="outboundInterface">
                         <SelectValue placeholder="None" />
                       </SelectTrigger>
                       <SelectContent>
@@ -566,237 +556,234 @@ export function EditBridgeRuleModal({
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </div>
               )}
-            </div>
+            </Fieldset>
 
             {isV15 && (
-              <div className="space-y-2">
-                <Label htmlFor="ethernetType">Ethernet Type</Label>
-                <Select value={ethernetType || "_any_"} onValueChange={(v) => setEthernetType(v === "_any_" ? "" : v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_any_">Any</SelectItem>
-                    <SelectItem value="arp">ARP</SelectItem>
-                    <SelectItem value="ipv4">IPv4</SelectItem>
-                    <SelectItem value="ipv6">IPv6</SelectItem>
-                    <SelectItem value="802.1q">802.1Q (VLAN)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <FieldsetDivider />
+                <Fieldset>
+                  <FormField label="Ethernet Type" htmlFor="ethernetType">
+                    <Select value={ethernetType || "_any_"} onValueChange={(v) => setEthernetType(v === "_any_" ? "" : v)}>
+                      <SelectTrigger id="ethernetType">
+                        <SelectValue placeholder="Any" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_any_">Any</SelectItem>
+                        <SelectItem value="arp">ARP</SelectItem>
+                        <SelectItem value="ipv4">IPv4</SelectItem>
+                        <SelectItem value="ipv6">IPv6</SelectItem>
+                        <SelectItem value="802.1q">802.1Q (VLAN)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </Fieldset>
+              </>
             )}
           </TabsContent>
 
           {/* IP/Ports Tab (1.5+) */}
           {isV15 && (
             <TabsContent value="ip" className="space-y-4 mt-4">
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Source</h4>
+              <Fieldset label="Source">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sourceAddress">IP Address/Network</Label>
-                    <div className="flex gap-2">
+                  <div className="space-y-3">
+                    <FormField label="IP Address/Network" htmlFor="sourceAddress">
                       <Input
                         id="sourceAddress"
                         placeholder="e.g., 192.168.1.0/24"
                         value={sourceAddress}
                         onChange={(e) => setSourceAddress(e.target.value)}
-                        className="flex-1"
                       />
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
+                    </FormField>
+                    <FormField
+                      label="Negate"
+                      htmlFor="sourceAddressNegate"
+                      description="Match everything EXCEPT this address"
+                      horizontal
+                    >
                       <Checkbox
                         id="sourceAddressNegate"
                         checked={sourceAddressNegate}
                         onCheckedChange={(c) => setSourceAddressNegate(c === true)}
                       />
-                      <Label htmlFor="sourceAddressNegate" className="text-xs font-normal text-muted-foreground">
-                        Negate (match everything EXCEPT this address)
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sourcePort">Port(s)</Label>
+                  <FormField label="Port(s)" htmlFor="sourcePort">
                     <Input
                       id="sourcePort"
                       placeholder="e.g., 80 or 80,443 or 1000-2000"
                       value={sourcePort}
                       onChange={(e) => setSourcePort(e.target.value)}
                     />
-                  </div>
+                  </FormField>
                 </div>
-              </div>
+              </Fieldset>
 
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Destination</h4>
+              <FieldsetDivider />
+
+              <Fieldset label="Destination">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="destinationAddress">IP Address/Network</Label>
-                    <div className="flex gap-2">
+                  <div className="space-y-3">
+                    <FormField label="IP Address/Network" htmlFor="destinationAddress">
                       <Input
                         id="destinationAddress"
                         placeholder="e.g., 192.168.1.0/24"
                         value={destinationAddress}
                         onChange={(e) => setDestinationAddress(e.target.value)}
-                        className="flex-1"
                       />
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
+                    </FormField>
+                    <FormField
+                      label="Negate"
+                      htmlFor="destinationAddressNegate"
+                      description="Match everything EXCEPT this address"
+                      horizontal
+                    >
                       <Checkbox
                         id="destinationAddressNegate"
                         checked={destinationAddressNegate}
                         onCheckedChange={(c) => setDestinationAddressNegate(c === true)}
                       />
-                      <Label htmlFor="destinationAddressNegate" className="text-xs font-normal text-muted-foreground">
-                        Negate (match everything EXCEPT this address)
-                      </Label>
-                    </div>
+                    </FormField>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="destinationPort">Port(s)</Label>
+                  <FormField label="Port(s)" htmlFor="destinationPort">
                     <Input
                       id="destinationPort"
                       placeholder="e.g., 80 or 80,443 or 1000-2000"
                       value={destinationPort}
                       onChange={(e) => setDestinationPort(e.target.value)}
                     />
-                  </div>
+                  </FormField>
                 </div>
-              </div>
+              </Fieldset>
             </TabsContent>
           )}
 
           {/* Protocol Tab (1.5+) */}
           {isV15 && (
             <TabsContent value="protocol" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="protocol">Protocol</Label>
-                <Select value={protocol || "_any_"} onValueChange={(v) => setProtocol(v === "_any_" ? "" : v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_any_">Any</SelectItem>
-                    <SelectItem value="tcp">TCP</SelectItem>
-                    <SelectItem value="udp">UDP</SelectItem>
-                    <SelectItem value="icmp">ICMP</SelectItem>
-                    <SelectItem value="icmpv6">ICMPv6</SelectItem>
-                    <SelectItem value="tcp_udp">TCP+UDP</SelectItem>
-                    <SelectItem value="gre">GRE</SelectItem>
-                    <SelectItem value="esp">ESP</SelectItem>
-                    <SelectItem value="ah">AH</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Fieldset>
+                <FormField label="Protocol" htmlFor="protocol">
+                  <Select value={protocol || "_any_"} onValueChange={(v) => setProtocol(v === "_any_" ? "" : v)}>
+                    <SelectTrigger id="protocol">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_any_">Any</SelectItem>
+                      <SelectItem value="tcp">TCP</SelectItem>
+                      <SelectItem value="udp">UDP</SelectItem>
+                      <SelectItem value="icmp">ICMP</SelectItem>
+                      <SelectItem value="icmpv6">ICMPv6</SelectItem>
+                      <SelectItem value="tcp_udp">TCP+UDP</SelectItem>
+                      <SelectItem value="gre">GRE</SelectItem>
+                      <SelectItem value="esp">ESP</SelectItem>
+                      <SelectItem value="ah">AH</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </Fieldset>
 
               {/* TCP Flags */}
               {(protocol === "tcp" || protocol === "tcp_udp") && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">TCP Flags</Label>
-                  <p className="text-xs text-muted-foreground mb-2">Match packets with these TCP flags set</p>
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="tcpSyn" checked={tcpFlagsSyn} onCheckedChange={(c) => setTcpFlagsSyn(c === true)} />
-                      <Label htmlFor="tcpSyn" className="font-normal">SYN</Label>
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="TCP Flags" description="Match packets with these TCP flags set">
+                    <div className="flex flex-wrap gap-4">
+                      <FormField label="SYN" htmlFor="tcpSyn" horizontal>
+                        <Checkbox id="tcpSyn" checked={tcpFlagsSyn} onCheckedChange={(c) => setTcpFlagsSyn(c === true)} />
+                      </FormField>
+                      <FormField label="ACK" htmlFor="tcpAck" horizontal>
+                        <Checkbox id="tcpAck" checked={tcpFlagsAck} onCheckedChange={(c) => setTcpFlagsAck(c === true)} />
+                      </FormField>
+                      <FormField label="FIN" htmlFor="tcpFin" horizontal>
+                        <Checkbox id="tcpFin" checked={tcpFlagsFin} onCheckedChange={(c) => setTcpFlagsFin(c === true)} />
+                      </FormField>
+                      <FormField label="RST" htmlFor="tcpRst" horizontal>
+                        <Checkbox id="tcpRst" checked={tcpFlagsRst} onCheckedChange={(c) => setTcpFlagsRst(c === true)} />
+                      </FormField>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="tcpAck" checked={tcpFlagsAck} onCheckedChange={(c) => setTcpFlagsAck(c === true)} />
-                      <Label htmlFor="tcpAck" className="font-normal">ACK</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="tcpFin" checked={tcpFlagsFin} onCheckedChange={(c) => setTcpFlagsFin(c === true)} />
-                      <Label htmlFor="tcpFin" className="font-normal">FIN</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="tcpRst" checked={tcpFlagsRst} onCheckedChange={(c) => setTcpFlagsRst(c === true)} />
-                      <Label htmlFor="tcpRst" className="font-normal">RST</Label>
-                    </div>
-                  </div>
-                </div>
+                  </Fieldset>
+                </>
               )}
 
               {/* ICMP Type/Code */}
               {(protocol === "icmp" || protocol === "icmpv6") && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="icmpTypeName">ICMP Type Name</Label>
-                    <Select value={icmpTypeName || "_any_"} onValueChange={(v) => setIcmpTypeName(v === "_any_" ? "" : v)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Any" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_any_">Any</SelectItem>
-                        <SelectItem value="echo-request">Echo Request (ping)</SelectItem>
-                        <SelectItem value="echo-reply">Echo Reply</SelectItem>
-                        <SelectItem value="destination-unreachable">Destination Unreachable</SelectItem>
-                        <SelectItem value="time-exceeded">Time Exceeded</SelectItem>
-                        <SelectItem value="parameter-problem">Parameter Problem</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="icmpType">ICMP Type (numeric)</Label>
-                      <Input
-                        id="icmpType"
-                        type="number"
-                        placeholder="0-255"
-                        value={icmpType}
-                        onChange={(e) => setIcmpType(e.target.value)}
-                      />
+                <>
+                  <FieldsetDivider />
+                  <Fieldset label="ICMP">
+                    <FormField label="ICMP Type Name" htmlFor="icmpTypeName">
+                      <Select value={icmpTypeName || "_any_"} onValueChange={(v) => setIcmpTypeName(v === "_any_" ? "" : v)}>
+                        <SelectTrigger id="icmpTypeName">
+                          <SelectValue placeholder="Any" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_any_">Any</SelectItem>
+                          <SelectItem value="echo-request">Echo Request (ping)</SelectItem>
+                          <SelectItem value="echo-reply">Echo Reply</SelectItem>
+                          <SelectItem value="destination-unreachable">Destination Unreachable</SelectItem>
+                          <SelectItem value="time-exceeded">Time Exceeded</SelectItem>
+                          <SelectItem value="parameter-problem">Parameter Problem</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField label="ICMP Type (numeric)" htmlFor="icmpType">
+                        <Input
+                          id="icmpType"
+                          type="number"
+                          placeholder="0-255"
+                          value={icmpType}
+                          onChange={(e) => setIcmpType(e.target.value)}
+                        />
+                      </FormField>
+                      <FormField label="ICMP Code" htmlFor="icmpCode">
+                        <Input
+                          id="icmpCode"
+                          type="number"
+                          placeholder="0-255"
+                          value={icmpCode}
+                          onChange={(e) => setIcmpCode(e.target.value)}
+                        />
+                      </FormField>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="icmpCode">ICMP Code</Label>
-                      <Input
-                        id="icmpCode"
-                        type="number"
-                        placeholder="0-255"
-                        value={icmpCode}
-                        onChange={(e) => setIcmpCode(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
+                  </Fieldset>
+                </>
               )}
 
-              {/* Connection Status */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Connection Status</Label>
-                <p className="text-xs text-muted-foreground mb-2">Match packets based on connection tracking state</p>
+              <FieldsetDivider />
+
+              <Fieldset label="Connection Status" description="Match packets based on connection tracking state">
                 <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2">
+                  <FormField label="New" htmlFor="connNew" horizontal>
                     <Checkbox id="connNew" checked={connStatusNew} onCheckedChange={(c) => setConnStatusNew(c === true)} />
-                    <Label htmlFor="connNew" className="font-normal">New</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  </FormField>
+                  <FormField label="Established" htmlFor="connEstablished" horizontal>
                     <Checkbox id="connEstablished" checked={connStatusEstablished} onCheckedChange={(c) => setConnStatusEstablished(c === true)} />
-                    <Label htmlFor="connEstablished" className="font-normal">Established</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  </FormField>
+                  <FormField label="Related" htmlFor="connRelated" horizontal>
                     <Checkbox id="connRelated" checked={connStatusRelated} onCheckedChange={(c) => setConnStatusRelated(c === true)} />
-                    <Label htmlFor="connRelated" className="font-normal">Related</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  </FormField>
+                  <FormField label="Invalid" htmlFor="connInvalid" horizontal>
                     <Checkbox id="connInvalid" checked={connStatusInvalid} onCheckedChange={(c) => setConnStatusInvalid(c === true)} />
-                    <Label htmlFor="connInvalid" className="font-normal">Invalid</Label>
-                  </div>
+                  </FormField>
                 </div>
-              </div>
+              </Fieldset>
             </TabsContent>
           )}
 
           {/* Advanced Tab (1.5+) */}
           {isV15 && (
             <TabsContent value="advanced" className="space-y-4 mt-4">
-              {/* Rate Limiting */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Rate Limiting</h4>
+              <Fieldset label="Rate Limiting">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2 col-span-2">
-                    <Label htmlFor="limitRate">Rate Limit</Label>
+                  <FormField
+                    label="Rate Limit"
+                    htmlFor="limitRateValue"
+                    description="Maximum packets to match per time period"
+                    className="col-span-2"
+                  >
                     <div className="flex gap-2">
                       <Input
                         id="limitRateValue"
@@ -820,10 +807,12 @@ export function EditBridgeRuleModal({
                         </SelectContent>
                       </Select>
                     </div>
-                    <p className="text-xs text-muted-foreground">Maximum packets to match per time period</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="limitBurst">Burst Size</Label>
+                  </FormField>
+                  <FormField
+                    label="Burst Size"
+                    htmlFor="limitBurst"
+                    description="Burst allowance"
+                  >
                     <Input
                       id="limitBurst"
                       type="number"
@@ -832,36 +821,41 @@ export function EditBridgeRuleModal({
                       value={limitBurst}
                       onChange={(e) => setLimitBurst(e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground">Burst allowance</p>
-                  </div>
+                  </FormField>
                 </div>
-              </div>
+              </Fieldset>
 
-              {/* Time-based Rules */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Time-based Rules</h4>
+              <FieldsetDivider />
+
+              <Fieldset label="Time-based Rules">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="timeStarttime">Start Time</Label>
+                  <FormField label="Start Time" htmlFor="timeStarttime">
                     <Input
                       id="timeStarttime"
                       type="time"
                       value={timeStarttime}
                       onChange={(e) => setTimeStarttime(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timeStoptime">Stop Time</Label>
+                  </FormField>
+                  <FormField label="Stop Time" htmlFor="timeStoptime">
                     <Input
                       id="timeStoptime"
                       type="time"
                       value={timeStoptime}
                       onChange={(e) => setTimeStoptime(e.target.value)}
                     />
-                  </div>
+                  </FormField>
                 </div>
-                <div className="space-y-2">
-                  <Label>Active Days</Label>
+                <FormField
+                  label="Active Days"
+                  description={
+                    selectedWeekdays.length === 0
+                      ? "No days selected (rule active every day)"
+                      : selectedWeekdays.length === 7
+                        ? "Active every day"
+                        : `Active on: ${selectedWeekdays.join(", ")}`
+                  }
+                >
                   <div className="flex flex-wrap gap-2">
                     {WEEKDAYS.map((day) => (
                       <Button
@@ -876,23 +870,14 @@ export function EditBridgeRuleModal({
                       </Button>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedWeekdays.length === 0
-                      ? "No days selected (rule active every day)"
-                      : selectedWeekdays.length === 7
-                        ? "Active every day"
-                        : `Active on: ${selectedWeekdays.join(", ")}`}
-                  </p>
-                </div>
-              </div>
+                </FormField>
+              </Fieldset>
 
-              {/* Packet Modifications */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Packet Modifications</h4>
-                <p className="text-xs text-muted-foreground">Modify packet fields when the rule matches</p>
+              <FieldsetDivider />
+
+              <Fieldset label="Packet Modifications" description="Modify packet fields when the rule matches">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="modifyDscp">Set DSCP</Label>
+                  <FormField label="Set DSCP" htmlFor="modifyDscp">
                     <Input
                       id="modifyDscp"
                       type="number"
@@ -902,23 +887,21 @@ export function EditBridgeRuleModal({
                       value={modifyDscp}
                       onChange={(e) => setModifyDscp(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="modifyMark">Set Mark</Label>
+                  </FormField>
+                  <FormField label="Set Mark" htmlFor="modifyMark">
                     <Input
                       id="modifyMark"
                       placeholder="Packet mark value"
                       value={modifyMark}
                       onChange={(e) => setModifyMark(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="modifyVlanPriority">Set VLAN Priority</Label>
+                  </FormField>
+                  <FormField label="Set VLAN Priority" htmlFor="modifyVlanPriority">
                     <Select
                       value={modifyVlanPriority || "_none_"}
                       onValueChange={(v) => setModifyVlanPriority(v === "_none_" ? "" : v)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="modifyVlanPriority">
                         <SelectValue placeholder="None" />
                       </SelectTrigger>
                       <SelectContent>
@@ -930,14 +913,13 @@ export function EditBridgeRuleModal({
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="modifyTcpMss">Set TCP MSS</Label>
+                  </FormField>
+                  <FormField label="Set TCP MSS" htmlFor="modifyTcpMss">
                     <Select
                       value={modifyTcpMss || "_none_"}
                       onValueChange={(v) => setModifyTcpMss(v === "_none_" ? "" : v)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="modifyTcpMss">
                         <SelectValue placeholder="None" />
                       </SelectTrigger>
                       <SelectContent>
@@ -949,9 +931,9 @@ export function EditBridgeRuleModal({
                         <SelectItem value="1360">1360 (Double Encapsulation)</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </div>
-              </div>
+              </Fieldset>
             </TabsContent>
           )}
         </Tabs>

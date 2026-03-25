@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Plus, X, Server } from "lucide-react";
 import {
   systemSettingsService,
@@ -98,7 +98,7 @@ export function SyslogRemoteModal({ open, onOpenChange, facilities, levels, onSu
       handleClose();
       onSuccess();
     } catch {
-      setError("An unexpected error occurred");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -129,33 +129,35 @@ export function SyslogRemoteModal({ open, onOpenChange, facilities, levels, onSu
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="host">Host / IP</Label>
-              <Input
-                id="host"
-                value={host}
-                onChange={(e) => setHost(e.target.value)}
-                placeholder="192.168.1.100"
-              />
+          <Fieldset>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <FormField label="Host / IP" htmlFor="host" required>
+                  <Input
+                    id="host"
+                    value={host}
+                    onChange={(e) => setHost(e.target.value)}
+                    placeholder="192.168.1.100"
+                  />
+                </FormField>
+              </div>
+              <FormField label="Port (optional)" htmlFor="port">
+                <Input
+                  id="port"
+                  type="number"
+                  min="1"
+                  max="65535"
+                  value={port}
+                  onChange={(e) => setPort(e.target.value)}
+                  placeholder="514"
+                />
+              </FormField>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="port">Port (optional)</Label>
-              <Input
-                id="port"
-                type="number"
-                min="1"
-                max="65535"
-                value={port}
-                onChange={(e) => setPort(e.target.value)}
-                placeholder="514"
-              />
-            </div>
-          </div>
+          </Fieldset>
 
-          {/* Facilities */}
-          <div className="space-y-2">
-            <Label>Facilities</Label>
+          <FieldsetDivider />
+
+          <Fieldset label="Facilities">
             <div className="flex flex-wrap gap-2 min-h-[2rem] p-2 rounded-md border bg-muted/30">
               {facList.map((f) => (
                 <Badge key={f.facility} variant="secondary" className="flex items-center gap-1">
@@ -171,37 +173,39 @@ export function SyslogRemoteModal({ open, onOpenChange, facilities, levels, onSu
             </div>
 
             <div className="flex gap-2 items-end">
-              <div className="flex-1 space-y-1">
-                <Label className="text-xs text-muted-foreground">Facility</Label>
-                <Select value={facInput} onValueChange={setFacInput}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {facilities.map((f) => (
-                      <SelectItem key={f} value={f}>{f}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex-1">
+                <FormField label="Facility" htmlFor="facInput">
+                  <Select value={facInput} onValueChange={setFacInput}>
+                    <SelectTrigger id="facInput">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {facilities.map((f) => (
+                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
               </div>
-              <div className="flex-1 space-y-1">
-                <Label className="text-xs text-muted-foreground">Level</Label>
-                <Select value={levelInput} onValueChange={setLevelInput}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {levels.map((l) => (
-                      <SelectItem key={l} value={l}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex-1">
+                <FormField label="Level" htmlFor="levelInput">
+                  <Select value={levelInput} onValueChange={setLevelInput}>
+                    <SelectTrigger id="levelInput">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {levels.map((l) => (
+                        <SelectItem key={l} value={l}>{l}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={addFacility}>
+              <Button type="button" variant="outline" size="sm" onClick={addFacility} className="mb-0 self-end">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-          </div>
+          </Fieldset>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>

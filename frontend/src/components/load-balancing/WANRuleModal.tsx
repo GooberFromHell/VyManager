@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -190,42 +190,41 @@ export function WANRuleModal({ open, onOpenChange, rule, interfaceHealth, onSucc
         <div className="space-y-4 py-2">
           {/* Basic */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Rule ID <span className="text-destructive">*</span></Label>
+            <FormField label="Rule ID" htmlFor="wan-rule-id" required>
               <Input
+                id="wan-rule-id"
                 value={form.rule_id}
                 onChange={(e) => set("rule_id", e.target.value)}
                 placeholder="10"
                 type="number"
                 disabled={isEdit}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Description</Label>
+            </FormField>
+            <FormField label="Description" htmlFor="wan-rule-desc">
               <Input
+                id="wan-rule-desc"
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
                 placeholder="Optional description"
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Inbound Interface</Label>
+            <FormField label="Inbound Interface" htmlFor="wan-rule-inbound">
               <Input
+                id="wan-rule-inbound"
                 value={form.inbound_interface}
                 onChange={(e) => set("inbound_interface", e.target.value)}
                 placeholder="eth0"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Protocol</Label>
+            </FormField>
+            <FormField label="Protocol" htmlFor="wan-rule-proto">
               <Select
                 value={form.protocol || "_any"}
                 onValueChange={(v) => set("protocol", v === "_any" ? "" : v)}
               >
-                <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
+                <SelectTrigger id="wan-rule-proto"><SelectValue placeholder="Any" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_any">Any</SelectItem>
                   <SelectItem value="tcp">TCP</SelectItem>
@@ -234,7 +233,7 @@ export function WANRuleModal({ open, onOpenChange, rule, interfaceHealth, onSucc
                   <SelectItem value="icmp">ICMP</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
           </div>
 
           {/* Flags */}
@@ -261,7 +260,7 @@ export function WANRuleModal({ open, onOpenChange, rule, interfaceHealth, onSucc
           {/* Outbound Interfaces */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Outbound Interfaces</Label>
+              <span className="text-sm font-semibold">Outbound Interfaces</span>
               <Button type="button" variant="outline" size="sm" onClick={addIface}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add
               </Button>
@@ -269,40 +268,43 @@ export function WANRuleModal({ open, onOpenChange, rule, interfaceHealth, onSucc
 
             {form.interfaces.map((iface, idx) => (
               <div key={idx} className="flex items-end gap-2">
-                <div className="flex-1 space-y-1">
-                  <Label className="text-xs">Interface</Label>
-                  <Select
-                    value={iface.interface || "_custom"}
-                    onValueChange={(v) => setIface(idx, "interface", v === "_custom" ? "" : v)}
-                  >
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder="Select or type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {healthyInterfaces.map((hi) => (
-                        <SelectItem key={hi} value={hi}>{hi}</SelectItem>
-                      ))}
-                      <SelectItem value="_custom">Custom…</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {(iface.interface === "" || !healthyInterfaces.includes(iface.interface)) && (
-                    <Input
-                      className="h-7 text-xs mt-1"
-                      value={iface.interface}
-                      onChange={(e) => setIface(idx, "interface", e.target.value)}
-                      placeholder="eth1"
-                    />
-                  )}
+                <div className="flex-1">
+                  <FormField label="Interface" htmlFor={`wan-iface-sel-${idx}`}>
+                    <Select
+                      value={iface.interface || "_custom"}
+                      onValueChange={(v) => setIface(idx, "interface", v === "_custom" ? "" : v)}
+                    >
+                      <SelectTrigger id={`wan-iface-sel-${idx}`} className="h-8 text-sm">
+                        <SelectValue placeholder="Select or type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {healthyInterfaces.map((hi) => (
+                          <SelectItem key={hi} value={hi}>{hi}</SelectItem>
+                        ))}
+                        <SelectItem value="_custom">Custom…</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(iface.interface === "" || !healthyInterfaces.includes(iface.interface)) && (
+                      <Input
+                        className="h-7 text-xs mt-1"
+                        value={iface.interface}
+                        onChange={(e) => setIface(idx, "interface", e.target.value)}
+                        placeholder="eth1"
+                      />
+                    )}
+                  </FormField>
                 </div>
-                <div className="w-20 space-y-1">
-                  <Label className="text-xs">Weight</Label>
-                  <Input
-                    className="h-8 text-sm"
-                    value={iface.weight}
-                    onChange={(e) => setIface(idx, "weight", e.target.value)}
-                    placeholder="1"
-                    type="number"
-                  />
+                <div className="w-20">
+                  <FormField label="Weight" htmlFor={`wan-iface-wt-${idx}`}>
+                    <Input
+                      id={`wan-iface-wt-${idx}`}
+                      className="h-8 text-sm"
+                      value={iface.weight}
+                      onChange={(e) => setIface(idx, "weight", e.target.value)}
+                      placeholder="1"
+                      type="number"
+                    />
+                  </FormField>
                 </div>
                 {form.interfaces.length > 1 && (
                   <Button
@@ -328,42 +330,42 @@ export function WANRuleModal({ open, onOpenChange, rule, interfaceHealth, onSucc
             <CollapsibleContent className="space-y-3 pt-3">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Source</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Address / Network</Label>
+                <FormField label="Address / Network" htmlFor="src-addr">
                   <Input
+                    id="src-addr"
                     value={form.source_address}
                     onChange={(e) => set("source_address", e.target.value)}
                     placeholder="192.168.1.0/24"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Port</Label>
+                </FormField>
+                <FormField label="Port" htmlFor="src-port">
                   <Input
+                    id="src-port"
                     value={form.source_port}
                     onChange={(e) => set("source_port", e.target.value)}
                     placeholder="1024-65535"
                   />
-                </div>
+                </FormField>
               </div>
 
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide pt-1">Destination</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Address / Network</Label>
+                <FormField label="Address / Network" htmlFor="dst-addr">
                   <Input
+                    id="dst-addr"
                     value={form.destination_address}
                     onChange={(e) => set("destination_address", e.target.value)}
                     placeholder="0.0.0.0/0"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Port</Label>
+                </FormField>
+                <FormField label="Port" htmlFor="dst-port">
                   <Input
+                    id="dst-port"
                     value={form.destination_port}
                     onChange={(e) => set("destination_port", e.target.value)}
                     placeholder="80,443"
                   />
-                </div>
+                </FormField>
               </div>
             </CollapsibleContent>
           </Collapsible>

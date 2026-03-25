@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertCircle,
@@ -20,9 +19,9 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  Ban,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { wireguardService, WireGuardPeer } from "@/lib/api/wireguard";
 import { ApiError } from "@/lib/types/api";
 
@@ -237,179 +236,164 @@ export function EditPeerModal({
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
-            {/* Peer Name (read-only) */}
-            <div className="space-y-2">
-              <Label>Peer Name</Label>
-              <Input value={peerData.name} disabled className="bg-muted" />
-            </div>
+            <Fieldset>
+              <FormField label="Peer Name">
+                <Input value={peerData.name} disabled className="bg-muted" />
+              </FormField>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-description">Description</Label>
-              <Input
-                id="edit-peer-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description for this peer"
-              />
-              <p className="text-xs text-muted-foreground">
-                A description to help identify this peer.
-              </p>
-            </div>
+              <FormField
+                label="Description"
+                htmlFor="edit-peer-description"
+                description="A description to help identify this peer."
+              >
+                <Input
+                  id="edit-peer-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description for this peer"
+                />
+              </FormField>
 
-            {/* Public Key */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-public-key">Public Key</Label>
-              <Input
-                id="edit-peer-public-key"
-                value={publicKey}
-                onChange={(e) => setPublicKey(e.target.value)}
-                placeholder="Base64 encoded public key"
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                The peer's WireGuard public key.
-              </p>
-            </div>
+              <FormField
+                label="Public Key"
+                htmlFor="edit-peer-public-key"
+                description="The peer's WireGuard public key."
+              >
+                <Input
+                  id="edit-peer-public-key"
+                  value={publicKey}
+                  onChange={(e) => setPublicKey(e.target.value)}
+                  placeholder="Base64 encoded public key"
+                  className="font-mono text-sm"
+                />
+              </FormField>
 
-            {/* Allowed IPs */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-allowed-ips">Allowed IPs</Label>
-              <Input
-                id="edit-peer-allowed-ips"
-                value={allowedIps}
-                onChange={(e) => setAllowedIps(e.target.value)}
-                placeholder="10.0.0.2/32, 192.168.1.0/24"
-              />
-              <p className="text-xs text-muted-foreground">
-                Comma-separated IPs/networks this peer can route.
-              </p>
-            </div>
+              <FormField
+                label="Allowed IPs"
+                htmlFor="edit-peer-allowed-ips"
+                description="Comma-separated IPs/networks this peer can route."
+              >
+                <Input
+                  id="edit-peer-allowed-ips"
+                  value={allowedIps}
+                  onChange={(e) => setAllowedIps(e.target.value)}
+                  placeholder="10.0.0.2/32, 192.168.1.0/24"
+                />
+              </FormField>
 
-            {/* Preshared Key */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-psk">Preshared Key</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    id="edit-peer-psk"
-                    type={showPresharedKey ? "text" : "password"}
-                    value={presharedKey}
-                    onChange={(e) => setPresharedKey(e.target.value)}
-                    placeholder="Leave as *** to keep current key"
-                    className="pr-10 font-mono text-sm"
-                  />
+              <FormField
+                label="Preshared Key"
+                htmlFor="edit-peer-psk"
+                description={'Keep as "***" to preserve existing key, or generate/enter a new one. Clear to remove.'}
+              >
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="edit-peer-psk"
+                      type={showPresharedKey ? "text" : "password"}
+                      value={presharedKey}
+                      onChange={(e) => setPresharedKey(e.target.value)}
+                      placeholder="Leave as *** to keep current key"
+                      className="pr-10 font-mono text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowPresharedKey(!showPresharedKey)}
+                    >
+                      {showPresharedKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPresharedKey(!showPresharedKey)}
+                    variant="outline"
+                    onClick={handleGeneratePSK}
+                    disabled={generating}
+                    className="gap-2"
                   >
-                    {showPresharedKey ? (
-                      <EyeOff className="h-4 w-4" />
+                    {generating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Sparkles className="h-4 w-4" />
                     )}
+                    {presharedKey === "***" ? "Replace" : "Generate"}
                   </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleGeneratePSK}
-                  disabled={generating}
-                  className="gap-2"
-                >
-                  {generating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
-                  {presharedKey === "***" ? "Replace" : "Generate"}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Keep as "***" to preserve existing key, or generate/enter a new one.
-                Clear to remove.
-              </p>
-            </div>
+              </FormField>
+            </Fieldset>
           </TabsContent>
 
           <TabsContent value="endpoint" className="space-y-4 mt-4">
-            {/* Endpoint IP Address */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-address">Endpoint IP Address</Label>
-              <Input
-                id="edit-peer-address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="203.0.113.1"
-              />
-              <p className="text-xs text-muted-foreground">
-                IP address of the remote peer. Use this OR hostname below.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Endpoint IP Address"
+                htmlFor="edit-peer-address"
+                description="IP address of the remote peer. Use this OR hostname below."
+              >
+                <Input
+                  id="edit-peer-address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="203.0.113.1"
+                />
+              </FormField>
 
-            {/* Endpoint Hostname */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-hostname">Endpoint Hostname</Label>
-              <Input
-                id="edit-peer-hostname"
-                value={hostName}
-                onChange={(e) => setHostName(e.target.value)}
-                placeholder="vpn.example.com"
-              />
-              <p className="text-xs text-muted-foreground">
-                Hostname of the remote peer. Use this OR IP address above.
-              </p>
-            </div>
+              <FormField
+                label="Endpoint Hostname"
+                htmlFor="edit-peer-hostname"
+                description="Hostname of the remote peer. Use this OR IP address above."
+              >
+                <Input
+                  id="edit-peer-hostname"
+                  value={hostName}
+                  onChange={(e) => setHostName(e.target.value)}
+                  placeholder="vpn.example.com"
+                />
+              </FormField>
 
-            {/* Endpoint Port */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-port">Endpoint Port</Label>
-              <Input
-                id="edit-peer-port"
-                type="number"
-                value={port}
-                onChange={(e) => setPort(e.target.value)}
-                placeholder="51820"
-              />
-            </div>
+              <FormField label="Endpoint Port" htmlFor="edit-peer-port">
+                <Input
+                  id="edit-peer-port"
+                  type="number"
+                  value={port}
+                  onChange={(e) => setPort(e.target.value)}
+                  placeholder="51820"
+                />
+              </FormField>
 
-            {/* Persistent Keepalive */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-peer-keepalive">
-                Persistent Keepalive (seconds)
-              </Label>
-              <Input
-                id="edit-peer-keepalive"
-                type="number"
-                value={persistentKeepalive}
-                onChange={(e) => setPersistentKeepalive(e.target.value)}
-                placeholder="25"
-              />
-              <p className="text-xs text-muted-foreground">
-                Send keepalive packets every N seconds. Useful for NAT traversal.
-              </p>
-            </div>
+              <FormField
+                label="Persistent Keepalive (seconds)"
+                htmlFor="edit-peer-keepalive"
+                description="Send keepalive packets every N seconds. Useful for NAT traversal."
+              >
+                <Input
+                  id="edit-peer-keepalive"
+                  type="number"
+                  value={persistentKeepalive}
+                  onChange={(e) => setPersistentKeepalive(e.target.value)}
+                  placeholder="25"
+                />
+              </FormField>
 
-            {/* Disable Peer */}
-            <div className="flex items-center space-x-3 pt-2">
-              <Checkbox
-                id="edit-peer-disabled"
-                checked={disabled}
-                onCheckedChange={(checked) => setDisabled(checked === true)}
-              />
-              <div className="space-y-0.5">
-                <Label htmlFor="edit-peer-disabled" className="flex items-center gap-2 cursor-pointer">
-                  <Ban className="h-4 w-4 text-muted-foreground" />
-                  Disable Peer
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Disable this peer connection.
-                </p>
-              </div>
-            </div>
+              <FormField
+                label="Disable Peer"
+                htmlFor="edit-peer-disabled"
+                description="Disable this peer connection."
+                horizontal
+              >
+                <Checkbox
+                  id="edit-peer-disabled"
+                  checked={disabled}
+                  onCheckedChange={(checked) => setDisabled(checked === true)}
+                />
+              </FormField>
+            </Fieldset>
           </TabsContent>
         </Tabs>
 

@@ -1,0 +1,43 @@
+# DERPO Goal Contract — VyOS Services Phase 3
+goal: "Implement VyOS advanced services management (Router Advert, TFTP, Broadcast Relay, Conntrack Sync) across all architecture layers following the established router → builder → mapper → API service → UI pattern."
+
+scope:
+  include:
+    - "backend/vyos_mappers/**"
+    - "backend/vyos_builders/**"
+    - "backend/routers/**"
+    - "backend/app.py"
+    - "frontend/src/lib/api/**"
+    - "frontend/src/components/services/**"
+    - "frontend/src/app/(default)/(app)/system/services/**"
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must follow existing three-layer backend pattern (Router → Builder → Mapper → pyvyos)"
+  - "Must support VyOS 1.4 and 1.5 via version-aware mapper pattern"
+  - "Must match Phase 1 implementation patterns exactly (DNS Forwarding, NTP, SSH as reference)"
+  - "Frontend must integrate into existing services tab layout"
+  - "All batch endpoints must call ensure_snapshot_before_change()"
+  - "No new dependencies without user approval"
+
+acceptance_criteria:
+  - "All 4 services have /capabilities, /config, /batch endpoints"
+  - "All mappers have _versions/ with v1_4.py, v1_5.py, __init__.py"
+  - "All mappers registered in backend/vyos_mappers/__init__.py"
+  - "All routers included in backend/app.py"
+  - "All frontend API services have getCapabilities, getConfig, batchConfigure, refreshConfig"
+  - "All batch endpoints call ensure_snapshot_before_change()"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes (npm run lint)"
+  - "/check-patterns reports no violations"
+
+human_checkpoints:
+  - after: resolve
+
+max_iterations: 3
+
+context: "Phase 1 (DNS Forwarding, NTP, SSH) is complete and serves as the reference implementation. Phase 2 (DHCP Relay, DHCPv6 Server, LLDP, SNMP) is pending. This is Phase 3: Router Advert, TFTP, Broadcast Relay, Conntrack Sync."

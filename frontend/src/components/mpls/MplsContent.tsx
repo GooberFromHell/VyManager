@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -553,8 +553,7 @@ export function MplsContent() {
                 <CardContent>
                   {paramsEditing ? (
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="params-max-ttl">Maximum TTL</Label>
+                      <FormField label="Maximum TTL" htmlFor="params-max-ttl">
                         <Input
                           id="params-max-ttl"
                           type="number"
@@ -570,9 +569,13 @@ export function MplsContent() {
                           placeholder="Default (255)"
                           className="max-w-xs"
                         />
-                      </div>
+                      </FormField>
 
-                      <div className="flex items-center gap-3">
+                      <FormField
+                        label="No Propagate TTL"
+                        htmlFor="params-no-prop-ttl"
+                        horizontal
+                      >
                         <Checkbox
                           id="params-no-prop-ttl"
                           checked={paramsForm.no_propagate_ttl}
@@ -580,10 +583,7 @@ export function MplsContent() {
                             setParamsForm({ ...paramsForm, no_propagate_ttl: checked === true })
                           }
                         />
-                        <Label htmlFor="params-no-prop-ttl" className="cursor-pointer">
-                          No Propagate TTL
-                        </Label>
-                      </div>
+                      </FormField>
 
                       {paramsError && (
                         <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3">
@@ -939,8 +939,7 @@ export function MplsContent() {
                   </CardHeader>
                   <CardContent>
                     {ldpGeneralEditing ? (
-                      <div className="space-y-2">
-                        <Label htmlFor="ldp-router-id">Router ID</Label>
+                      <FormField label="Router ID" htmlFor="ldp-router-id">
                         <Input
                           id="ldp-router-id"
                           value={ldpGeneralForm.router_id ?? ""}
@@ -953,7 +952,7 @@ export function MplsContent() {
                           placeholder="e.g. 10.0.0.1"
                           className="max-w-xs font-mono"
                         />
-                      </div>
+                      </FormField>
                     ) : (
                       <p className="font-mono text-sm">
                         {ldp.router_id ?? <span className="text-muted-foreground font-sans">Not configured</span>}
@@ -980,8 +979,7 @@ export function MplsContent() {
                           { label: "Session IPv4 Holdtime (s)", key: "session_ipv4_holdtime" as const },
                           { label: "Session IPv6 Holdtime (s)", key: "session_ipv6_holdtime" as const },
                         ].map(({ label, key }) => (
-                          <div key={key} className="space-y-1">
-                            <Label className="text-xs">{label}</Label>
+                          <FormField key={key} label={label}>
                             <Input
                               type="number"
                               min={0}
@@ -997,10 +995,9 @@ export function MplsContent() {
                               }
                               placeholder="Default"
                             />
-                          </div>
+                          </FormField>
                         ))}
-                        <div className="space-y-1">
-                          <Label className="text-xs">Transport IPv4 Address</Label>
+                        <FormField label="Transport IPv4 Address">
                           <Input
                             value={ldpGeneralForm.discovery.transport_ipv4_address ?? ""}
                             onChange={(e) =>
@@ -1015,9 +1012,8 @@ export function MplsContent() {
                             placeholder="e.g. 10.0.0.1"
                             className="font-mono"
                           />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Transport IPv6 Address</Label>
+                        </FormField>
+                        <FormField label="Transport IPv6 Address">
                           <Input
                             value={ldpGeneralForm.discovery.transport_ipv6_address ?? ""}
                             onChange={(e) =>
@@ -1032,7 +1028,7 @@ export function MplsContent() {
                             placeholder="e.g. 2001:db8::1"
                             className="font-mono"
                           />
-                        </div>
+                        </FormField>
                       </div>
                     ) : (
                       <dl className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -1073,7 +1069,13 @@ export function MplsContent() {
                           { key: "ordered_control" as const, label: "Ordered Control", desc: "Use ordered label distribution control" },
                           { key: "transport_prefer_ipv4" as const, label: "Transport Prefer IPv4", desc: "Prefer IPv4 transport over IPv6" },
                         ].map(({ key, label, desc }) => (
-                          <div key={key} className="flex items-center gap-3">
+                          <FormField
+                            key={key}
+                            label={label}
+                            htmlFor={`ldp-param-${key}`}
+                            description={desc}
+                            horizontal
+                          >
                             <Checkbox
                               id={`ldp-param-${key}`}
                               checked={ldpGeneralForm.parameters[key]}
@@ -1087,11 +1089,7 @@ export function MplsContent() {
                                 })
                               }
                             />
-                            <div className="space-y-0.5">
-                              <Label htmlFor={`ldp-param-${key}`} className="cursor-pointer">{label}</Label>
-                              <p className="text-xs text-muted-foreground">{desc}</p>
-                            </div>
-                          </div>
+                          </FormField>
                         ))}
                       </div>
                     ) : (
@@ -1167,8 +1165,7 @@ export function MplsContent() {
                   <CardContent>
                     {filtersEditing ? (
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs">IPv4 Access List</Label>
+                        <FormField label="IPv4 Access List">
                           <Input
                             value={filtersForm.allocation.ipv4_access_list ?? ""}
                             onChange={(e) =>
@@ -1179,9 +1176,8 @@ export function MplsContent() {
                             }
                             placeholder="ACL name or number"
                           />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">IPv6 Access List</Label>
+                        </FormField>
+                        <FormField label="IPv6 Access List">
                           <Input
                             value={filtersForm.allocation.ipv6_access_list ?? ""}
                             onChange={(e) =>
@@ -1192,7 +1188,7 @@ export function MplsContent() {
                             }
                             placeholder="ACL name or number"
                           />
-                        </div>
+                        </FormField>
                       </div>
                     ) : (
                       <dl className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -1218,7 +1214,11 @@ export function MplsContent() {
                       <div className="space-y-4">
                         <div className="space-y-3">
                           <p className="text-xs font-semibold text-muted-foreground">IPv4</p>
-                          <div className="flex items-center gap-3">
+                          <FormField
+                            label="IPv4 Explicit Null"
+                            htmlFor="export-ipv4-explicit-null"
+                            horizontal
+                          >
                             <Checkbox
                               id="export-ipv4-explicit-null"
                               checked={filtersForm.export.ipv4_explicit_null}
@@ -1229,11 +1229,9 @@ export function MplsContent() {
                                 })
                               }
                             />
-                            <Label htmlFor="export-ipv4-explicit-null" className="cursor-pointer">IPv4 Explicit Null</Label>
-                          </div>
+                          </FormField>
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Filter Access List</Label>
+                            <FormField label="Filter Access List">
                               <Input
                                 value={filtersForm.export.ipv4_export_filter.filter_access_list ?? ""}
                                 onChange={(e) =>
@@ -1250,9 +1248,8 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Neighbor Access List</Label>
+                            </FormField>
+                            <FormField label="Neighbor Access List">
                               <Input
                                 value={filtersForm.export.ipv4_export_filter.neighbor_access_list ?? ""}
                                 onChange={(e) =>
@@ -1269,13 +1266,17 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
+                            </FormField>
                           </div>
                         </div>
 
                         <div className="space-y-3">
                           <p className="text-xs font-semibold text-muted-foreground">IPv6</p>
-                          <div className="flex items-center gap-3">
+                          <FormField
+                            label="IPv6 Explicit Null"
+                            htmlFor="export-ipv6-explicit-null"
+                            horizontal
+                          >
                             <Checkbox
                               id="export-ipv6-explicit-null"
                               checked={filtersForm.export.ipv6_explicit_null}
@@ -1286,11 +1287,9 @@ export function MplsContent() {
                                 })
                               }
                             />
-                            <Label htmlFor="export-ipv6-explicit-null" className="cursor-pointer">IPv6 Explicit Null</Label>
-                          </div>
+                          </FormField>
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Filter Access List</Label>
+                            <FormField label="Filter Access List">
                               <Input
                                 value={filtersForm.export.ipv6_export_filter.filter_access_list ?? ""}
                                 onChange={(e) =>
@@ -1307,9 +1306,8 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Neighbor Access List</Label>
+                            </FormField>
+                            <FormField label="Neighbor Access List">
                               <Input
                                 value={filtersForm.export.ipv6_export_filter.neighbor_access_list ?? ""}
                                 onChange={(e) =>
@@ -1326,7 +1324,7 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
+                            </FormField>
                           </div>
                         </div>
                       </div>
@@ -1363,8 +1361,7 @@ export function MplsContent() {
                         <div className="space-y-3">
                           <p className="text-xs font-semibold text-muted-foreground">IPv4</p>
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Filter Access List</Label>
+                            <FormField label="Filter Access List">
                               <Input
                                 value={filtersForm.ldp_import.ipv4_import_filter.filter_access_list ?? ""}
                                 onChange={(e) =>
@@ -1381,9 +1378,8 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Neighbor Access List</Label>
+                            </FormField>
+                            <FormField label="Neighbor Access List">
                               <Input
                                 value={filtersForm.ldp_import.ipv4_import_filter.neighbor_access_list ?? ""}
                                 onChange={(e) =>
@@ -1400,15 +1396,14 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
+                            </FormField>
                           </div>
                         </div>
 
                         <div className="space-y-3">
                           <p className="text-xs font-semibold text-muted-foreground">IPv6</p>
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Filter Access List</Label>
+                            <FormField label="Filter Access List">
                               <Input
                                 value={filtersForm.ldp_import.ipv6_import_filter.filter_access_list ?? ""}
                                 onChange={(e) =>
@@ -1425,9 +1420,8 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Neighbor Access List</Label>
+                            </FormField>
+                            <FormField label="Neighbor Access List">
                               <Input
                                 value={filtersForm.ldp_import.ipv6_import_filter.neighbor_access_list ?? ""}
                                 onChange={(e) =>
@@ -1444,7 +1438,7 @@ export function MplsContent() {
                                 }
                                 placeholder="ACL name"
                               />
-                            </div>
+                            </FormField>
                           </div>
                         </div>
                       </div>

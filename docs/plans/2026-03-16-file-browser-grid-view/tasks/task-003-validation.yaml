@@ -1,0 +1,56 @@
+id: "task-003"
+title: "Validate TypeScript compilation and linting"
+phase: observe
+execution_phase: 2
+agent: "general-purpose"
+status: not_started
+depends_on: ["task-001", "task-002"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify: []
+
+context_files: []
+
+instructions: |
+  Run validation checks to ensure the grid view changes compile and lint cleanly.
+
+  ## Steps:
+
+  1. Run TypeScript compilation check:
+     ```bash
+     cd frontend && npx tsc --noEmit
+     ```
+     Fix any TypeScript errors found in file-browser components.
+
+  2. Run ESLint on the changed files:
+     ```bash
+     cd frontend && npx eslint src/components/file-browser/
+     ```
+     Fix any linting errors.
+
+  3. Verify all files exist:
+     - frontend/src/components/file-browser/FileGridView.tsx
+     - frontend/src/components/file-browser/FileBrowserContent.tsx (modified)
+
+  4. Verify integration:
+     - Grep for 'FileGridView' in FileBrowserContent.tsx
+     - Grep for 'LayoutGrid' in FileBrowserContent.tsx
+     - Grep for 'layout' state in FileBrowserContent.tsx
+
+  Fix any issues found.
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+  - "Command passes: cd frontend && npx eslint src/components/file-browser/"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

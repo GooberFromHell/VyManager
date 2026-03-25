@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { vrfService } from "@/lib/api/vrf";
 
@@ -88,15 +88,14 @@ export function DeleteVrfModal({
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirm-name">VRF Name</Label>
+          <FormField label="VRF Name" htmlFor="confirm-name">
             <Input
               id="confirm-name"
               placeholder={vrfName}
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
             />
-          </div>
+          </FormField>
         </div>
 
         <DialogFooter>

@@ -1,0 +1,37 @@
+# DERPO Goal Contract
+# File Browser Grid/Tile View Layout
+
+goal: "Add a switchable grid/tile layout to the file browser so users can choose between the existing table view and a visual tile-based grid view for navigating directories and files."
+
+scope:
+  include:
+    - "frontend/src/components/file-browser/**"
+    - "frontend/src/app/(default)/(app)/system/file-browser/**"
+  exclude:
+    - "backend/**"
+    - "**/node_modules/**"
+
+constraints:
+  - "Must follow existing architecture patterns (see CLAUDE.md)"
+  - "No new npm dependencies — use existing shadcn/ui + Tailwind + lucide-react"
+  - "Dark mode only"
+  - "Layout preference should persist across navigation (but does not need to persist across sessions)"
+  - "Grid view must support all existing actions: navigate, preview, download, rename, delete"
+  - "Must not break any existing table view functionality"
+
+acceptance_criteria:
+  - "A toggle control allows switching between table and grid layouts"
+  - "Grid view displays files and directories as visual tiles in a responsive grid"
+  - "Clicking a directory tile navigates into it"
+  - "Clicking a file tile opens the preview modal"
+  - "Action buttons (download, rename, delete) are accessible in grid view"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes for all modified/new files"
+
+human_checkpoints:
+  - after: evaluate
+  - after: resolve
+
+max_iterations: 3
+
+context: "The file browser was just implemented with a table-based layout. The user wants a second layout option — a tile/grid view similar to how OS file managers offer icon views. This is a frontend-only change."

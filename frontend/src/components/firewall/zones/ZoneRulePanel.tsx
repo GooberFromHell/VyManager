@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -722,7 +721,7 @@ export function ZoneRulePanel({
                 </div>
                 {/* Action */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Action</Label>
+                  <p className="text-xs">Action</p>
                   <Select value={action} onValueChange={setAction} disabled={!canEdit}>
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue />
@@ -738,7 +737,7 @@ export function ZoneRulePanel({
                 {/* Jump target */}
                 {action === "jump" && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Jump Target</Label>
+                    <p className="text-xs">Jump Target</p>
                     <Select value={jumpTarget} onValueChange={setJumpTarget} disabled={!canEdit}>
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Select chain" />
@@ -755,7 +754,7 @@ export function ZoneRulePanel({
                 {/* Offload target */}
                 {action === "offload" && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Offload Target (Flowtable)</Label>
+                    <p className="text-xs">Offload Target (Flowtable)</p>
                     <Select value={offloadTarget} onValueChange={setOffloadTarget} disabled={!canEdit}>
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Select flowtable" />
@@ -771,7 +770,7 @@ export function ZoneRulePanel({
 
                 {/* Protocol */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Protocol</Label>
+                  <p className="text-xs">Protocol</p>
                   <div className="flex items-center gap-2">
                     <Select value={ruleProtocol} onValueChange={setRuleProtocol} disabled={!canEdit}>
                       <SelectTrigger className="h-8 text-xs flex-1">
@@ -797,7 +796,7 @@ export function ZoneRulePanel({
 
                 {/* Description */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Description</Label>
+                  <p className="text-xs">Description</p>
                   <Input
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -827,7 +826,7 @@ export function ZoneRulePanel({
                   <div className="flex-1 h-px bg-border" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Source Match</Label>
+                  <p className="text-xs">Source Match</p>
                   <RadioGroup
                     value={srcMode}
                     onValueChange={(v) => setSrcMode(v as SrcMode)}
@@ -913,7 +912,7 @@ export function ZoneRulePanel({
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Source Port</Label>
+                  <p className="text-xs">Source Port</p>
                   <RadioGroup value={srcPortMode} onValueChange={(v) => setSrcPortMode(v as PortMode)} className="flex gap-4" disabled={!canEdit}>
                     {(["any", "port", "group"] as PortMode[]).map((m) => (
                       <label key={m} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -950,7 +949,7 @@ export function ZoneRulePanel({
                   <div className="flex-1 h-px bg-border" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Destination Match</Label>
+                  <p className="text-xs">Destination Match</p>
                   <RadioGroup value={dstMode} onValueChange={(v) => setDstMode(v as DstMode)} className="flex flex-wrap gap-x-4 gap-y-1" disabled={!canEdit}>
                     {(["any", "address", "group", "geoip"] as DstMode[]).map((m) => (
                       <label key={m} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -1018,7 +1017,7 @@ export function ZoneRulePanel({
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Destination Port</Label>
+                  <p className="text-xs">Destination Port</p>
                   <RadioGroup value={dstPortMode} onValueChange={(v) => setDstPortMode(v as PortMode)} className="flex gap-4" disabled={!canEdit}>
                     {(["any", "port", "group"] as PortMode[]).map((m) => (
                       <label key={m} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -1055,7 +1054,7 @@ export function ZoneRulePanel({
                   <div className="flex-1 h-px bg-border" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Connection State</Label>
+                  <p className="text-xs">Connection State</p>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: "established", label: "Established", val: stateEstablished, set: setStateEstablished },
@@ -1081,7 +1080,7 @@ export function ZoneRulePanel({
                 </div>
                 {/* TCP Flags */}
                 <div className="space-y-2">
-                  <Label className="text-xs">TCP Flags</Label>
+                  <p className="text-xs">TCP Flags</p>
                   {ruleProtocol !== "tcp" && ruleProtocol !== "tcp_udp" && (
                     <p className="text-xs text-muted-foreground">Set protocol to TCP to configure flags.</p>
                   )}
@@ -1112,7 +1111,7 @@ export function ZoneRulePanel({
 
                 {/* ICMP Type */}
                 <div className="space-y-2">
-                  <Label className="text-xs">ICMP Type</Label>
+                  <p className="text-xs">ICMP Type</p>
                   {!["icmp", "icmpv6", "ipv6-icmp"].includes(ruleProtocol) && (
                     <p className="text-xs text-muted-foreground">Set protocol to ICMP to configure type.</p>
                   )}
@@ -1143,7 +1142,7 @@ export function ZoneRulePanel({
 
                 {/* Packet mods */}
                 <div className="space-y-2">
-                  <Label className="text-xs">Packet Modifications</Label>
+                  <p className="text-xs">Packet Modifications</p>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { label: "DSCP (0-63)", val: dscp, set: setDscp, ph: "0-63" },
@@ -1151,7 +1150,7 @@ export function ZoneRulePanel({
                       { label: "TTL (0-255)", val: ttl, set: setTtl, ph: "0-255" },
                     ].map(({ label, val, set, ph }) => (
                       <div key={label} className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">{label}</Label>
+                        <p className="text-[11px] text-muted-foreground">{label}</p>
                         <Input value={val} onChange={(e) => set(e.target.value)} placeholder={ph} className="h-8 text-xs" disabled={!canEdit} />
                       </div>
                     ))}

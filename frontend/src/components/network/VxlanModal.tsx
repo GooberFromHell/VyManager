@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -372,10 +372,11 @@ export function VxlanModal({
         return;
       }
 
-      await vxlanService.batchConfigure({
-        interface: interfaceName.trim(),
-        operations,
-      });
+      if (mode === "create") {
+        await vxlanService.createInterface(interfaceName.trim(), operations);
+      } else {
+        await vxlanService.updateInterface(vxlan!.name, operations);
+      }
 
       // Refresh config cache
       await vxlanService.refreshConfig();
@@ -450,137 +451,107 @@ export function VxlanModal({
 
             {/* General Tab */}
             <TabsContent value="general" className="space-y-4 mt-4">
-              {mode === "create" && (
-                <div className="space-y-2">
-                  <Label htmlFor="vxlan-name" className="text-zinc-300">
-                    Interface Name <span className="text-red-400">*</span>
-                  </Label>
+              <Fieldset label="Identity">
+                {mode === "create" && (
+                  <FormField label="Interface Name" htmlFor="vxlan-name" description={'Must start with "vxlan" (e.g., vxlan0, vxlan100)'} required>
+                    <Input
+                      id="vxlan-name"
+                      placeholder="vxlan0"
+                      value={interfaceName}
+                      onChange={(e) => setInterfaceName(e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                      required
+                    />
+                  </FormField>
+                )}
+
+                <FormField
+                  label="VNI (VXLAN Network Identifier)"
+                  htmlFor="vxlan-vni"
+                  description={`Range: 1-16777215.${mode === "edit" ? " VNI cannot be changed after creation." : ""}`}
+                  required={mode === "create"}
+                >
                   <Input
-                    id="vxlan-name"
-                    placeholder="vxlan0"
-                    value={interfaceName}
-                    onChange={(e) => setInterfaceName(e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
-                    required
+                    id="vxlan-vni"
+                    type="number"
+                    placeholder="100"
+                    min={1}
+                    max={16777215}
+                    value={vni}
+                    onChange={(e) => setVni(e.target.value)}
+                    disabled={mode === "edit"}
+                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-50"
                   />
-                  <p className="text-xs text-zinc-500">
-                    Must start with &quot;vxlan&quot; (e.g., vxlan0, vxlan100)
-                  </p>
-                </div>
-              )}
+                </FormField>
+              </Fieldset>
 
-              <div className="space-y-2">
-                <Label htmlFor="vxlan-vni" className="text-zinc-300">
-                  VNI (VXLAN Network Identifier){" "}
-                  <span className="text-red-400">*</span>
-                </Label>
-                <Input
-                  id="vxlan-vni"
-                  type="number"
-                  placeholder="100"
-                  min={1}
-                  max={16777215}
-                  value={vni}
-                  onChange={(e) => setVni(e.target.value)}
-                  disabled={mode === "edit"}
-                  className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-50"
-                />
-                <p className="text-xs text-zinc-500">
-                  Range: 1-16777215.{" "}
-                  {mode === "edit" && "VNI cannot be changed after creation."}
-                </p>
-              </div>
+              <FieldsetDivider />
 
-              <div className="space-y-2">
-                <Label htmlFor="vxlan-primary-remote" className="text-zinc-300">
-                  Remote
-                </Label>
-                <Input
-                  id="vxlan-primary-remote"
-                  placeholder="10.0.0.2"
-                  value={remotes[0] || ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (remotes.length === 0) {
-                      setRemotes(val ? [val] : []);
-                    } else {
-                      const updated = [...remotes];
-                      updated[0] = val;
-                      setRemotes(updated);
-                    }
-                  }}
-                  disabled={hasGroup}
-                  className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-40"
-                />
-                <p className="text-xs text-zinc-500">
-                  Remote VTEP peer address. Add more in the Peers tab.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="vxlan-source-address" className="text-zinc-300">
-                    Source Address
-                  </Label>
+              <Fieldset label="Connectivity">
+                <FormField label="Remote" htmlFor="vxlan-primary-remote" description="Remote VTEP peer address. Add more in the Peers tab.">
                   <Input
-                    id="vxlan-source-address"
-                    placeholder="10.0.0.1"
-                    value={sourceAddress}
-                    onChange={(e) => setSourceAddress(e.target.value)}
+                    id="vxlan-primary-remote"
+                    placeholder="10.0.0.2"
+                    value={remotes[0] || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (remotes.length === 0) {
+                        setRemotes(val ? [val] : []);
+                      } else {
+                        const updated = [...remotes];
+                        updated[0] = val;
+                        setRemotes(updated);
+                      }
+                    }}
+                    disabled={hasGroup}
+                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-40"
+                  />
+                </FormField>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="Source Address" htmlFor="vxlan-source-address" description="VTEP source IP address">
+                    <Input
+                      id="vxlan-source-address"
+                      placeholder="10.0.0.1"
+                      value={sourceAddress}
+                      onChange={(e) => setSourceAddress(e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                    />
+                  </FormField>
+
+                  <FormField label="Source Interface" htmlFor="vxlan-source-interface" description="Interface to derive source address from">
+                    <Select value={sourceInterface} onValueChange={setSourceInterface}>
+                      <SelectTrigger id="vxlan-source-interface" className="bg-zinc-900 border-zinc-700 text-zinc-100">
+                        <SelectValue placeholder="Select interface" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableInterfaces.map((iface) => (
+                          <SelectItem key={iface} value={iface}>
+                            {iface}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </div>
+
+                <FormField label="Destination Port" htmlFor="vxlan-port" description="Default: 4789 (IANA standard VXLAN port)">
+                  <Input
+                    id="vxlan-port"
+                    type="number"
+                    placeholder="4789"
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
                     className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
                   />
-                  <p className="text-xs text-zinc-500">VTEP source IP address</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="vxlan-source-interface"
-                    className="text-zinc-300"
-                  >
-                    Source Interface
-                  </Label>
-                  <Select value={sourceInterface} onValueChange={setSourceInterface}>
-                    <SelectTrigger id="vxlan-source-interface" className="bg-zinc-900 border-zinc-700 text-zinc-100">
-                      <SelectValue placeholder="Select interface" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableInterfaces.map((iface) => (
-                        <SelectItem key={iface} value={iface}>
-                          {iface}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-zinc-500">
-                    Interface to derive source address from
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="vxlan-port" className="text-zinc-300">
-                  Destination Port
-                </Label>
-                <Input
-                  id="vxlan-port"
-                  type="number"
-                  placeholder="4789"
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
-                  className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
-                />
-                <p className="text-xs text-zinc-500">
-                  Default: 4789 (IANA standard VXLAN port)
-                </p>
-              </div>
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
             {/* Peers Tab */}
             <TabsContent value="peers" className="space-y-4 mt-4">
-              {/* Remote Peers */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-zinc-300">Remote VTEP Peers</Label>
+              <Fieldset label="Remote VTEP Peers">
+                <div className="flex justify-end">
                   <Button
                     type="button"
                     variant="outline"
@@ -606,7 +577,7 @@ export function VxlanModal({
                 )}
 
                 {remotes.length === 0 && !hasGroup && (
-                  <p className="text-sm text-zinc-500 py-2">
+                  <p className="text-sm text-muted-foreground py-2">
                     No remote peers configured. Click &quot;Add Remote&quot; to
                     add a unicast VTEP peer.
                   </p>
@@ -637,7 +608,7 @@ export function VxlanModal({
                     </div>
                   ))}
                 </div>
-              </div>
+              </Fieldset>
 
               {/* Divider */}
               <div className="relative py-2">
@@ -650,11 +621,7 @@ export function VxlanModal({
               </div>
 
               {/* Multicast Group */}
-              <div className="space-y-3">
-                <Label htmlFor="vxlan-group" className="text-zinc-300">
-                  Multicast Group
-                </Label>
-
+              <Fieldset label="Multicast Group">
                 {hasRemotes && (
                   <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2">
                     <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
@@ -666,26 +633,27 @@ export function VxlanModal({
                   </div>
                 )}
 
-                <Input
-                  id="vxlan-group"
-                  placeholder="239.1.1.1"
-                  value={group}
-                  onChange={(e) => setGroup(e.target.value)}
-                  disabled={hasRemotes}
-                  className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-40"
-                />
-                <p className="text-xs text-zinc-500">
-                  Multicast group address for BUM traffic flooding. Mutually
-                  exclusive with unicast remote peers.
-                </p>
-              </div>
+                <FormField
+                  label="Multicast Group Address"
+                  htmlFor="vxlan-group"
+                  description="Multicast group address for BUM traffic flooding. Mutually exclusive with unicast remote peers."
+                >
+                  <Input
+                    id="vxlan-group"
+                    placeholder="239.1.1.1"
+                    value={group}
+                    onChange={(e) => setGroup(e.target.value)}
+                    disabled={hasRemotes}
+                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-40"
+                  />
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
             {/* Addresses Tab */}
             <TabsContent value="addresses" className="space-y-4 mt-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-zinc-300">IP Addresses</Label>
+              <Fieldset label="IP Addresses">
+                <div className="flex justify-end">
                   <Button
                     type="button"
                     variant="outline"
@@ -699,7 +667,7 @@ export function VxlanModal({
                 </div>
 
                 {addresses.length === 0 && (
-                  <p className="text-sm text-zinc-500 py-2">
+                  <p className="text-sm text-muted-foreground py-2">
                     No addresses configured. Click &quot;Add Address&quot; to
                     assign an IP address.
                   </p>
@@ -728,161 +696,125 @@ export function VxlanModal({
                     </div>
                   ))}
                 </div>
-              </div>
+              </Fieldset>
             </TabsContent>
 
             {/* Options Tab */}
             <TabsContent value="options" className="space-y-4 mt-4">
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-zinc-200">
-                  VXLAN Options
-                </h3>
+              <Fieldset label="VXLAN Options">
+                <FormField
+                  label="Generic Protocol Extension (GPE)"
+                  htmlFor="vxlan-gpe"
+                  description="Enable VXLAN-GPE for multi-protocol encapsulation"
+                  horizontal
+                >
+                  <Checkbox
+                    id="vxlan-gpe"
+                    checked={gpe}
+                    onCheckedChange={(checked) => setGpe(checked as boolean)}
+                  />
+                </FormField>
 
-                <div className="space-y-3 rounded-md border border-zinc-800 bg-zinc-900/50 p-4">
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="vxlan-gpe"
-                      checked={gpe}
-                      onCheckedChange={(checked) => setGpe(checked as boolean)}
-                    />
-                    <div>
-                      <Label
-                        htmlFor="vxlan-gpe"
-                        className="cursor-pointer text-zinc-200"
-                      >
-                        Generic Protocol Extension (GPE)
-                      </Label>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Enable VXLAN-GPE for multi-protocol encapsulation
-                      </p>
-                    </div>
-                  </div>
+                <FormField
+                  label="External Control Plane"
+                  htmlFor="vxlan-external"
+                  description="Use an external control plane (e.g., EVPN) for MAC learning"
+                  horizontal
+                >
+                  <Checkbox
+                    id="vxlan-external"
+                    checked={external}
+                    onCheckedChange={(checked) =>
+                      setExternal(checked as boolean)
+                    }
+                  />
+                </FormField>
 
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="vxlan-external"
-                      checked={external}
-                      onCheckedChange={(checked) =>
-                        setExternal(checked as boolean)
-                      }
-                    />
-                    <div>
-                      <Label
-                        htmlFor="vxlan-external"
-                        className="cursor-pointer text-zinc-200"
-                      >
-                        External Control Plane
-                      </Label>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Use an external control plane (e.g., EVPN) for MAC
-                        learning
-                      </p>
-                    </div>
-                  </div>
+                <FormField
+                  label="Disable MAC Learning"
+                  htmlFor="vxlan-nolearning"
+                  description="Disable source-address learning on this VXLAN interface"
+                  horizontal
+                >
+                  <Checkbox
+                    id="vxlan-nolearning"
+                    checked={nolearning}
+                    onCheckedChange={(checked) =>
+                      setNolearning(checked as boolean)
+                    }
+                  />
+                </FormField>
 
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="vxlan-nolearning"
-                      checked={nolearning}
-                      onCheckedChange={(checked) =>
-                        setNolearning(checked as boolean)
-                      }
-                    />
-                    <div>
-                      <Label
-                        htmlFor="vxlan-nolearning"
-                        className="cursor-pointer text-zinc-200"
-                      >
-                        Disable MAC Learning
-                      </Label>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Disable source-address learning on this VXLAN interface
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="vxlan-neighbor-suppress"
-                      checked={neighborSuppress}
-                      onCheckedChange={(checked) =>
-                        setNeighborSuppress(checked as boolean)
-                      }
-                    />
-                    <div>
-                      <Label
-                        htmlFor="vxlan-neighbor-suppress"
-                        className="cursor-pointer text-zinc-200"
-                      >
-                        Neighbor Suppress
-                      </Label>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Enable ARP/ND neighbor suppression to reduce BUM traffic
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <FormField
+                  label="Neighbor Suppress"
+                  htmlFor="vxlan-neighbor-suppress"
+                  description="Enable ARP/ND neighbor suppression to reduce BUM traffic"
+                  horizontal
+                >
+                  <Checkbox
+                    id="vxlan-neighbor-suppress"
+                    checked={neighborSuppress}
+                    onCheckedChange={(checked) =>
+                      setNeighborSuppress(checked as boolean)
+                    }
+                  />
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
             {/* Common Tab */}
             <TabsContent value="common" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="vxlan-description" className="text-zinc-300">
-                  Description
-                </Label>
-                <Textarea
-                  id="vxlan-description"
-                  placeholder="VXLAN overlay for tenant network"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 resize-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="vxlan-mtu" className="text-zinc-300">
-                    MTU
-                  </Label>
-                  <Input
-                    id="vxlan-mtu"
-                    type="number"
-                    placeholder="1500"
-                    value={mtu}
-                    onChange={(e) => setMtu(e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+              <Fieldset label="General">
+                <FormField label="Description" htmlFor="vxlan-description">
+                  <Textarea
+                    id="vxlan-description"
+                    placeholder="VXLAN overlay for tenant network"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 resize-none"
                   />
-                </div>
+                </FormField>
+              </Fieldset>
 
-                <div className="space-y-2">
-                  <Label htmlFor="vxlan-vrf" className="text-zinc-300">
-                    VRF
-                  </Label>
-                  <Input
-                    id="vxlan-vrf"
-                    placeholder="MGMT"
-                    value={vrf}
-                    onChange={(e) => setVrf(e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+              <FieldsetDivider />
+
+              <Fieldset label="Interface Settings">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="MTU" htmlFor="vxlan-mtu">
+                    <Input
+                      id="vxlan-mtu"
+                      type="number"
+                      placeholder="1500"
+                      value={mtu}
+                      onChange={(e) => setMtu(e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                    />
+                  </FormField>
+
+                  <FormField label="VRF" htmlFor="vxlan-vrf">
+                    <Input
+                      id="vxlan-vrf"
+                      placeholder="MGMT"
+                      value={vrf}
+                      onChange={(e) => setVrf(e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                    />
+                  </FormField>
+                </div>
+              </Fieldset>
+
+              <FieldsetDivider />
+
+              <Fieldset>
+                <FormField label="Administratively Disable Interface" htmlFor="vxlan-disable" horizontal>
+                  <Checkbox
+                    id="vxlan-disable"
+                    checked={disabled}
+                    onCheckedChange={(checked) => setDisabled(checked as boolean)}
                   />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 rounded-md border border-zinc-800 bg-zinc-900/50 p-3">
-                <Checkbox
-                  id="vxlan-disable"
-                  checked={disabled}
-                  onCheckedChange={(checked) => setDisabled(checked as boolean)}
-                />
-                <Label
-                  htmlFor="vxlan-disable"
-                  className="cursor-pointer text-zinc-200"
-                >
-                  Administratively disable interface
-                </Label>
-              </div>
+                </FormField>
+              </Fieldset>
             </TabsContent>
           </Tabs>
 

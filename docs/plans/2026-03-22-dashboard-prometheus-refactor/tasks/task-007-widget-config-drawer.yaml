@@ -1,0 +1,60 @@
+id: "task-007"
+title: "Create WidgetConfigDrawer (Sheet-based config panel)"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005"]
+blocks: ["task-010", "task-011", "task-012", "task-013", "task-014"]
+parallel_with: ["task-006"]
+
+files:
+  create:
+    - "frontend/src/components/dashboard/WidgetConfigDrawer.tsx"
+
+context_files:
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/ui/sheet.tsx"
+  - "frontend/src/components/ui/fieldset.tsx"
+
+instructions: |
+  Create a Sheet-based (right-side drawer) widget configuration panel.
+
+  Props:
+  ```typescript
+  interface WidgetConfigDrawerProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    widgetType: string;
+    config: Record<string, unknown>;
+    onConfigChange: (config: Record<string, unknown>) => void;
+    span: number;
+    height: number;
+    onSpanChange: (span: number) => void;
+    onHeightChange: (height: number) => void;
+  }
+  ```
+
+  Implementation:
+  - Uses shadcn Sheet component (side="right", width ~400px)
+  - Header: widget name + icon (from registry)
+  - Common config section: span selector (dropdown: 3/4/6/8/12), height selector (1/2/3), refresh interval
+  - Widget-specific section: renders the `configPanel` from the widget registry if it exists
+  - Changes apply immediately (no separate save button — changes are reflected in the card)
+  - Close button in header
+
+  Style: dark theme, consistent with existing modals. Use Fieldset for form sections.
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/WidgetConfigDrawer.tsx"
+  - "Grep match: 'WidgetConfigDrawer' in frontend/src/components/dashboard/WidgetConfigDrawer.tsx"
+  - "Grep match: 'Sheet' in frontend/src/components/dashboard/WidgetConfigDrawer.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

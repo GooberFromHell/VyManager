@@ -1,0 +1,46 @@
+# DERPO Goal Contract
+# Dashboard Refactor with Prometheus Data Source
+
+goal: "Refactor the VyManager dashboard to be more customizable and space-efficient. Add support for VyOS routers' Prometheus API as a data source and create new visualization widgets (charts, gauges, sparklines, etc.) that leverage the various Prometheus REST metrics."
+
+scope:
+  include:
+    - "frontend/src/app/(default)/(app)/page.tsx"           # Dashboard page
+    - "frontend/src/components/dashboard/**"                  # Dashboard components (if any)
+    - "frontend/src/hooks/useDashboardSSE.ts"                # Existing SSE hook
+    - "frontend/src/lib/api/**"                              # API services
+    - "backend/routers/**"                                   # Backend endpoints
+    - "backend/pyvyos/**"                                    # VyOS SDK
+    - "frontend/prisma/schema.prisma"                        # DashboardLayout model
+    - "frontend/src/components/layout/**"                    # Layout components
+  exclude:
+    - "**/test/**"
+    - "**/migrations/**"
+    - "**/node_modules/**"
+    - "**/__pycache__/**"
+
+constraints:
+  - "Must follow existing architecture patterns (see CLAUDE.md)"
+  - "No new dependencies without user approval"
+  - "Dark mode only — maintain existing design system"
+  - "Must work with VyOS 1.4 and 1.5"
+  - "Prometheus API access goes through VyOS's built-in prometheus endpoint"
+  - "Dashboard customization state persists per-user via DashboardLayout model"
+  - "Existing SSE-based dashboard data must continue to work alongside Prometheus"
+
+acceptance_criteria:
+  - "Dashboard renders with improved space utilization"
+  - "Users can add/remove/resize/reorder widgets"
+  - "Prometheus data source is available and widgets can query it"
+  - "At least 3 new visualization widget types beyond existing cards"
+  - "Widget configuration is persisted per-user"
+  - "TypeScript compiles with zero errors (npx tsc --noEmit)"
+  - "Linting passes (npm run lint)"
+
+human_checkpoints:
+  - after: evaluate
+  - after: resolve
+
+max_iterations: 3
+
+context: "The current dashboard uses a drag-and-drop grid with stat cards fed by SSE. The goal is to make it more Grafana-like — denser, more widget types, and Prometheus as a first-class data source for time-series charts and gauges."

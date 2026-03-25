@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Output Report",
+  "description": "Standardized output every agent must produce upon completion. Validated by agent-completion-gate hook.",
+  "type": "object",
+  "required": ["task_id", "status", "files_modified", "files_created"],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^(ARCH|IMPL|TEST|REVIEW|KB)-[0-9]{3,}$",
+      "description": "Task ID matching the context manifest"
+    },
+    "agent_role": {
+      "type": "string",
+      "enum": ["architect", "implementer", "tester", "reviewer", "knowledge-broker"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["complete", "partial", "failed"],
+      "description": "complete: all acceptance criteria met. partial: some work done, needs continuation. failed: could not accomplish task."
+    },
+    "files_modified": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths of all files modified by this agent"
+    },
+    "files_created": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths of all files created by this agent"
+    },
+    "tests_passing": {
+      "type": "boolean",
+      "description": "Whether all tests pass after this agent's changes"
+    },
+    "acceptance_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion": { "type": "string" },
+          "met": { "type": "boolean" },
+          "evidence": { "type": "string" }
+        },
+        "required": ["criterion", "met"]
+      },
+      "description": "Per-criterion results from acceptance_criteria in the manifest"
+    },
+    "tokens_consumed": {
+      "type": "object",
+      "properties": {
+        "context": { "type": "integer" },
+        "output": { "type": "integer" }
+      },
+      "description": "Estimated token consumption for this task"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form notes about the work done, blockers encountered, or suggestions"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { staticRoutesService } from "@/lib/api/static-routes";
 import { showService } from "@/lib/api/show";
@@ -137,46 +137,49 @@ export function CreateNeighborProxyModal({
               <TabsTrigger value="nd">ND Proxy (IPv6)</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="arp" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="ipv4-address">IPv4 Address</Label>
-                <Input
-                  id="ipv4-address"
-                  placeholder="192.168.1.100"
-                  value={ipAddress}
-                  onChange={(e) => setIpAddress(e.target.value)}
-                />
-              </div>
+            <TabsContent value="arp" className="mt-4">
+              <Fieldset>
+                <FormField label="IPv4 Address" htmlFor="ipv4-address">
+                  <Input
+                    id="ipv4-address"
+                    placeholder="192.168.1.100"
+                    value={ipAddress}
+                    onChange={(e) => setIpAddress(e.target.value)}
+                  />
+                </FormField>
+              </Fieldset>
             </TabsContent>
 
-            <TabsContent value="nd" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="ipv6-address">IPv6 Address</Label>
-                <Input
-                  id="ipv6-address"
-                  placeholder="2001:db8::1"
-                  value={ipAddress}
-                  onChange={(e) => setIpAddress(e.target.value)}
-                />
-              </div>
+            <TabsContent value="nd" className="mt-4">
+              <Fieldset>
+                <FormField label="IPv6 Address" htmlFor="ipv6-address">
+                  <Input
+                    id="ipv6-address"
+                    placeholder="2001:db8::1"
+                    value={ipAddress}
+                    onChange={(e) => setIpAddress(e.target.value)}
+                  />
+                </FormField>
+              </Fieldset>
             </TabsContent>
           </Tabs>
 
-          <div className="space-y-2">
-            <Label htmlFor="interface">Interface</Label>
-            <Select value={interfaceName} onValueChange={setInterfaceName}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select interface..." />
-              </SelectTrigger>
-              <SelectContent>
-                {availableInterfaces.map((iface) => (
-                  <SelectItem key={iface} value={iface}>
-                    {iface}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Fieldset>
+            <FormField label="Interface" htmlFor="interface">
+              <Select value={interfaceName} onValueChange={setInterfaceName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select interface..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableInterfaces.map((iface) => (
+                    <SelectItem key={iface} value={iface}>
+                      {iface}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          </Fieldset>
         </div>
 
         <DialogFooter>

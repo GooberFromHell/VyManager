@@ -1,0 +1,64 @@
+id: "task-011"
+title: "Final Validation — type check, lint, pattern audit"
+phase: observe
+agent: general-purpose
+status: not_started
+depends_on: ["task-010"]
+blocks: []
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "docs/plans/vyos-services-tracker.md"
+
+context_files:
+  - "docs/plans/vyos-services-tracker.md"
+
+instructions: |
+  Run all validation checks and update the services tracker.
+
+  ## Step 1: TypeScript type check
+
+  Run: `cd frontend && npx tsc --noEmit`
+  Expected: Zero errors. If errors found, fix them (likely import issues or type mismatches).
+
+  ## Step 2: Lint check
+
+  Run: `cd frontend && npm run lint`
+  Expected: No new errors. Fix any lint violations.
+
+  ## Step 3: Pattern consistency audit
+
+  Run the /check-patterns skill (or manually verify):
+  - All 4 new routers have /capabilities, /config, /batch endpoints
+  - All 4 new builders have add_set, add_delete, clear, get_operations methods
+  - All 4 new mappers have _versions/ with v1_4.py, v1_5.py, __init__.py
+  - All 4 new mappers registered in vyos_mappers/__init__.py
+  - All 4 new frontend services have getCapabilities, getConfig, batchConfigure, refreshConfig
+  - All 4 batch endpoints call ensure_snapshot_before_change()
+
+  ## Step 4: Verify service navigation
+
+  Check that layout.tsx includes all 4 new services in the allServices array
+  and they have valid hrefs pointing to existing page files.
+
+  ## Step 5: Update services tracker
+
+  Read docs/plans/vyos-services-tracker.md and add Phase 3 details following
+  the existing Phase 1/2 table format. Add all 4 services with their layer completion status.
+  Set Phase 3 status to COMPLETE if all checks pass.
+
+acceptance_criteria:
+  - "Command passes: cd frontend && npx tsc --noEmit"
+  - "Command passes: cd frontend && npm run lint"
+  - "Grep match: 'Phase 3' in docs/plans/vyos-services-tracker.md"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

@@ -1,0 +1,74 @@
+id: "task-014"
+title: "Create PrometheusMetricTable widget"
+phase: produce
+execution_phase: 4
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-005", "task-006", "task-008"]
+blocks: ["task-015"]
+parallel_with: ["task-010", "task-011", "task-012", "task-013"]
+
+files:
+  create:
+    - "frontend/src/components/dashboard/widgets/PrometheusMetricTable.tsx"
+  modify:
+    - "frontend/src/components/dashboard/widget-registry.ts"
+
+context_files:
+  - "frontend/src/components/dashboard/widget-registry.ts"
+  - "frontend/src/components/dashboard/WidgetShell.tsx"
+  - "frontend/src/components/dashboard/InterfaceStatisticsCard.tsx"
+  - "frontend/src/hooks/usePrometheusData.ts"
+
+instructions: |
+  Create a sortable metric table with monospace values and threshold coloring.
+
+  ## Component: PrometheusMetricTable.tsx
+
+  - Subscribe to configured Prometheus metric families
+  - Render a table with columns:
+    - Metric name (with label values if applicable)
+    - Current value (monospace, right-aligned)
+    - Optional: mini sparkline cell showing trend
+  - Sortable by name or value (click column header)
+  - Threshold coloring: configurable breakpoints turn value cell green/yellow/red
+  - Monospace font for all numeric values
+  - Compact rows for density
+  - Scrollable within card height if many metrics
+  - Alternating row shading (subtle, dark theme)
+
+  Config panel:
+  - Metric family selector
+  - Threshold configuration (warning level, critical level)
+  - Columns to show
+  - Refresh interval
+
+  ## Register
+
+  ```typescript
+  registerWidget({
+    type: "prometheus-metric-table",
+    name: "Metric Table",
+    description: "Tabular display of metrics with threshold coloring",
+    icon: Table,
+    component: PrometheusMetricTable,
+    configPanel: PrometheusMetricTableConfig,
+    defaultConfig: { families: [], thresholds: { warning: 70, critical: 90 }, refreshInterval: 10000 },
+    defaultSpan: 6,
+    defaultHeight: 2,
+    dataSource: "prometheus",
+  });
+  ```
+
+acceptance_criteria:
+  - "File exists: frontend/src/components/dashboard/widgets/PrometheusMetricTable.tsx"
+  - "Grep match: 'prometheus-metric-table' in frontend/src/components/dashboard/widget-registry.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

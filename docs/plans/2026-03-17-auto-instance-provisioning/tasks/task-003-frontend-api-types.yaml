@@ -1,0 +1,105 @@
+id: "task-003"
+title: "Extend frontend API types and session service for provisioning"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:typescript-pro"
+status: not_started
+
+depends_on: []
+blocks: ["task-004"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "frontend/src/lib/api/session.ts"
+
+context_files:
+  - "frontend/src/lib/api/session.ts"
+  - "frontend/src/lib/api/client.ts"
+  - "frontend/src/components/sites/CreateInstanceModal.tsx"
+
+instructions: |
+  Extend the frontend session API service to support auto-provisioning fields.
+
+  ## 1. Find and read `frontend/src/lib/api/session.ts`
+
+  Look for the `InstanceCreateRequest` interface (or equivalent type used when creating instances).
+  Also look for `sessionService` or similar service object.
+
+  ## 2. Modify InstanceCreateRequest interface
+
+  Make `api_key` optional and add provisioning fields:
+  ```typescript
+  interface InstanceCreateRequest {
+    // ... existing fields ...
+    api_key?: string;  // Was required, now optional when provisioning
+    // ... existing fields ...
+
+    // Auto-provisioning (optional)
+    provision_ssh_username?: string;
+    provision_ssh_password?: string;
+  }
+  ```
+
+  ## 3. Add ProvisioningResult type
+
+  ```typescript
+  export interface ProvisioningResult {
+    success: boolean;
+    ssh_connected: boolean;
+    api_key_configured: boolean;
+    ssh_key_configured: boolean;
+    committed: boolean;
+    saved: boolean;
+    error: string | null;
+    step_errors: Record<string, string>;
+  }
+  ```
+
+  ## 4. Add ProvisioningResponse extension to instance response
+
+  The create instance response may now include a `provisioning` field:
+  ```typescript
+  export interface InstanceCreateResponse {
+    // ... existing instance fields ...
+    provisioning?: ProvisioningResult;
+  }
+  ```
+
+  Or if the response type is already defined, extend it.
+
+  ## 5. Add provisionInstance method to session service
+
+  Add a method for the standalone re-provisioning endpoint:
+  ```typescript
+  async provisionInstance(instanceId: string, sshUsername: string, sshPassword: string): Promise<ProvisioningResult> {
+    const response = await apiClient.post<ProvisioningResult>(
+      `/vyos/session/instances/${instanceId}/provision`,
+      { ssh_username: sshUsername, ssh_password: sshPassword }
+    );
+    return response;
+  }
+  ```
+
+  ## Important notes
+  - Follow the existing code style exactly
+  - Don't change any existing method signatures that aren't needed
+  - The createInstance method already sends the request body — just make sure the types allow the new optional fields
+  - Keep the `api_key` field name consistent with backend (snake_case for API, since the proxy passes through as-is)
+
+acceptance_criteria:
+  - "Grep match: 'provision_ssh_username' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'provision_ssh_password' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'ProvisioningResult' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'provisionInstance' in frontend/src/lib/api/session.ts"
+  - "Grep match: 'api_key\\?' in frontend/src/lib/api/session.ts"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

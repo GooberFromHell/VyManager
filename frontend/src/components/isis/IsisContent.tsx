@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -556,8 +556,7 @@ export function IsisContent() {
                     <h3 className="font-semibold mb-4">Global Settings</h3>
                     <div className="space-y-4">
                       {/* NET Addresses */}
-                      <div className="space-y-2">
-                        <Label className="text-sm">NET Address(es)</Label>
+                      <FormField label="NET Address(es)">
                         <div className="flex flex-wrap gap-1 min-h-[36px] p-2 rounded-md border border-input bg-background">
                           {(overviewEditing ? nets : (g?.net ?? [])).map((net) => (
                             <span
@@ -593,11 +592,10 @@ export function IsisContent() {
                             </Button>
                           </div>
                         )}
-                      </div>
+                      </FormField>
 
                       {/* Level */}
-                      <div className="space-y-2">
-                        <Label className="text-sm">IS-IS Level</Label>
+                      <FormField label="IS-IS Level">
                         {overviewEditing ? (
                           <Select value={level} onValueChange={setLevel}>
                             <SelectTrigger>
@@ -614,11 +612,10 @@ export function IsisContent() {
                             {levelBadge(g?.level ?? null)}
                           </div>
                         )}
-                      </div>
+                      </FormField>
 
                       {/* Metric Style */}
-                      <div className="space-y-2">
-                        <Label className="text-sm">Metric Style</Label>
+                      <FormField label="Metric Style">
                         {overviewEditing ? (
                           <Select value={metricStyle} onValueChange={setMetricStyle}>
                             <SelectTrigger>
@@ -639,7 +636,7 @@ export function IsisContent() {
                             )}
                           </div>
                         )}
-                      </div>
+                      </FormField>
                     </div>
                   </CardContent>
                 </Card>
@@ -658,15 +655,14 @@ export function IsisContent() {
                         { id: "attached-bit", label: "Set Attached Bit", field: "set_attached_bit" as const, value: setAttachedBit, setter: setSetAttachedBit },
                         { id: "overload-bit", label: "Set Overload Bit", field: "set_overload_bit" as const, value: setOverloadBit, setter: setSetOverloadBit },
                       ].map(({ id, label, field, value, setter }) => (
-                        <div key={id} className="flex items-center gap-3">
+                        <FormField key={id} label={label} htmlFor={id} horizontal>
                           <Checkbox
                             id={id}
                             checked={overviewEditing ? value : (g?.[field] ?? false)}
                             disabled={!overviewEditing}
                             onCheckedChange={(c) => setter(!!c)}
                           />
-                          <Label htmlFor={id} className="text-sm font-normal">{label}</Label>
-                        </div>
+                        </FormField>
                       ))}
                     </div>
                   </CardContent>
@@ -971,8 +967,7 @@ export function IsisContent() {
                         { label: "SPF Interval (ms)", key: "spf_interval" as const, value: spfInterval, setter: setSpfInterval, placeholder: "Default", min: 1, max: 120000, cur: g?.spf_interval },
                         { label: "LDP Sync Holddown (s)", key: "ldp_sync_holddown" as const, value: ldpSyncHolddown, setter: setLdpSyncHolddown, placeholder: "Disabled", min: 1, max: 10000, cur: g?.ldp_sync_holddown },
                       ].map(({ label, value, setter, placeholder, min, max, cur }) => (
-                        <div key={label} className="space-y-1">
-                          <Label className="text-sm">{label}</Label>
+                        <FormField key={label} label={label}>
                           <Input
                             type="number"
                             value={advancedEditing ? value : (cur != null ? String(cur) : "")}
@@ -982,7 +977,7 @@ export function IsisContent() {
                             min={min}
                             max={max}
                           />
-                        </div>
+                        </FormField>
                       ))}
                     </div>
                   </CardContent>
@@ -1028,8 +1023,7 @@ export function IsisContent() {
                         { label: "Hold-down (ms)", value: spfHolddown, setter: setSpfHolddown, cur: g?.spf_delay_ietf.holddown },
                         { label: "Time-to-Learn (ms)", value: spfTimeToLearn, setter: setSpfTimeToLearn, cur: g?.spf_delay_ietf.time_to_learn },
                       ].map(({ label, value, setter, cur }) => (
-                        <div key={label} className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">{label}</Label>
+                        <FormField key={label} label={label}>
                           <Input
                             type="number"
                             value={spfDelayEditing ? value : (cur != null ? String(cur) : "")}
@@ -1039,7 +1033,7 @@ export function IsisContent() {
                             min={0}
                             className="h-8 text-sm"
                           />
-                        </div>
+                        </FormField>
                       ))}
                     </div>
                   </CardContent>

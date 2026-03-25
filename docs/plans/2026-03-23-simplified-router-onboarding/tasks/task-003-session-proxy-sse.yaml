@@ -1,0 +1,55 @@
+id: "003"
+title: "Add SSE support to session API proxy"
+phase: 2
+status: not_started
+agent_type: general-purpose
+depends_on: []
+parallel_with: ["004", "005"]
+
+description: |
+  The session API proxy at frontend/src/app/api/session/[...path]/route.ts does not handle
+  SSE responses — it reads the full body as text and tries to parse JSON. Add SSE handling
+  identical to the vyos proxy so the provision SSE stream passes through correctly.
+
+files:
+  modify:
+    - frontend/src/app/api/session/[...path]/route.ts
+
+context_files:
+  - frontend/src/app/api/vyos/[...path]/route.ts (reference SSE handling at lines 111-123)
+
+instructions: |
+  In the proxyRequest function, add SSE handling BEFORE the CSV check (around line 105).
+  Copy the pattern from the vyos proxy:
+
+  ```typescript
+  // Stream SSE responses directly without buffering
+  const responseContentType = response.headers.get("Content-Type") || "";
+  if (responseContentType.includes("text/event-stream")) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+        "Connection": "keep-alive",
+      },
+    });
+  }
+  ```
+
+  Insert this block right after `const responseContentType = ...` and before the CSV check.
+
+acceptance_criteria:
+  - Session proxy handles text/event-stream responses by streaming them through
+  - SSE response headers include Cache-Control no-cache and X-Accel-Buffering no
+  - Existing JSON and CSV handling is unchanged
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

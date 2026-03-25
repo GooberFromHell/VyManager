@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -246,14 +246,13 @@ export function CreateZoneModal({
             </div>
           )}
 
-          {/* Basic */}
-          <div className="space-y-4">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic</p>
-
-            <div className="space-y-2">
-              <Label htmlFor="zone-name">
-                Zone Name <span className="text-destructive">*</span>
-              </Label>
+          <Fieldset label="Basic">
+            <FormField
+              label="Zone Name"
+              htmlFor="zone-name"
+              description="Letters, numbers, hyphens, underscores, dots. Must start with alphanumeric."
+              required
+            >
               <Input
                 id="zone-name"
                 value={zoneName}
@@ -262,13 +261,12 @@ export function CreateZoneModal({
                 className="font-mono"
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">
-                Letters, numbers, hyphens, underscores, dots. Must start with alphanumeric.
-              </p>
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+            <FormField
+              label="Description"
+              htmlFor="description"
+            >
               <Input
                 id="description"
                 value={description}
@@ -276,11 +274,13 @@ export function CreateZoneModal({
                 placeholder="Optional description"
                 disabled={loading}
               />
-            </div>
+            </FormField>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="default-action">Default Action</Label>
+              <FormField
+                label="Default Action"
+                htmlFor="default-action"
+              >
                 <Select value={defaultAction} onValueChange={setDefaultAction} disabled={loading}>
                   <SelectTrigger id="default-action">
                     <SelectValue />
@@ -290,31 +290,28 @@ export function CreateZoneModal({
                     <SelectItem value="reject">Reject</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label>Default Log</Label>
-                <div className="flex items-center gap-2 h-10">
-                  <Checkbox
-                    id="default-log"
-                    checked={defaultLog}
-                    onCheckedChange={(v) => setDefaultLog(!!v)}
-                    disabled={loading}
-                  />
-                  <label htmlFor="default-log" className="text-sm cursor-pointer">
-                    Log default-action packets
-                  </label>
-                </div>
-              </div>
+              <FormField
+                label="Default Log"
+                htmlFor="default-log"
+                description="Log default-action packets"
+                horizontal
+              >
+                <Checkbox
+                  id="default-log"
+                  checked={defaultLog}
+                  onCheckedChange={(v) => setDefaultLog(!!v)}
+                  disabled={loading}
+                />
+              </FormField>
             </div>
-          </div>
+          </Fieldset>
 
-          {/* Interfaces */}
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Interfaces</p>
+          <FieldsetDivider />
 
-            <div className="space-y-2">
-              <Label>Member Interfaces</Label>
+          <Fieldset label="Interfaces">
+            <FormField label="Member Interfaces">
               {loadingInterfaces ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -363,11 +360,10 @@ export function CreateZoneModal({
                   ))}
                 </div>
               )}
-            </div>
+            </FormField>
 
             {supportsVrf && (
-              <div className="space-y-2">
-                <Label>Member VRFs</Label>
+              <FormField label="Member VRFs">
                 <div className="flex gap-2">
                   <Input
                     value={vrfInput}
@@ -387,7 +383,7 @@ export function CreateZoneModal({
                   </Button>
                 </div>
                 {vrfs.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 mt-2">
                     {vrfs.map((vrf) => (
                       <Badge key={vrf} variant="secondary" className="font-mono gap-1">
                         {vrf}
@@ -399,9 +395,9 @@ export function CreateZoneModal({
                     ))}
                   </div>
                 )}
-              </div>
+              </FormField>
             )}
-          </div>
+          </Fieldset>
 
           {/* Chain preview */}
           {(nonLocalPeers.length > 0 || isFirstZone) && zoneName && (

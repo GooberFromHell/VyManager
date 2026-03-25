@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Fieldset, FormField } from "@/components/ui/fieldset";
 import {
   Table,
   TableBody,
@@ -347,84 +347,79 @@ export function VrfStaticRoutesTab({
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label>Destination *</Label>
-              <Input
-                placeholder={family === "ipv4" ? "e.g., 10.0.0.0/8" : "e.g., 2001:db8::/32"}
-                value={newDest}
-                onChange={(e) => setNewDest(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Input
-                placeholder="Optional"
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Route Type</Label>
-              <Select value={newType} onValueChange={(v) => setNewType(v as typeof newType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="next-hop">Next-hop</SelectItem>
-                  <SelectItem value="interface">Interface</SelectItem>
-                  <SelectItem value="blackhole">Blackhole</SelectItem>
-                  <SelectItem value="reject">Reject</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {newType === "next-hop" && (
-              <div className="space-y-2">
-                <Label>Next-hop Address *</Label>
+            <Fieldset>
+              <FormField label="Destination" required>
                 <Input
-                  placeholder={family === "ipv4" ? "e.g., 192.168.1.1" : "e.g., 2001:db8::1"}
-                  value={newNextHop}
-                  onChange={(e) => setNewNextHop(e.target.value)}
+                  placeholder={family === "ipv4" ? "e.g., 10.0.0.0/8" : "e.g., 2001:db8::/32"}
+                  value={newDest}
+                  onChange={(e) => setNewDest(e.target.value)}
                 />
-              </div>
-            )}
+              </FormField>
 
-            {(newType === "next-hop" || newType === "interface") && (
-              <div className="space-y-2">
-                <Label>{newType === "interface" ? "Interface Name *" : "Interface (optional)"}</Label>
+              <FormField label="Description">
                 <Input
-                  placeholder="e.g., eth0"
-                  value={newInterface}
-                  onChange={(e) => setNewInterface(e.target.value)}
+                  placeholder="Optional"
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
                 />
-              </div>
-            )}
+              </FormField>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Distance</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={255}
-                  placeholder="1-255"
-                  value={newDistance}
-                  onChange={(e) => setNewDistance(e.target.value)}
-                />
-              </div>
-              {(newType === "next-hop" || newType === "interface") && (
-                <div className="space-y-2">
-                  <Label>VRF (route leaking)</Label>
+              <FormField label="Route Type">
+                <Select value={newType} onValueChange={(v) => setNewType(v as typeof newType)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="next-hop">Next-hop</SelectItem>
+                    <SelectItem value="interface">Interface</SelectItem>
+                    <SelectItem value="blackhole">Blackhole</SelectItem>
+                    <SelectItem value="reject">Reject</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+
+              {newType === "next-hop" && (
+                <FormField label="Next-hop Address" required>
                   <Input
-                    placeholder="Target VRF name"
-                    value={newNhVrf}
-                    onChange={(e) => setNewNhVrf(e.target.value)}
+                    placeholder={family === "ipv4" ? "e.g., 192.168.1.1" : "e.g., 2001:db8::1"}
+                    value={newNextHop}
+                    onChange={(e) => setNewNextHop(e.target.value)}
                   />
-                </div>
+                </FormField>
               )}
-            </div>
+
+              {(newType === "next-hop" || newType === "interface") && (
+                <FormField label={newType === "interface" ? "Interface Name" : "Interface (optional)"} required={newType === "interface"}>
+                  <Input
+                    placeholder="e.g., eth0"
+                    value={newInterface}
+                    onChange={(e) => setNewInterface(e.target.value)}
+                  />
+                </FormField>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Distance">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={255}
+                    placeholder="1-255"
+                    value={newDistance}
+                    onChange={(e) => setNewDistance(e.target.value)}
+                  />
+                </FormField>
+                {(newType === "next-hop" || newType === "interface") && (
+                  <FormField label="VRF (route leaking)">
+                    <Input
+                      placeholder="Target VRF name"
+                      value={newNhVrf}
+                      onChange={(e) => setNewNhVrf(e.target.value)}
+                    />
+                  </FormField>
+                )}
+              </div>
+            </Fieldset>
           </div>
 
           <DialogFooter>

@@ -126,3 +126,20 @@ CLAUDE.md
 
 # Git worktrees
 .worktrees/
+node_modules
+.gitnexus
+
+# HSCO Framework
+.agent-workspace/outputs/
+.agent-workspace/logs/*.jsonl
+.agent-workspace/status/*.json
+!.agent-workspace/**/.gitkeep
+
+# ARCHON Framework
+.archon/workspace/outputs/
+.archon/workspace/logs/*.jsonl
+.archon/workspace/status/*.json
+!.archon/workspace/status/.gitkeep
+!.archon/workspace/outputs/.gitkeep
+.archon/data/
+.archon/venv/

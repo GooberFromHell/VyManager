@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Fieldset, FieldsetDivider, FormField } from "@/components/ui/fieldset";
 import {
   Select,
   SelectContent,
@@ -166,80 +166,92 @@ export function OspfAreaModal({
 
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-4 pb-2">
-            {/* Area ID */}
-            <div className="space-y-2">
-              <Label htmlFor="ospf-area-id">Area ID</Label>
-              <Input
-                id="ospf-area-id"
-                value={areaId}
-                onChange={(e) => setAreaId(e.target.value)}
-                placeholder="0.0.0.0 or integer"
-                disabled={isEditMode}
-                className={isEditMode ? "bg-muted" : ""}
-              />
-              <p className="text-xs text-muted-foreground">
-                Area identifier in dotted-decimal or integer format.
-              </p>
-            </div>
+            <Fieldset>
+              <FormField
+                label="Area ID"
+                htmlFor="ospf-area-id"
+                description="Area identifier in dotted-decimal or integer format."
+                required={!isEditMode}
+              >
+                <Input
+                  id="ospf-area-id"
+                  value={areaId}
+                  onChange={(e) => setAreaId(e.target.value)}
+                  placeholder="0.0.0.0 or integer"
+                  disabled={isEditMode}
+                  className={isEditMode ? "bg-muted" : ""}
+                />
+              </FormField>
 
-            {/* Area Type */}
-            <div className="space-y-2">
-              <Label htmlFor="ospf-area-type">Area Type</Label>
-              <Select value={areaType} onValueChange={setAreaType}>
-                <SelectTrigger id="ospf-area-type">
-                  <SelectValue placeholder="Normal (default)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="stub">Stub</SelectItem>
-                  <SelectItem value="nssa">NSSA</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <FormField
+                label="Area Type"
+                htmlFor="ospf-area-type"
+              >
+                <Select value={areaType} onValueChange={setAreaType}>
+                  <SelectTrigger id="ospf-area-type">
+                    <SelectValue placeholder="Normal (default)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="stub">Stub</SelectItem>
+                    <SelectItem value="nssa">NSSA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </Fieldset>
 
             {/* Stub/NSSA options */}
             {showStubNssaOptions && (
-              <div className="space-y-3 pl-4 border-l-2 border-muted">
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="ospf-area-no-summary"
-                    checked={noSummary}
-                    onCheckedChange={(checked) => setNoSummary(checked === true)}
-                  />
-                  <Label htmlFor="ospf-area-no-summary" className="cursor-pointer">
-                    No Summary (Totally {areaType === "stub" ? "Stubby" : "NSSA"})
-                  </Label>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ospf-area-default-cost">Default Cost</Label>
-                  <Input
-                    id="ospf-area-default-cost"
-                    type="number"
-                    value={defaultCost}
-                    onChange={(e) => setDefaultCost(e.target.value)}
-                    placeholder="Default cost for injected default route"
-                    min={0}
-                  />
-                </div>
-              </div>
+              <>
+                <FieldsetDivider />
+                <Fieldset label="Stub / NSSA Options">
+                  <FormField
+                    label={`No Summary (Totally ${areaType === "stub" ? "Stubby" : "NSSA"})`}
+                    htmlFor="ospf-area-no-summary"
+                    horizontal
+                  >
+                    <Checkbox
+                      id="ospf-area-no-summary"
+                      checked={noSummary}
+                      onCheckedChange={(checked) => setNoSummary(checked === true)}
+                    />
+                  </FormField>
+
+                  <FormField
+                    label="Default Cost"
+                    htmlFor="ospf-area-default-cost"
+                  >
+                    <Input
+                      id="ospf-area-default-cost"
+                      type="number"
+                      value={defaultCost}
+                      onChange={(e) => setDefaultCost(e.target.value)}
+                      placeholder="Default cost for injected default route"
+                      min={0}
+                    />
+                  </FormField>
+                </Fieldset>
+              </>
             )}
 
-            {/* Networks */}
-            <div className="space-y-2">
-              <Label>Networks</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newNetwork}
-                  onChange={(e) => setNewNetwork(e.target.value)}
-                  placeholder="e.g. 10.0.0.0/24"
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addNetwork())}
-                />
-                <Button type="button" variant="outline" size="icon" onClick={addNetwork}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+            <FieldsetDivider />
+
+            <Fieldset label="Networks">
+              <FormField label="Add Network">
+                <div className="flex gap-2">
+                  <Input
+                    value={newNetwork}
+                    onChange={(e) => setNewNetwork(e.target.value)}
+                    placeholder="e.g. 10.0.0.0/24"
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addNetwork())}
+                  />
+                  <Button type="button" variant="outline" size="icon" onClick={addNetwork}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </FormField>
               {networks.length > 0 && (
-                <div className="space-y-1 mt-2">
+                <div className="space-y-1">
                   {networks.map((net, idx) => (
                     <div key={idx} className="flex items-center justify-between rounded-md border px-3 py-1.5">
                       <span className="text-sm font-mono">{net}</span>
@@ -253,75 +265,84 @@ export function OspfAreaModal({
               <p className="text-xs text-muted-foreground">
                 CIDR prefixes to include in this area.
               </p>
-            </div>
+            </Fieldset>
 
-            {/* Authentication */}
-            <div className="space-y-2">
-              <Label htmlFor="ospf-area-auth">Authentication</Label>
-              <Select value={authentication} onValueChange={setAuthentication}>
-                <SelectTrigger id="ospf-area-auth">
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="plaintext-password">Plaintext Password</SelectItem>
-                  <SelectItem value="md5">MD5</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <FieldsetDivider />
 
-            {/* Shortcut */}
-            <div className="space-y-2">
-              <Label htmlFor="ospf-area-shortcut">Shortcut</Label>
-              <Select value={shortcut} onValueChange={setShortcut}>
-                <SelectTrigger id="ospf-area-shortcut">
-                  <SelectValue placeholder="Default" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">Default</SelectItem>
-                  <SelectItem value="enable">Enable</SelectItem>
-                  <SelectItem value="disable">Disable</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Export/Import Lists */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ospf-area-export">Export List</Label>
-                <Select
-                  value={exportList}
-                  onValueChange={(v) => setExportList(v === "__none__" ? "" : v)}
-                >
-                  <SelectTrigger id="ospf-area-export">
+            <Fieldset label="Advanced">
+              <FormField
+                label="Authentication"
+                htmlFor="ospf-area-auth"
+              >
+                <Select value={authentication} onValueChange={setAuthentication}>
+                  <SelectTrigger id="ospf-area-auth">
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {accessListNames.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="plaintext-password">Plaintext Password</SelectItem>
+                    <SelectItem value="md5">MD5</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ospf-area-import">Import List</Label>
-                <Select
-                  value={importList}
-                  onValueChange={(v) => setImportList(v === "__none__" ? "" : v)}
-                >
-                  <SelectTrigger id="ospf-area-import">
-                    <SelectValue placeholder="None" />
+              </FormField>
+
+              <FormField
+                label="Shortcut"
+                htmlFor="ospf-area-shortcut"
+              >
+                <Select value={shortcut} onValueChange={setShortcut}>
+                  <SelectTrigger id="ospf-area-shortcut">
+                    <SelectValue placeholder="Default" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {accessListNames.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
+                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="enable">Enable</SelectItem>
+                    <SelectItem value="disable">Disable</SelectItem>
                   </SelectContent>
                 </Select>
+              </FormField>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="Export List"
+                  htmlFor="ospf-area-export"
+                >
+                  <Select
+                    value={exportList}
+                    onValueChange={(v) => setExportList(v === "__none__" ? "" : v)}
+                  >
+                    <SelectTrigger id="ospf-area-export">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {accessListNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField
+                  label="Import List"
+                  htmlFor="ospf-area-import"
+                >
+                  <Select
+                    value={importList}
+                    onValueChange={(v) => setImportList(v === "__none__" ? "" : v)}
+                  >
+                    <SelectTrigger id="ospf-area-import">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {accessListNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
               </div>
-            </div>
+            </Fieldset>
           </div>
         </ScrollArea>
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/fieldset";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -311,8 +311,7 @@ export function CountryMultiSelect({ value, onChange, label, id }: CountryMultiS
   };
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+    <FormField label={label} htmlFor={id}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -384,6 +383,6 @@ export function CountryMultiSelect({ value, onChange, label, id }: CountryMultiS
           ))}
         </div>
       )}
-    </div>
+    </FormField>
   );
 }

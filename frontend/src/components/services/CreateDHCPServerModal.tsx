@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/fieldset";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, Plus, X, Info } from "lucide-react";
@@ -494,7 +494,7 @@ export function CreateDHCPServerModal({
         {!existingNetwork && (
           <div className="space-y-4">
             <div>
-              <Label className="text-sm font-medium">Mode</Label>
+              <p className="text-sm font-medium">Mode</p>
               <div className="flex gap-4 mt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -536,18 +536,25 @@ export function CreateDHCPServerModal({
             {/* Basic Tab */}
             <TabsContent value="basic" className="space-y-4 mt-4">
               <div className="grid gap-4">
-                <div>
-                  <Label className="required">
-                    Shared Network Name
-                  </Label>
+                <FormField
+                  label="Shared Network Name"
+                  htmlFor="network-name"
+                  required
+                  description={mode === "new"
+                    ? "Logical group name for this DHCP configuration"
+                    : "Select an existing shared network to add this subnet to"
+                  }
+                >
                   {mode === "new" ? (
                     <Input
+                      id="network-name"
                       value={networkName}
                       onChange={(e) => setNetworkName(e.target.value)}
                       placeholder="e.g., LAN"
                     />
                   ) : (
                     <select
+                      id="network-name"
                       value={selectedNetwork}
                       onChange={(e) => setSelectedNetwork(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -560,57 +567,46 @@ export function CreateDHCPServerModal({
                       ))}
                     </select>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {mode === "new"
-                      ? "Logical group name for this DHCP configuration"
-                      : "Select an existing shared network to add this subnet to"
-                    }
-                  </p>
-                </div>
+                </FormField>
 
-                <div>
-                  <Label htmlFor="subnet" className="required">
-                    Subnet (CIDR)
-                  </Label>
+                <FormField
+                  label="Subnet (CIDR)"
+                  htmlFor="subnet"
+                  required
+                  description="Enter subnet in CIDR notation (e.g., 192.168.1.0/24)"
+                >
                   <Input
                     id="subnet"
                     value={subnet}
                     onChange={(e) => setSubnet(e.target.value)}
                     placeholder="e.g., 192.168.1.0/24"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Enter subnet in CIDR notation (e.g., 192.168.1.0/24)
-                  </p>
-                </div>
+                </FormField>
 
-                <div>
-                  <Label htmlFor="defaultRouter" className="required">
-                    Default Router (Gateway)
-                  </Label>
+                <FormField label="Default Router (Gateway)" htmlFor="defaultRouter" required>
                   <Input
                     id="defaultRouter"
                     value={defaultRouter}
                     onChange={(e) => setDefaultRouter(e.target.value)}
                     placeholder="e.g., 192.168.1.1"
                   />
-                </div>
+                </FormField>
 
-                <div>
-                  <Label htmlFor="domainName" className="required">
-                    Domain Name
-                  </Label>
+                <FormField label="Domain Name" htmlFor="domainName" required>
                   <Input
                     id="domainName"
                     value={domainName}
                     onChange={(e) => setDomainName(e.target.value)}
                     placeholder="e.g., local.lan"
                   />
-                </div>
+                </FormField>
 
-                <div>
-                  <Label htmlFor="lease" className="required">
-                    Lease Time (seconds)
-                  </Label>
+                <FormField
+                  label="Lease Time (seconds)"
+                  htmlFor="lease"
+                  required
+                  description="Default: 86400 (24 hours)"
+                >
                   <Input
                     id="lease"
                     type="number"
@@ -618,18 +614,14 @@ export function CreateDHCPServerModal({
                     onChange={(e) => setLease(e.target.value)}
                     placeholder="86400"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Default: 86400 (24 hours)
-                  </p>
-                </div>
+                </FormField>
               </div>
             </TabsContent>
 
             {/* DNS Tab */}
             <TabsContent value="dns" className="space-y-4 mt-4">
-              <div>
-                <Label className="required">Name Servers (DNS)</Label>
-                <div className="space-y-2 mt-2">
+              <FormField label="Name Servers (DNS)" required>
+                <div className="space-y-2">
                   {nameServers.map((ns, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
@@ -659,11 +651,10 @@ export function CreateDHCPServerModal({
                     Add Name Server
                   </Button>
                 </div>
-              </div>
+              </FormField>
 
-              <div>
-                <Label>Domain Search List</Label>
-                <div className="space-y-2 mt-2">
+              <FormField label="Domain Search List">
+                <div className="space-y-2">
                   {domainSearch.map((ds, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
@@ -691,14 +682,13 @@ export function CreateDHCPServerModal({
                     Add Domain Search
                   </Button>
                 </div>
-              </div>
+              </FormField>
             </TabsContent>
 
             {/* DHCP Pool Tab */}
             <TabsContent value="pool" className="space-y-4 mt-4">
-              <div>
-                <Label className="required">IP Address Ranges</Label>
-                <div className="space-y-3 mt-2">
+              <FormField label="IP Address Ranges" required>
+                <div className="space-y-3">
                   {ranges.map((range, index) => (
                     <div key={index} className="flex gap-2 items-start">
                       <div className="flex-1 grid grid-cols-2 gap-2">
@@ -734,13 +724,9 @@ export function CreateDHCPServerModal({
                     Add Range
                   </Button>
                 </div>
-              </div>
+              </FormField>
 
-              <div>
-                <Label>Excluded Addresses</Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  IP addresses to exclude from the DHCP pool
-                </p>
+              <FormField label="Excluded Addresses" description="IP addresses to exclude from the DHCP pool">
                 <div className="space-y-2">
                   {excludes.map((exclude, index) => (
                     <div key={index} className="flex gap-2">
@@ -764,184 +750,175 @@ export function CreateDHCPServerModal({
                     Add Exclude
                   </Button>
                 </div>
-              </div>
+              </FormField>
             </TabsContent>
 
             {/* Advanced Tab */}
             <TabsContent value="advanced" className="space-y-4 mt-4 pb-24">
               <div className="grid gap-4">
                 {capabilities?.fields.bootfile_name.supported && (
-                  <div>
-                    <Label htmlFor="bootfileName">Bootfile Name</Label>
+                  <FormField label="Bootfile Name" htmlFor="bootfileName">
                     <Input
                       id="bootfileName"
                       value={bootfileName}
                       onChange={(e) => setBootfileName(e.target.value)}
                       placeholder="e.g., pxelinux.0"
                     />
-                  </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.bootfile_server.supported && (
-                  <div>
-                    <Label htmlFor="bootfileServer">Bootfile Server</Label>
+                  <FormField label="Bootfile Server" htmlFor="bootfileServer">
                     <Input
                       id="bootfileServer"
                       value={bootfileServer}
                       onChange={(e) => setBootfileServer(e.target.value)}
                       placeholder="e.g., 192.168.1.10"
                     />
-                  </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.tftp_server_name.supported && (
-                  <div>
-                    <Label htmlFor="tftpServerName">TFTP Server Name</Label>
+                  <FormField label="TFTP Server Name" htmlFor="tftpServerName">
                     <Input
                       id="tftpServerName"
                       value={tftpServerName}
                       onChange={(e) => setTftpServerName(e.target.value)}
                       placeholder="e.g., tftp.local.lan"
                     />
-                  </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.time_servers.supported && (
-                  <div>
-                    <Label>Time Servers</Label>
-                  <div className="space-y-2 mt-2">
-                    {timeServers.map((ts, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={ts}
-                          onChange={(e) => updateTimeServer(index, e.target.value)}
-                          placeholder="e.g., 192.168.1.1"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeTimeServer(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addTimeServer}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Time Server
-                    </Button>
-                  </div>
-                  </div>
+                  <FormField label="Time Servers">
+                    <div className="space-y-2">
+                      {timeServers.map((ts, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={ts}
+                            onChange={(e) => updateTimeServer(index, e.target.value)}
+                            placeholder="e.g., 192.168.1.1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeTimeServer(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addTimeServer}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Time Server
+                      </Button>
+                    </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.ntp_servers.supported && (
-                  <div>
-                    <Label>NTP Servers (IP Address Only)</Label>
-                    <div className="space-y-2 mt-2">
-                    {ntpServers.map((ntp, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={ntp}
-                          onChange={(e) => updateNtpServer(index, e.target.value)}
-                          placeholder="e.g., 192.168.1.1"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeNtpServer(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addNtpServer}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add NTP Server
-                    </Button>
-                  </div>
-                  </div>
+                  <FormField label="NTP Servers (IP Address Only)">
+                    <div className="space-y-2">
+                      {ntpServers.map((ntp, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={ntp}
+                            onChange={(e) => updateNtpServer(index, e.target.value)}
+                            placeholder="e.g., 192.168.1.1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeNtpServer(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addNtpServer}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add NTP Server
+                      </Button>
+                    </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.wins_servers.supported && (
-                  <div>
-                    <Label>WINS Servers</Label>
-                    <div className="space-y-2 mt-2">
-                    {winsServers.map((wins, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={wins}
-                          onChange={(e) => updateWinsServer(index, e.target.value)}
-                          placeholder="e.g., 192.168.1.2"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeWinsServer(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addWinsServer}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add WINS Server
-                    </Button>
-                  </div>
-                  </div>
+                  <FormField label="WINS Servers">
+                    <div className="space-y-2">
+                      {winsServers.map((wins, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={wins}
+                            onChange={(e) => updateWinsServer(index, e.target.value)}
+                            placeholder="e.g., 192.168.1.2"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeWinsServer(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addWinsServer}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add WINS Server
+                      </Button>
+                    </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.time_offset.supported && (
-                  <div>
-                    <Label htmlFor="timeOffset">Time Offset (seconds)</Label>
+                  <FormField label="Time Offset (seconds)" htmlFor="timeOffset">
                     <Input
                       id="timeOffset"
                       value={timeOffset}
                       onChange={(e) => setTimeOffset(e.target.value)}
                       placeholder="e.g., -18000 for EST"
                     />
-                  </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.client_prefix_length.supported && (
-                  <div>
-                    <Label htmlFor="clientPrefixLength">Client Prefix Length</Label>
+                  <FormField label="Client Prefix Length" htmlFor="clientPrefixLength">
                     <Input
                       id="clientPrefixLength"
                       value={clientPrefixLength}
                       onChange={(e) => setClientPrefixLength(e.target.value)}
                       placeholder="e.g., 24"
                     />
-                  </div>
+                  </FormField>
                 )}
 
                 {capabilities?.fields.wpad_url.supported && (
-                  <div>
-                    <Label htmlFor="wpadUrl">WPAD URL</Label>
+                  <FormField label="WPAD URL" htmlFor="wpadUrl">
                     <Input
                       id="wpadUrl"
                       value={wpadUrl}
                       onChange={(e) => setWpadUrl(e.target.value)}
                       placeholder="e.g., http://wpad.local.lan/wpad.dat"
                     />
-                  </div>
+                  </FormField>
                 )}
               </div>
             </TabsContent>
@@ -957,9 +934,9 @@ export function CreateDHCPServerModal({
                       onCheckedChange={(checked) => setPingCheck(checked as boolean)}
                     />
                     <div className="space-y-1">
-                      <Label htmlFor="pingCheck" className="cursor-pointer">
+                      <label htmlFor="pingCheck" className="text-sm font-medium cursor-pointer">
                         Ping Check
-                      </Label>
+                      </label>
                       <p className="text-xs text-muted-foreground">
                         Test IP addresses with ICMP ping before lease assignment
                       </p>
@@ -975,9 +952,9 @@ export function CreateDHCPServerModal({
                       onCheckedChange={(checked) => setEnableFailover(checked as boolean)}
                     />
                     <div className="space-y-1">
-                      <Label htmlFor="enableFailover" className="cursor-pointer">
+                      <label htmlFor="enableFailover" className="text-sm font-medium cursor-pointer">
                         Enable Failover
-                      </Label>
+                      </label>
                       <p className="text-xs text-muted-foreground">
                         Enable high availability for this subnet (VyOS 1.4 only)
                       </p>

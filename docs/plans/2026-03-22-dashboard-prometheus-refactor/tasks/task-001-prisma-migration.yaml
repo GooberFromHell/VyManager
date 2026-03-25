@@ -1,0 +1,47 @@
+id: "task-001"
+title: "Add Prometheus fields to Instance model + Prisma migration"
+phase: produce
+execution_phase: 1
+agent: "general-purpose"
+status: not_started
+depends_on: []
+blocks: ["task-002", "task-003", "task-004"]
+parallel_with: []
+
+files:
+  modify:
+    - "frontend/prisma/schema.prisma"
+
+context_files:
+  - "frontend/prisma/schema.prisma"
+
+instructions: |
+  Add Prometheus monitoring fields to the existing `Instance` model in the Prisma schema.
+
+  Add these fields AFTER the existing SSH fields (after `sshKeyConfigured`):
+
+  ```prisma
+  // Prometheus monitoring
+  prometheusEnabled    Boolean  @default(false)
+  prometheusPort       Int      @default(9273)
+  prometheusAuth       Boolean  @default(false)
+  prometheusUsername   String?
+  prometheusPassword  String?
+  ```
+
+  Then run: `cd frontend && npx prisma migrate dev --name add-prometheus-fields`
+  Then run: `cd frontend && npx prisma generate`
+
+acceptance_criteria:
+  - "Grep match: 'prometheusEnabled' in frontend/prisma/schema.prisma"
+  - "Grep match: 'prometheusPort' in frontend/prisma/schema.prisma"
+  - "Command passes: cd frontend && npx prisma generate"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

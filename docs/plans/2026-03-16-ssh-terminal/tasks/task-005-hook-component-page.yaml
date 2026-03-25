@@ -1,0 +1,514 @@
+id: "task-005"
+title: "Create terminal hook, xterm component, page, and sidebar nav"
+phase: produce
+execution_phase: 2
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-002", "task-003", "task-004"]
+blocks: ["task-006"]
+parallel_with: []
+
+files:
+  create:
+    - "frontend/src/hooks/useTerminalWebSocket.ts"
+    - "frontend/src/components/terminal/SSHTerminal.tsx"
+    - "frontend/src/app/(default)/(app)/system/terminal/page.tsx"
+  modify:
+    - "frontend/src/components/layout/Sidebar.tsx"
+
+context_files:
+  - "frontend/src/hooks/useMonitoringWebSocket.ts"
+  - "frontend/src/lib/api/terminal.ts"
+  - "frontend/src/lib/api/monitoring.ts"
+  - "frontend/src/app/(default)/(app)/monitoring/page.tsx"
+  - "frontend/src/components/monitoring/MonitoringTerminal.tsx"
+  - "frontend/src/store/session-store.ts"
+  - "frontend/src/hooks/usePermissions.ts"
+  - "frontend/src/components/layout/Sidebar.tsx"
+  - "frontend/src/components/ui/page-header.tsx"
+  - "frontend/src/components/ui/error-alert.tsx"
+
+instructions: |
+  Create the terminal WebSocket hook, xterm.js component, page, and sidebar navigation.
+
+  ## 1. frontend/src/hooks/useTerminalWebSocket.ts
+
+  Hook that manages the WebSocket lifecycle for the terminal.
+
+  ```typescript
+  "use client";
+
+  import { useCallback, useRef, useState } from "react";
+  import { terminalService } from "@/lib/api/terminal";
+  import type { TerminalServerMessage } from "@/lib/api/terminal";
+
+  export type TerminalStatus = "disconnected" | "connecting" | "connected" | "error";
+
+  interface UseTerminalWebSocketOptions {
+    onOutput?: (data: string) => void;
+    onReady?: () => void;
+    onError?: (message: string) => void;
+    onClosed?: (reason: string) => void;
+  }
+
+  interface UseTerminalWebSocketReturn {
+    status: TerminalStatus;
+    error: string | null;
+    connect: (cols: number, rows: number) => void;
+    disconnect: () => void;
+    sendInput: (data: string) => void;
+    sendResize: (cols: number, rows: number) => void;
+  }
+
+  export function useTerminalWebSocket(
+    options: UseTerminalWebSocketOptions = {}
+  ): UseTerminalWebSocketReturn {
+    const [status, setStatus] = useState<TerminalStatus>("disconnected");
+    const [error, setError] = useState<string | null>(null);
+    const wsRef = useRef<WebSocket | null>(null);
+    const optionsRef = useRef(options);
+    optionsRef.current = options;
+
+    const cleanup = useCallback(() => {
+      if (wsRef.current) {
+        try { wsRef.current.close(); } catch { /* ignore */ }
+        wsRef.current = null;
+      }
+    }, []);
+
+    const connect = useCallback((cols: number, rows: number) => {
+      cleanup();
+      setError(null);
+      setStatus("connecting");
+
+      const ws = terminalService.createTerminalSocket();
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        // Send initial terminal size
+        ws.send(JSON.stringify({ type: "resize", cols, rows }));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg: TerminalServerMessage = JSON.parse(event.data);
+
+          switch (msg.type) {
+            case "ready":
+              setStatus("connected");
+              optionsRef.current.onReady?.();
+              break;
+            case "output":
+              if (msg.data) optionsRef.current.onOutput?.(msg.data);
+              break;
+            case "status":
+              // Status messages during connection setup — could display
+              break;
+            case "error":
+              setStatus("error");
+              setError(msg.data || "Unknown error");
+              optionsRef.current.onError?.(msg.data || "Unknown error");
+              break;
+            case "closed":
+              setStatus("disconnected");
+              optionsRef.current.onClosed?.(msg.reason || "Session ended");
+              break;
+          }
+        } catch {
+          // Non-JSON message, ignore
+        }
+      };
+
+      ws.onerror = () => {
+        setStatus("error");
+        setError("WebSocket connection error");
+      };
+
+      ws.onclose = () => {
+        wsRef.current = null;
+        if (status !== "error") {
+          setStatus("disconnected");
+        }
+      };
+    }, [cleanup, status]);
+
+    const disconnect = useCallback(() => {
+      cleanup();
+      setStatus("disconnected");
+      setError(null);
+    }, [cleanup]);
+
+    const sendInput = useCallback((data: string) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: "input", data }));
+      }
+    }, []);
+
+    const sendResize = useCallback((cols: number, rows: number) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: "resize", cols, rows }));
+      }
+    }, []);
+
+    return { status, error, connect, disconnect, sendInput, sendResize };
+  }
+  ```
+
+  ## 2. frontend/src/components/terminal/SSHTerminal.tsx
+
+  xterm.js wrapper component. MUST use dynamic import since xterm requires DOM.
+
+  ```typescript
+  "use client";
+
+  import { useEffect, useRef, useCallback } from "react";
+
+  interface SSHTerminalProps {
+    onData: (data: string) => void;
+    onResize: (cols: number, rows: number) => void;
+    onReady: (write: (data: string) => void, cols: number, rows: number) => void;
+  }
+
+  export function SSHTerminal({ onData, onResize, onReady }: SSHTerminalProps) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const terminalRef = useRef<any>(null);
+    const fitAddonRef = useRef<any>(null);
+    const initializedRef = useRef(false);
+
+    useEffect(() => {
+      if (!containerRef.current || initializedRef.current) return;
+      initializedRef.current = true;
+
+      let terminal: any;
+      let fitAddon: any;
+
+      (async () => {
+        // Dynamic import to avoid SSR issues
+        const { Terminal } = await import("@xterm/xterm");
+        const { FitAddon } = await import("@xterm/addon-fit");
+        // Import the CSS
+        await import("@xterm/xterm/css/xterm.css");
+
+        terminal = new Terminal({
+          cursorBlink: true,
+          fontSize: 14,
+          fontFamily: "'Geist Mono', 'Cascadia Code', 'Fira Code', monospace",
+          theme: {
+            background: "#09090b",     // zinc-950
+            foreground: "#fafafa",     // zinc-50
+            cursor: "#fafafa",
+            selectionBackground: "#27272a", // zinc-800
+            black: "#09090b",
+            red: "#ef4444",
+            green: "#22c55e",
+            yellow: "#eab308",
+            blue: "#3b82f6",
+            magenta: "#a855f7",
+            cyan: "#06b6d4",
+            white: "#fafafa",
+            brightBlack: "#52525b",
+            brightRed: "#f87171",
+            brightGreen: "#4ade80",
+            brightYellow: "#facc15",
+            brightBlue: "#60a5fa",
+            brightMagenta: "#c084fc",
+            brightCyan: "#22d3ee",
+            brightWhite: "#ffffff",
+          },
+          allowProposedApi: true,
+        });
+
+        fitAddon = new FitAddon();
+        terminal.loadAddon(fitAddon);
+        terminal.open(containerRef.current!);
+        fitAddon.fit();
+
+        terminalRef.current = terminal;
+        fitAddonRef.current = fitAddon;
+
+        // Wire user input
+        terminal.onData((data: string) => {
+          onData(data);
+        });
+
+        // Wire resize
+        terminal.onResize(({ cols, rows }: { cols: number; rows: number }) => {
+          onResize(cols, rows);
+        });
+
+        // Notify parent with write function and initial dimensions
+        onReady(
+          (data: string) => terminal.write(data),
+          terminal.cols,
+          terminal.rows
+        );
+
+        // Observe container size changes
+        const observer = new ResizeObserver(() => {
+          fitAddon.fit();
+        });
+        observer.observe(containerRef.current!);
+
+        // Store cleanup ref
+        (containerRef.current as any).__cleanup = () => {
+          observer.disconnect();
+          terminal.dispose();
+        };
+      })();
+
+      return () => {
+        if (containerRef.current && (containerRef.current as any).__cleanup) {
+          (containerRef.current as any).__cleanup();
+        }
+      };
+    }, [onData, onResize, onReady]);
+
+    return (
+      <div
+        ref={containerRef}
+        className="w-full h-full"
+        style={{ minHeight: "400px" }}
+      />
+    );
+  }
+  ```
+
+  ## 3. frontend/src/app/(default)/(app)/system/terminal/page.tsx
+
+  Terminal page with connection controls and SSH status checking.
+
+  Read the monitoring page (`frontend/src/app/(default)/(app)/monitoring/page.tsx`) for the SSH status checking pattern — it uses `monitoringService.getMonitoringStatus()` to check if SSH is configured.
+
+  ```typescript
+  "use client";
+
+  import { useState, useEffect, useCallback, useRef } from "react";
+  import { Loader2, Terminal as TerminalIcon, Plug, Unplug, AlertCircle } from "lucide-react";
+  import dynamic from "next/dynamic";
+  import { useTerminalWebSocket } from "@/hooks/useTerminalWebSocket";
+  import { monitoringService } from "@/lib/api/monitoring";
+  import type { MonitoringStatus as SSHStatus } from "@/lib/api/monitoring";
+  import { useSessionStore } from "@/store/session-store";
+  import { usePermissions } from "@/hooks/usePermissions";
+  import { FeatureGroup } from "@/lib/api/user-management";
+  import { PageHeader } from "@/components/ui/page-header";
+  import { ErrorAlert } from "@/components/ui/error-alert";
+  import { Button } from "@/components/ui/button";
+  import { Badge } from "@/components/ui/badge";
+  import { Card, CardContent } from "@/components/ui/card";
+
+  // Dynamic import SSHTerminal (xterm.js needs DOM)
+  const SSHTerminal = dynamic(
+    () => import("@/components/terminal/SSHTerminal").then((m) => m.SSHTerminal),
+    { ssr: false }
+  );
+
+  export default function TerminalPage() {
+    const { activeSession } = useSessionStore();
+    const { canWrite } = usePermissions();
+    const [sshStatus, setSSHStatus] = useState<SSHStatus | null>(null);
+    const [sshLoading, setSSHLoading] = useState(true);
+    const [sshError, setSSHError] = useState<string | null>(null);
+    const writeRef = useRef<((data: string) => void) | null>(null);
+    const [closedReason, setClosedReason] = useState<string | null>(null);
+
+    const terminal = useTerminalWebSocket({
+      onOutput: (data) => {
+        writeRef.current?.(data);
+      },
+      onReady: () => {
+        setClosedReason(null);
+      },
+      onError: (msg) => {
+        writeRef.current?.(`\r\n\x1b[31mError: ${msg}\x1b[0m\r\n`);
+      },
+      onClosed: (reason) => {
+        setClosedReason(reason);
+        writeRef.current?.(`\r\n\x1b[33m${reason}\x1b[0m\r\n`);
+      },
+    });
+
+    // Check SSH status on mount
+    useEffect(() => {
+      async function checkSSH() {
+        try {
+          const status = await monitoringService.getMonitoringStatus();
+          setSSHStatus(status);
+        } catch (err) {
+          setSSHError(err instanceof Error ? err.message : "Failed to check SSH status");
+        } finally {
+          setSSHLoading(false);
+        }
+      }
+      checkSSH();
+    }, []);
+
+    const handleTerminalReady = useCallback(
+      (write: (data: string) => void, cols: number, rows: number) => {
+        writeRef.current = write;
+        // Auto-connect when terminal is ready
+        terminal.connect(cols, rows);
+      },
+      [terminal]
+    );
+
+    const handleData = useCallback(
+      (data: string) => {
+        terminal.sendInput(data);
+      },
+      [terminal]
+    );
+
+    const handleResize = useCallback(
+      (cols: number, rows: number) => {
+        terminal.sendResize(cols, rows);
+      },
+      [terminal]
+    );
+
+    const handleReconnect = useCallback(() => {
+      // Need to get current terminal dimensions
+      // The terminal resize event will fire on reconnect
+      terminal.connect(80, 24);
+    }, [terminal]);
+
+    // Permission check
+    if (!canWrite(FeatureGroup.MONITORING)) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <ErrorAlert title="Access Denied" message="You need Monitoring write access to use the terminal." className="max-w-md" />
+        </div>
+      );
+    }
+
+    // SSH status loading
+    if (sshLoading) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    // SSH not configured
+    if (sshStatus && !sshStatus.configured) {
+      return (
+        <div className="space-y-6 p-6">
+          <PageHeader title="Terminal" description="Interactive SSH shell to your VyOS device" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
+                <div>
+                  <h3 className="text-lg font-semibold">SSH Not Configured</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    The SSH key has not been set up for this instance. Configure it via
+                    Sites &gt; Edit Instance &gt; SSH / Monitoring to enable terminal access.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    // Main terminal view
+    return (
+      <div className="flex flex-col h-full p-6 gap-4">
+        <div className="flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <TerminalIcon className="h-5 w-5" />
+            <div>
+              <h1 className="text-lg font-semibold">Terminal</h1>
+              <p className="text-sm text-muted-foreground">
+                Interactive SSH shell to {activeSession?.instance_name || "VyOS device"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant={
+              terminal.status === "connected" ? "default" :
+              terminal.status === "connecting" ? "secondary" :
+              terminal.status === "error" ? "destructive" : "outline"
+            }>
+              {terminal.status === "connected" && "Connected"}
+              {terminal.status === "connecting" && "Connecting..."}
+              {terminal.status === "error" && "Error"}
+              {terminal.status === "disconnected" && "Disconnected"}
+            </Badge>
+            {terminal.status === "connected" ? (
+              <Button variant="outline" size="sm" onClick={terminal.disconnect}>
+                <Unplug className="h-4 w-4 mr-2" />
+                Disconnect
+              </Button>
+            ) : terminal.status === "disconnected" || terminal.status === "error" ? (
+              <Button size="sm" onClick={handleReconnect}>
+                <Plug className="h-4 w-4 mr-2" />
+                {closedReason ? "Reconnect" : "Connect"}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        {terminal.error && terminal.status === "error" && (
+          <ErrorAlert title="Terminal Error" message={terminal.error} className="shrink-0" />
+        )}
+
+        <Card className="flex-1 min-h-0 overflow-hidden">
+          <CardContent className="p-0 h-full">
+            <SSHTerminal
+              onData={handleData}
+              onResize={handleResize}
+              onReady={handleTerminalReady}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  ```
+
+  ## 4. Modify frontend/src/components/layout/Sidebar.tsx
+
+  Add a Terminal entry to the navigation array. Place it AFTER the Monitoring entry and BEFORE the Services entry.
+
+  Read the Sidebar.tsx file first to find the exact location. The Monitoring entry is around line 224-229 and looks like:
+  ```typescript
+  {
+    title: "Monitoring",
+    href: "/monitoring",
+    icon: Activity,
+    requiredPermission: FeatureGroup.MONITORING,
+  },
+  ```
+
+  Add immediately after it:
+  ```typescript
+  {
+    title: "Terminal",
+    href: "/system/terminal",
+    icon: TerminalSquare,
+    requiredPermission: FeatureGroup.MONITORING,
+  },
+  ```
+
+  Make sure `TerminalSquare` is imported from `lucide-react`. Check the existing imports first — `Terminal` might already be imported (it's used in the services layout for SSH). Use `TerminalSquare` to avoid conflicts, or if it's not available, use `SquareTerminal`.
+
+acceptance_criteria:
+  - "File exists: frontend/src/hooks/useTerminalWebSocket.ts"
+  - "File exists: frontend/src/components/terminal/SSHTerminal.tsx"
+  - "File exists: frontend/src/app/(default)/(app)/system/terminal/page.tsx"
+  - "Grep match: 'useTerminalWebSocket' in frontend/src/hooks/useTerminalWebSocket.ts"
+  - "Grep match: '@xterm/xterm' in frontend/src/components/terminal/SSHTerminal.tsx"
+  - "Grep match: 'Terminal' in frontend/src/components/layout/Sidebar.tsx (nav entry)"
+  - "Grep match: '/system/terminal' in frontend/src/components/layout/Sidebar.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

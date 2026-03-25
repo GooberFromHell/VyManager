@@ -1,0 +1,157 @@
+id: "task-002"
+title: "Add layout toggle and conditional rendering to FileBrowserContent"
+phase: produce
+execution_phase: 1
+agent: "voltagent-lang:react-specialist"
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-003"]
+parallel_with: []
+
+files:
+  create: []
+  modify:
+    - "frontend/src/components/file-browser/FileBrowserContent.tsx"
+
+context_files:
+  - "frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "frontend/src/components/file-browser/FileGridView.tsx"
+
+instructions: |
+  Modify FileBrowserContent.tsx to add a layout toggle and conditionally render
+  either the table view or the new grid view.
+
+  ## Changes to frontend/src/components/file-browser/FileBrowserContent.tsx
+
+  ### 1. Add imports
+
+  Add to lucide-react import:
+  - `LayoutGrid` and `LayoutList`
+
+  Add new import:
+  ```tsx
+  import { FileGridView } from "./FileGridView";
+  ```
+
+  ### 2. Add layout state
+
+  After the modal state declarations (around line 98), add:
+  ```tsx
+  const [layout, setLayout] = useState<"table" | "grid">("table");
+  ```
+
+  ### 3. Add layout toggle to the breadcrumb nav bar
+
+  In the `<nav>` element for breadcrumbs (around line 211), add a layout toggle
+  AFTER the breadcrumb segments and loading spinner, aligned to the right.
+
+  Replace the breadcrumb `<nav>` section with:
+  ```tsx
+  <div className="flex items-center justify-between">
+    <nav className="flex items-center gap-1 text-sm" aria-label="Directory path">
+      {segments.map((seg, idx) => {
+        const isLast = idx === segments.length - 1;
+        return (
+          <span key={seg.href} className="flex items-center gap-1">
+            {(isLast && idx >= 1) && <span className="text-muted-foreground select-none">/</span>}
+            {isLast ? (
+              <span className="font-mono font-medium text-foreground">
+                {seg.label}
+              </span>
+            ) : (
+              <button
+                onClick={() => handleNavigate(seg.href)}
+                className="font-mono text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {seg.label}
+              </button>
+            )}
+          </span>
+        );
+      })}
+      {loading && (
+        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground ml-2" />
+      )}
+    </nav>
+
+    <div className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setLayout("table")}
+        className={layout === "table" ? "bg-accent" : ""}
+        title="Table view"
+      >
+        <LayoutList className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setLayout("grid")}
+        className={layout === "grid" ? "bg-accent" : ""}
+        title="Grid view"
+      >
+        <LayoutGrid className="h-4 w-4" />
+      </Button>
+    </div>
+  </div>
+  ```
+
+  ### 4. Conditional rendering of table vs grid
+
+  Wrap the existing table `<div className="rounded-lg border border-border">` block
+  in a conditional. Replace it with:
+
+  ```tsx
+  {layout === "table" ? (
+    <div className="rounded-lg border border-border">
+      <Table>
+        {/* ... existing table code stays exactly as-is ... */}
+      </Table>
+    </div>
+  ) : (
+    <FileGridView
+      entries={entries}
+      currentPath={currentPath}
+      isRoot={isRoot}
+      writeAllowed={writeAllowed}
+      onNavigate={handleNavigate}
+      onEntryClick={handleEntryClick}
+      onDownload={handleDownload}
+      onRename={setRenameItem}
+      onDelete={setDeleteItem}
+      onUpload={() => setUploadOpen(true)}
+    />
+  )}
+  ```
+
+  ### 5. Export helpers for shared use
+
+  Export `formatFileSize` and `navigateToParent` by adding `export` keyword to their
+  declarations so FileGridView can import them instead of duplicating.
+  Change:
+  - `function formatFileSize(` → `export function formatFileSize(`
+  - `function navigateToParent(` → `export function navigateToParent(`
+
+  OR: if FileGridView already has its own copies, leave them as-is. Just ensure no duplication issues.
+
+  ### Important:
+  - Do NOT modify any of the existing table JSX code
+  - Do NOT modify any modal code
+  - The only JSX changes are: wrapping breadcrumb in a flex container with the toggle, and wrapping the table in a conditional
+
+acceptance_criteria:
+  - "Grep match: 'LayoutGrid' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "Grep match: 'LayoutList' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "Grep match: 'FileGridView' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "Grep match: 'setLayout' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+  - "Grep match: 'layout === .table.' in frontend/src/components/file-browser/FileBrowserContent.tsx"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

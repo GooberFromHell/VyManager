@@ -1,0 +1,143 @@
+id: "task-008"
+title: "Conntrack Sync — Backend mapper, builder, router"
+phase: produce
+agent: python-pro
+status: not_started
+depends_on: ["task-001"]
+blocks: ["task-010"]
+parallel_with: ["task-006", "task-007", "task-009"]
+
+files:
+  create:
+    - "backend/vyos_mappers/conntrack_sync/__init__.py"
+    - "backend/vyos_mappers/conntrack_sync/conntrack_sync.py"
+    - "backend/vyos_mappers/conntrack_sync/conntrack_sync_versions/__init__.py"
+    - "backend/vyos_mappers/conntrack_sync/conntrack_sync_versions/v1_4.py"
+    - "backend/vyos_mappers/conntrack_sync/conntrack_sync_versions/v1_5.py"
+    - "backend/vyos_builders/conntrack_sync/__init__.py"
+    - "backend/vyos_builders/conntrack_sync/conntrack_sync.py"
+    - "backend/routers/conntrack_sync/__init__.py"
+    - "backend/routers/conntrack_sync/conntrack_sync.py"
+  modify: []
+
+context_files:
+  - "backend/vyos_mappers/ssh/ssh.py"
+  - "backend/vyos_mappers/ssh/ssh_versions/v1_4.py"
+  - "backend/vyos_mappers/ssh/ssh_versions/v1_5.py"
+  - "backend/vyos_mappers/base.py"
+  - "backend/vyos_builders/ssh/ssh.py"
+  - "backend/routers/ssh/ssh.py"
+  - "backend/routers/ntp/ntp.py"
+
+instructions: |
+  Create Conntrack Sync backend. Most complex Phase 3 service.
+  Uses SSH as reference for multi-section config with version differences.
+
+  ## VyOS CLI Command Tree
+  ```
+  set service conntrack-sync
+    accept-protocol <protocol>           # multi-value (tcp, udp, icmp, etc.)
+    disable-external-cache               # flag
+    event-listen-queue-size <integer>    # v1.5 only
+    expect-sync <module>                 # multi-value (ftp, h323, nfs, sip, sqlnet)
+    failover-mechanism
+      vrrp
+        sync-group <name>               # VRRP sync group name
+      cluster                           # v1.4 only (deprecated in v1.5)
+        group <name>
+    interface <name>                     # multi-value (with sub-key)
+      port <1-65535>                     # UDP port for sync on this interface
+    listen-address <ip>                  # v1.5 only, multi-value
+    mcast-group <multicast-ip>          # multicast group for sync
+    sync-queue-size <integer>           # v1.5 only
+    startup-resync                       # v1.5 only (flag)
+  ```
+
+  Config path: `full_config["service"]["conntrack-sync"]`
+
+  ## Step 1: Mapper (backend/vyos_mappers/conntrack_sync/conntrack_sync.py)
+
+  Create `ConntrackSyncMapper(BaseFeatureMapper)`:
+
+  Base methods (both versions):
+  - `get_accept_protocol(protocol)` → `["service", "conntrack-sync", "accept-protocol", protocol]`
+  - `get_disable_external_cache()` → `["service", "conntrack-sync", "disable-external-cache"]`
+  - `get_expect_sync(module)` → `["service", "conntrack-sync", "expect-sync", module]`
+  - `get_failover_mechanism_vrrp_sync_group(name)` → `["service", "conntrack-sync", "failover-mechanism", "vrrp", "sync-group", name]`
+  - `get_interface(iface)` → `["service", "conntrack-sync", "interface", iface]`
+  - `get_interface_port(iface, port)` → `["service", "conntrack-sync", "interface", iface, "port", port]`
+  - `get_mcast_group(addr)` → `["service", "conntrack-sync", "mcast-group", addr]`
+  - Corresponding _path methods for delete
+
+  Version-delegated methods:
+  - `has_cluster()` → v1.4: True, v1.5: False
+  - `has_listen_address()` → v1.4: False, v1.5: True
+  - `has_event_listen_queue_size()` → v1.4: False, v1.5: True
+  - `has_sync_queue_size()` → v1.4: False, v1.5: True
+  - `has_startup_resync()` → v1.4: False, v1.5: True
+  - `get_failover_mechanism_cluster_group(name)` → v1.4 only
+  - `get_listen_address(addr)` → v1.5 only
+  - `get_event_listen_queue_size(size)` → v1.5 only
+  - `get_sync_queue_size(size)` → v1.5 only
+  - `get_startup_resync()` → v1.5 only
+
+  ## Step 2: Version Overrides
+
+  `v1_4.py`: `ConntrackSyncMapperV1_4`
+  - `has_cluster() → True` (implements get_failover_mechanism_cluster_group)
+  - `has_listen_address() → False`, `has_event_listen_queue_size() → False`
+  - `has_sync_queue_size() → False`, `has_startup_resync() → False`
+
+  `v1_5.py`: `ConntrackSyncMapperV1_5`
+  - `has_cluster() → False`
+  - `has_listen_address() → True` (implements get_listen_address)
+  - `has_event_listen_queue_size() → True`, `has_sync_queue_size() → True`
+  - `has_startup_resync() → True`
+  - Implements all v1.5-only methods
+
+  ## Step 3: Builder
+
+  `ConntrackSyncBatchBuilder` with mapper_key = "conntrack_sync"
+  Feature methods for all mapper methods.
+  get_capabilities() returns all version flags.
+
+  ## Step 4: Router
+
+  - `router = APIRouter(prefix="/vyos/conntrack-sync", tags=["conntrack-sync"])`
+  - Pydantic models:
+    - `ConntrackSyncInterface`: name (str), port (Optional[str])
+    - `ConntrackSyncFailoverMechanism`: type (str — "vrrp" or "cluster"),
+      sync_group (Optional[str]), cluster_group (Optional[str])
+    - `ConntrackSyncConfigResponse`: accept_protocols (List[str]),
+      disable_external_cache (bool), expect_sync (List[str]),
+      failover_mechanism (Optional[ConntrackSyncFailoverMechanism]),
+      interfaces (List[ConntrackSyncInterface]), listen_addresses (List[str]),
+      mcast_group (Optional[str]), event_listen_queue_size (Optional[str]),
+      sync_queue_size (Optional[str]), startup_resync (Optional[bool])
+  - GET /config: Parse conntrack-sync dict. Handle:
+    - accept-protocol: may be str or list
+    - interface: dict keyed by name, each with optional port sub-key
+    - failover-mechanism: nested dict with vrrp/cluster sub-keys
+    - expect-sync: may be str or list
+    - listen-address: may be str or list (v1.5)
+  - Use FeatureGroup.CONNTRACK_SYNC for permissions
+  - POST /batch MUST call ensure_snapshot_before_change()
+
+acceptance_criteria:
+  - "File exists: backend/vyos_mappers/conntrack_sync/conntrack_sync.py"
+  - "File exists: backend/vyos_mappers/conntrack_sync/conntrack_sync_versions/v1_4.py"
+  - "File exists: backend/vyos_mappers/conntrack_sync/conntrack_sync_versions/v1_5.py"
+  - "File exists: backend/vyos_builders/conntrack_sync/conntrack_sync.py"
+  - "File exists: backend/routers/conntrack_sync/conntrack_sync.py"
+  - "Grep match: 'ConntrackSyncMapper' in backend/vyos_mappers/conntrack_sync/conntrack_sync.py"
+  - "Grep match: 'ensure_snapshot_before_change' in backend/routers/conntrack_sync/conntrack_sync.py"
+  - "Grep match: 'FeatureGroup.CONNTRACK_SYNC' in backend/routers/conntrack_sync/conntrack_sync.py"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: ""

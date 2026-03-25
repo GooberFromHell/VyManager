@@ -1,0 +1,197 @@
+id: task-010-update-sites-page
+title: "Add Management nav section to sites page and update SiteToolsSection for 202 response"
+archetype: custom
+phase: 3
+depends_on: [task-009, task-008]
+parallel_with: [task-011]
+agent: general-purpose
+status: not_started
+
+files:
+  create: []
+  modify:
+    - "frontend/src/app/(default)/sites/page.tsx"
+    - "frontend/src/components/sites/SiteToolsSection.tsx"
+
+context_files:
+  - ".derpo/architecture.md"
+  - "frontend/src/app/(default)/sites/page.tsx"
+  - "frontend/src/components/sites/SiteToolsSection.tsx"
+  - "frontend/src/components/management/ManagementView.tsx"
+  - "frontend/src/components/management/BackgroundJobsView.tsx"
+  - "frontend/src/lib/api/background-jobs.ts"
+  - "frontend/src/lib/api/types/background-jobs.ts"
+  - "frontend/src/hooks/useJobPolling.ts"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Update the sites page to add a "Management" navigation section with a running job count badge,
+  and update SiteToolsSection to handle the new 202 fire-and-forget backup response.
+
+  ## Step 1: Read current files
+  Read `frontend/src/app/(default)/sites/page.tsx` fully — it is a large file.
+  Read `frontend/src/components/sites/SiteToolsSection.tsx` fully.
+
+  ## Step 2: Update sites/page.tsx — NavSection type
+  Change the NavSection type from:
+  ```typescript
+  type NavSection = "sites" | "user-management" | "authentication";
+  ```
+  To:
+  ```typescript
+  type NavSection = "sites" | "user-management" | "authentication" | "management";
+  ```
+
+  ## Step 3: Add imports
+  Add these imports to sites/page.tsx:
+  ```typescript
+  import { Layers } from "lucide-react";
+  import { ManagementView } from "@/components/management/ManagementView";
+  import { useJobPolling } from "@/hooks/useJobPolling";
+  ```
+
+  ## Step 4: Add job polling state
+  Inside the `SitesPage` component, add the job polling hook near the other state declarations.
+  The polling should only be active when the management section is selected:
+
+  ```typescript
+  const { jobs: allJobs, hasRunningJobs } = useJobPolling({
+    enabled: true,  // Always fetch initially to get running count for badge
+    pollIntervalMs: 5000,  // Slower polling for badge count only
+  });
+
+  const runningJobCount = allJobs.filter(
+    (j) => j.status === "queued" || j.status === "running"
+  ).length;
+  ```
+
+  ## Step 5: Add Management nav button
+  In the navigation section (inside the `<ScrollArea>` with the Sites, User Management,
+  and Authentication buttons), add a new "Management" button AFTER the Authentication button,
+  following the exact same pattern:
+
+  ```tsx
+  {/* Management */}
+  <button
+    onClick={() => setSelectedSection("management")}
+    className={cn(
+      "w-full text-left rounded-lg px-3 py-3 transition-all duration-200 ease-[var(--ease-out-quart)]",
+      selectedSection === "management"
+        ? "bg-accent text-accent-foreground shadow-sm"
+        : "hover:bg-accent/50"
+    )}
+  >
+    <div className="flex items-center gap-3">
+      <div className={cn(
+        "rounded-md p-1.5",
+        selectedSection === "management" ? "bg-primary/10" : "bg-muted"
+      )}>
+        <Layers className={cn(
+          "h-4 w-4",
+          selectedSection === "management" ? "text-primary" : "text-muted-foreground"
+        )} />
+      </div>
+      <span className="font-medium text-sm">Management</span>
+      {runningJobCount > 0 && (
+        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground animate-pulse">
+          {runningJobCount}
+        </span>
+      )}
+      {selectedSection === "management" && (
+        <ChevronRight className="h-4 w-4 text-primary ml-auto" />
+      )}
+    </div>
+  </button>
+  ```
+
+  Note: When `runningJobCount > 0`, the badge is shown with `animate-pulse`. When there are
+  no running jobs, only the ChevronRight indicator shows for the active state.
+
+  ## Step 6: Add ManagementView rendering
+  In the main content area (the right side of the layout), find where `selectedSection` is
+  checked to render different views. There should be conditions for "sites", "user-management",
+  and "authentication". Add a condition for "management":
+
+  ```tsx
+  {selectedSection === "management" && <ManagementView />}
+  ```
+
+  This should be at the same level as the other section renderings.
+
+  ## Step 7: Update SiteToolsSection.tsx
+  The SiteToolsSection currently calls `sessionService.backupSite(siteId)` which returns the
+  full `SiteBackupResponse` synchronously and then downloads a ZIP. This needs to change to
+  fire-and-forget.
+
+  Changes:
+  1. Replace the import:
+     ```typescript
+     // Remove: import { sessionService, SiteBackupResponse } from "@/lib/api/session";
+     // Remove: import JSZip from "jszip";
+     // Add:
+     import { backgroundJobsService } from "@/lib/api/background-jobs";
+     ```
+
+  2. Remove the `lastResult` state and the `downloadBackupZip` function entirely.
+     Remove the `sanitizeFilename` function if it's only used by `downloadBackupZip`.
+
+  3. Update the `handleBackup` function:
+     ```typescript
+     const handleBackup = async () => {
+       if (backingUp || !isAdmin) return;
+       setBackingUp(true);
+
+       try {
+         const response = await backgroundJobsService.triggerSiteBackup(siteId);
+         const jobCount = response.job_ids.length;
+
+         toast.success(
+           "Backup started",
+           `Backup started for ${jobCount} instance${jobCount !== 1 ? "s" : ""} — view progress in Management > Jobs`,
+         );
+       } catch (err) {
+         const message = (err as ApiError).message || "Failed to start backup";
+         toast.error("Backup failed", message);
+       } finally {
+         setBackingUp(false);
+       }
+     };
+     ```
+
+  4. Simplify the backup button UI — remove the `lastResult` badges
+     (CheckCircle2/XCircle/SkipForward counts) since results are now viewed in
+     the Management section. The button just shows "Site Backup" or "Starting..."
+     when clicked.
+
+  5. Remove unused imports: `CheckCircle2`, `XCircle`, `SkipForward`, `Download` (if no longer
+     used), `SiteBackupResponse` (from session), `JSZip`.
+
+  ## Important notes
+  - Do NOT remove the JSZip package from package.json — it may be used elsewhere.
+  - The `SiteToolsSection` no longer needs `SiteBackupResponse` type since the response
+    is now `TriggerBackupResponse`.
+  - Keep the placeholder tools unchanged.
+  - The `apiClient` correctly handles 202 responses — it just parses the JSON body.
+
+acceptance_criteria:
+  - "NavSection type includes 'management' as a valid value"
+  - "Layers icon is imported from lucide-react"
+  - "ManagementView component is imported and rendered when selectedSection is 'management'"
+  - "Management nav button exists in the left sidebar with the same styling as other nav buttons"
+  - "Running job count badge with animate-pulse appears on the Management button when > 0"
+  - "useJobPolling hook is used to get running job count for the badge"
+  - "SiteToolsSection calls backgroundJobsService.triggerSiteBackup instead of sessionService.backupSite"
+  - "SiteToolsSection shows a toast notification with job count after triggering backup"
+  - "SiteToolsSection no longer downloads a ZIP or shows per-instance result counts"
+  - "JSZip import is removed from SiteToolsSection"
+  - "SiteBackupResponse import is removed from SiteToolsSection"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null

@@ -1,0 +1,106 @@
+id: task-002-backend-models
+title: "Add container backup Pydantic models and extend InstanceBackupResult"
+archetype: custom
+phase: 1
+depends_on: []
+parallel_with: [task-001]
+agent: general-purpose
+status: not_started
+
+files:
+  create: []
+  modify:
+    - "backend/routers/site_tools/backup.py"
+
+context_files:
+  - ".derpo/architecture.md"
+  - "backend/routers/site_tools/backup.py"
+  - "docs/plans/2026-03-24-background-jobs-container-backup/decision-document.md"
+  - "new_features.md"
+
+instructions: |
+  Add container backup Pydantic models to backup.py and extend the existing InstanceBackupResult
+  model with container-related fields.
+
+  ## Step 1: Read the current backup.py
+  Read `backend/routers/site_tools/backup.py` to understand the existing models and structure.
+
+  ## Step 2: Add new Pydantic models
+  Add the following models ABOVE the existing `InstanceBackupResult` class, in a new subsection
+  with a comment header "Container Backup Models":
+
+  ```python
+  # ============================================================================
+  # Container Backup Models
+  # ============================================================================
+
+  class VolumeBackupData(BaseModel):
+      """Backup data for a single container volume."""
+      volume_name: str
+      source_path: str              # Path on the VyOS host filesystem
+      size_bytes: Optional[int] = None
+      data_base64: Optional[str] = None  # base64-encoded tar.gz of the volume directory
+      error: Optional[str] = None
+
+  class ContainerImageManifest(BaseModel):
+      """Image metadata for a container at backup time."""
+      container_name: str
+      image_ref: str                # e.g. "ghcr.io/foo/bar:latest"
+      image_digest: Optional[str] = None  # sha256:... pinned digest
+      image_archive_path: Optional[str] = None  # Future: path to exported .tar for air-gap
+      error: Optional[str] = None
+
+  class ContainerRuntimeStatus(BaseModel):
+      """Runtime state of a container at backup time."""
+      container_name: str
+      running: bool
+      exit_code: Optional[int] = None
+      uptime_seconds: Optional[int] = None
+
+  class ContainerFullBackup(BaseModel):
+      """Complete backup state for a single container — enough to redeploy."""
+      container_name: str
+      config_commands: str          # The VyOS set commands for this container
+      volumes: List[VolumeBackupData] = []
+      image_manifest: ContainerImageManifest
+      runtime_status: Optional[ContainerRuntimeStatus] = None
+  ```
+
+  ## Step 3: Extend InstanceBackupResult
+  Add two new fields to the existing `InstanceBackupResult` class:
+
+  ```python
+  containers: Optional[List[ContainerFullBackup]] = None
+  container_backup_errors: List[str] = []
+  ```
+
+  These fields should be added after the existing `backed_up_at` field. The `containers` field
+  is Optional (None when no containers exist or SSH was not available). The
+  `container_backup_errors` field defaults to an empty list and collects per-container
+  error messages for partial-success scenarios.
+
+  ## Step 4: Verify
+  - All models use `BaseModel` from pydantic (already imported).
+  - `Optional` and `List` are already imported from `typing` in the file.
+  - No circular imports introduced.
+  - The `ContainerFullBackup` model includes `container_name` as a top-level field for
+    easy identification when iterating the list.
+
+acceptance_criteria:
+  - "VolumeBackupData model exists with fields: volume_name, source_path, size_bytes, data_base64, error"
+  - "ContainerImageManifest model exists with fields: container_name, image_ref, image_digest, image_archive_path, error"
+  - "ContainerRuntimeStatus model exists with fields: container_name, running, exit_code, uptime_seconds"
+  - "ContainerFullBackup model exists with fields: container_name, config_commands, volumes, image_manifest, runtime_status"
+  - "InstanceBackupResult has new field: containers (Optional[List[ContainerFullBackup]])"
+  - "InstanceBackupResult has new field: container_backup_errors (List[str] with default [])"
+  - "All new models are defined above InstanceBackupResult in the file"
+  - "No new imports are needed (Optional, List, BaseModel already imported)"
+
+execution:
+  agent_id: null
+  started_at: null
+  completed_at: null
+  retry_count: 0
+  files_changed: []
+  commit: null
+  notes: null
