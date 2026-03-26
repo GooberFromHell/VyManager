@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SearchProvider } from "@/contexts/SearchContext";
+import { UnifiedViewProvider } from "@/contexts/UnifiedViewContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,9 +41,13 @@ export default function RootLayout({
           disableTransitionOnChange
           themes={["light", "dark", "interstellar"]}
         >
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
+          <SearchProvider>
+            <UnifiedViewProvider>
+              <TooltipProvider>
+                {children}
+              </TooltipProvider>
+            </UnifiedViewProvider>
+          </SearchProvider>
         </ThemeProvider>
       </body>
     </html>

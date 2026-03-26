@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { Loader2, Plus, Save, Edit3, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Github, Globe, MessageCircle, Sparkles, ArrowUpCircle, Tag } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useSession } from "@/lib/auth-client";
 import { useSessionStore } from "@/store/session-store";
 import { dashboardService, DashboardCard, DashboardLayout } from "@/lib/api/dashboard";
+import { versionService, VersionCheckResponse } from "@/lib/api/version";
 import { getWidget } from "@/components/dashboard/widget-registry";
 import { migrateLayout } from "@/components/dashboard/layout-migration";
 import { AddCardModal } from "@/components/dashboard/AddCardModal";
@@ -113,6 +115,8 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [canEditDashboard, setCanEditDashboard] = useState(false);
+  const [versionInfo, setVersionInfo] = useState<VersionCheckResponse | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -156,6 +160,9 @@ export default function Home() {
 
       // AuthGuard ensures session is valid — load dashboard data directly
       await loadDashboard();
+
+      // Check for version updates
+      versionService.checkVersion().then(setVersionInfo).catch(() => {});
 
       // Check if user has permission to edit the dashboard layout
       try {
@@ -533,6 +540,83 @@ export default function Home() {
                 </Button>
               </>
             )}
+          </div>
+        </div>
+
+        {/* Beta Information Card */}
+        <div className="mt-6 relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-br from-primary/5 via-purple-500/5 to-cyan-500/5 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
+          <div className="relative p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Open Beta</span>
+            </div>
+
+            <div className="flex flex-wrap gap-4 text-sm">
+              {versionInfo && (
+                <div className="flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    v{versionInfo.current_version}
+                  </span>
+                  {versionInfo.environment === "dev" && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+                      dev
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {versionInfo?.update_available && (
+                <a
+                  href={versionInfo.release_url ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-medium transition-colors"
+                >
+                  <ArrowUpCircle className="h-4 w-4" />
+                  v{versionInfo.latest_version} available
+                </a>
+              )}
+
+              <div className="flex items-center gap-2">
+                <Github className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Development by</span>
+                <a
+                  href="https://github.com/Community-VyProjects/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 font-medium transition-colors underline decoration-primary/30 hover:decoration-primary/60"
+                >
+                  VyProjects Org
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <a
+                  href="https://vyprojects.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 font-medium transition-colors underline decoration-primary/30 hover:decoration-primary/60"
+                >
+                  Website
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Join our</span>
+                <a
+                  href="https://discord.gg/4mE6QsZtKm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-500 hover:text-purple-400 font-medium transition-colors underline decoration-purple-500/30 hover:decoration-purple-500/60"
+                >
+                  Discord
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -24,6 +24,8 @@ from routers.firewall import bridge as firewall_bridge
 from routers.firewall import flowtables as firewall_flowtables
 from routers.firewall import zones as firewall_zones
 from routers.nat import nat
+from routers.nat64 import nat64
+from routers.nat66 import nat66
 from routers.dhcp import dhcp
 from routers.static_routes import static_routes
 from routers.route_map import route_map
@@ -75,6 +77,10 @@ from routers.site_tools import backup as site_backup_router
 from routers.site_tools.jobs import router as site_jobs_router
 from background_jobs import prune_old_jobs
 from routers.site_tools.backup import _running_job_tasks
+from routers.ipsec import ipsec as ipsec_router
+from routers.l2tp import l2tp as l2tp_router
+from routers.pki import pki as pki_router
+from routers import version as version_router
 
 # Global variables
 db_pool: Optional[asyncpg.Pool] = None
@@ -261,7 +267,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="VyOS Management API",
-    version="1.0.0",
+    version=os.environ.get("VYMANAGER_VERSION", "dev"),
     description="FastAPI backend for managing VyOS devices with version-aware commands",
     lifespan=lifespan,
 )
@@ -321,6 +327,8 @@ app.include_router(firewall_bridge.router)
 app.include_router(firewall_flowtables.router)
 app.include_router(firewall_zones.router)
 app.include_router(nat.router)
+app.include_router(nat64.router)
+app.include_router(nat66.router)
 app.include_router(dhcp.router)
 app.include_router(static_routes.router)
 app.include_router(route_map.router)
@@ -370,6 +378,10 @@ app.include_router(file_browser_router.router)
 app.include_router(prometheus_router.router)
 app.include_router(site_backup_router.router)
 app.include_router(site_jobs_router)
+app.include_router(ipsec_router.router)
+app.include_router(l2tp_router.router)
+app.include_router(pki_router.router)
+app.include_router(version_router.router)
 
 
 # ============================================================================
@@ -393,6 +405,8 @@ async def read_root() -> dict:
             "firewall-ipv6",
             "firewall-global-options",
             "nat",
+            "nat64",
+            "nat66",
             "dhcp-server",
             "static-routes",
             "route-map",

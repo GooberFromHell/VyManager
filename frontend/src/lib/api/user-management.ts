@@ -107,6 +107,8 @@ export enum FeatureGroup {
   // Legacy/Parent features (for backward compatibility)
   FIREWALL = "FIREWALL",
   NAT = "NAT",
+  NAT64 = "NAT64",
+  NAT66 = "NAT66",
   DHCP = "DHCP",
   INTERFACES = "INTERFACES",
 
@@ -127,6 +129,10 @@ export enum FeatureGroup {
   VPN = "VPN",
   IPSEC = "IPSEC",
   WIREGUARD = "WIREGUARD",
+  L2TP = "L2TP",
+
+  // PKI
+  PKI = "PKI",
 
   // Routing features (three-level hierarchy)
   ROUTING = "ROUTING",

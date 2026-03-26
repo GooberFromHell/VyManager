@@ -61,6 +61,7 @@ export function EditInstanceModal({
   const [prometheusAuth, setPrometheusAuth] = useState(false);
   const [prometheusUsername, setPrometheusUsername] = useState("");
   const [prometheusPassword, setPrometheusPassword] = useState("");
+  const [timeout, setTimeout] = useState("10");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +83,7 @@ export function EditInstanceModal({
       setPrometheusAuth(instance.prometheus_auth ?? false);
       setPrometheusUsername(instance.prometheus_username || "");
       setPrometheusPassword("");
+      setTimeout((instance.timeout ?? 10).toString());
       // Don't populate API key for security
       setApiKey("");
       setProtocol(instance.protocol || "https");
@@ -109,6 +111,7 @@ export function EditInstanceModal({
     setPrometheusAuth(false);
     setPrometheusUsername("");
     setPrometheusPassword("");
+    setTimeout("10");
     setError(null);
     onOpenChange(false);
   };
@@ -161,6 +164,7 @@ export function EditInstanceModal({
         prometheus_auth: prometheusAuth,
         prometheus_username: prometheusAuth ? prometheusUsername.trim() || undefined : undefined,
         ...(prometheusAuth && prometheusPassword ? { prometheus_password: prometheusPassword } : {}),
+        timeout: parseInt(timeout) || 10,
       };
 
       if (apiKey.trim()) {
@@ -435,6 +439,25 @@ export function EditInstanceModal({
                     onCheckedChange={(checked) =>
                       setVerifySsl(checked as boolean)
                     }
+                    disabled={loading}
+                  />
+                </FormField>
+              </Fieldset>
+
+              <Fieldset>
+                <FormField
+                  label="API Timeout (seconds)"
+                  htmlFor="editTimeout"
+                  description="Timeout for API requests to the VyOS device (1-300 seconds)"
+                >
+                  <Input
+                    id="editTimeout"
+                    type="number"
+                    value={timeout}
+                    onChange={(e) => setTimeout(e.target.value)}
+                    placeholder="10"
+                    min="1"
+                    max="300"
                     disabled={loading}
                   />
                 </FormField>

@@ -8,6 +8,8 @@ Each builder includes all necessary operations for its feature type.
 from .interfaces import EthernetInterfaceBuilderMixin, DummyInterfaceBuilderMixin, TunnelInterfaceBuilderMixin, VxlanInterfaceBuilderMixin
 from .firewall import FirewallGroupsBatchBuilder, FirewallIPv4BatchBuilder, FirewallIPv6BatchBuilder, BridgeFirewallBatchBuilder, FirewallZonesBatchBuilder
 from .nat import NATBatchBuilder
+from .nat64 import NAT64BatchBuilder
+from .nat66 import NAT66BatchBuilder
 from .dhcp import DHCPBatchBuilder
 from .static_routes import StaticRoutesBatchBuilder
 from .route_map import RouteMapBatchBuilder
@@ -44,6 +46,8 @@ from .broadcast_relay import BroadcastRelayBatchBuilder
 from .router_advert import RouterAdvertBatchBuilder
 from .conntrack_sync import ConntrackSyncBatchBuilder
 from .container import ContainerBatchBuilder
+from .ipsec import IPSecBatchBuilder
+from .pki import PKIBatchBuilder
 
 # Directly use the self-contained builders
 EthernetBatchBuilder = EthernetInterfaceBuilderMixin
@@ -60,6 +64,8 @@ __all__ = [
     "FirewallIPv4BatchBuilder",
     "FirewallIPv6BatchBuilder",
     "NATBatchBuilder",
+    "NAT64BatchBuilder",
+    "NAT66BatchBuilder",
     "DHCPBatchBuilder",
     "StaticRoutesBatchBuilder",
     "RouteMapBatchBuilder",
@@ -99,4 +105,6 @@ __all__ = [
     "RouterAdvertBatchBuilder",
     "ConntrackSyncBatchBuilder",
     "ContainerBatchBuilder",
+    "IPSecBatchBuilder",
+    "PKIBatchBuilder",
 ]

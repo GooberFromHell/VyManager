@@ -69,6 +69,7 @@ import {
   Terminal,
   ArrowLeftRight,
   FolderOpen,
+  ShieldCheck,
 } from "lucide-react";
 import {
   userManagementService,
@@ -99,6 +100,8 @@ interface InstanceWithSite {
 const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.FIREWALL]: Shield,
   [FeatureGroup.NAT]: Network,
+  [FeatureGroup.NAT64]: Globe,
+  [FeatureGroup.NAT66]: Globe,
   [FeatureGroup.DHCP]: Wifi,
   [FeatureGroup.INTERFACES]: Router,
   [FeatureGroup.FIREWALL_GROUPS]: Shield,
@@ -113,6 +116,8 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.VPN]: Lock,
   [FeatureGroup.IPSEC]: Lock,
   [FeatureGroup.WIREGUARD]: Lock,
+  [FeatureGroup.L2TP]: Lock,
+  [FeatureGroup.PKI]: ShieldCheck,
   [FeatureGroup.ROUTING]: Router,
   [FeatureGroup.UNICAST_PROTOCOLS]: Router,
   [FeatureGroup.BGP]: Router,
@@ -172,6 +177,8 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
 const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.FIREWALL]: "Firewall",
   [FeatureGroup.NAT]: "NAT",
+  [FeatureGroup.NAT64]: "NAT64",
+  [FeatureGroup.NAT66]: "NAT66",
   [FeatureGroup.DHCP]: "DHCP",
   [FeatureGroup.INTERFACES]: "Interfaces",
   [FeatureGroup.FIREWALL_GROUPS]: "Firewall Groups",
@@ -186,6 +193,8 @@ const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.VPN]: "VPN",
   [FeatureGroup.IPSEC]: "IPsec",
   [FeatureGroup.WIREGUARD]: "WireGuard",
+  [FeatureGroup.L2TP]: "L2TP",
+  [FeatureGroup.PKI]: "PKI",
   [FeatureGroup.ROUTING]: "Routing",
   [FeatureGroup.UNICAST_PROTOCOLS]: "Unicast Protocols",
   [FeatureGroup.BGP]: "BGP",
@@ -294,6 +303,8 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
           { feature: FeatureGroup.VRF },
           { feature: FeatureGroup.LOAD_BALANCING },
           { feature: FeatureGroup.NAT },
+          { feature: FeatureGroup.NAT64 },
+          { feature: FeatureGroup.NAT66 },
           { feature: FeatureGroup.HIGH_AVAILABILITY },
         ],
       },
@@ -354,8 +365,10 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         children: [
           { feature: FeatureGroup.IPSEC },
           { feature: FeatureGroup.WIREGUARD },
+          { feature: FeatureGroup.L2TP },
         ],
       },
+      { feature: FeatureGroup.PKI },
     ],
   },
   {

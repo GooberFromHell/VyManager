@@ -26,6 +26,8 @@ class FeatureGroup(str, Enum):
     # Legacy/Parent features (for backward compatibility)
     FIREWALL = "FIREWALL"
     NAT = "NAT"
+    NAT64 = "NAT64"
+    NAT66 = "NAT66"
     DHCP = "DHCP"
     INTERFACES = "INTERFACES"
 
@@ -46,6 +48,10 @@ class FeatureGroup(str, Enum):
     VPN = "VPN"
     IPSEC = "IPSEC"
     WIREGUARD = "WIREGUARD"
+    L2TP = "L2TP"
+
+    # PKI
+    PKI = "PKI"
 
     # Routing features (parent/child hierarchy)
     ROUTING = "ROUTING"
@@ -143,6 +149,8 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.FIREWALL_FLOWTABLES: PermissionLevel.WRITE,
         FeatureGroup.NETWORK: PermissionLevel.WRITE,
         FeatureGroup.NAT: PermissionLevel.WRITE,
+        FeatureGroup.NAT64: PermissionLevel.WRITE,
+        FeatureGroup.NAT66: PermissionLevel.WRITE,
         FeatureGroup.DHCP: PermissionLevel.WRITE,
         FeatureGroup.INTERFACES: PermissionLevel.WRITE,
         FeatureGroup.VRF: PermissionLevel.WRITE,
@@ -150,6 +158,8 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.VPN: PermissionLevel.WRITE,
         FeatureGroup.IPSEC: PermissionLevel.WRITE,
         FeatureGroup.WIREGUARD: PermissionLevel.WRITE,
+        FeatureGroup.L2TP: PermissionLevel.WRITE,
+        FeatureGroup.PKI: PermissionLevel.WRITE,
         FeatureGroup.ROUTING: PermissionLevel.WRITE,
         FeatureGroup.UNICAST_PROTOCOLS: PermissionLevel.WRITE,
         FeatureGroup.BGP: PermissionLevel.WRITE,
@@ -215,6 +225,8 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.FIREWALL_FLOWTABLES: PermissionLevel.WRITE,
         FeatureGroup.NETWORK: PermissionLevel.WRITE,
         FeatureGroup.NAT: PermissionLevel.WRITE,
+        FeatureGroup.NAT64: PermissionLevel.WRITE,
+        FeatureGroup.NAT66: PermissionLevel.WRITE,
         FeatureGroup.DHCP: PermissionLevel.WRITE,
         FeatureGroup.INTERFACES: PermissionLevel.WRITE,
         FeatureGroup.VRF: PermissionLevel.WRITE,
@@ -222,6 +234,8 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.VPN: PermissionLevel.WRITE,
         FeatureGroup.IPSEC: PermissionLevel.WRITE,
         FeatureGroup.WIREGUARD: PermissionLevel.WRITE,
+        FeatureGroup.L2TP: PermissionLevel.WRITE,
+        FeatureGroup.PKI: PermissionLevel.WRITE,
         FeatureGroup.ROUTING: PermissionLevel.WRITE,
         FeatureGroup.UNICAST_PROTOCOLS: PermissionLevel.WRITE,
         FeatureGroup.BGP: PermissionLevel.WRITE,
@@ -288,6 +302,8 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.FIREWALL_FLOWTABLES: PermissionLevel.READ,
         FeatureGroup.NETWORK: PermissionLevel.READ,
         FeatureGroup.NAT: PermissionLevel.READ,
+        FeatureGroup.NAT64: PermissionLevel.READ,
+        FeatureGroup.NAT66: PermissionLevel.READ,
         FeatureGroup.DHCP: PermissionLevel.READ,
         FeatureGroup.INTERFACES: PermissionLevel.READ,
         FeatureGroup.VRF: PermissionLevel.READ,
@@ -295,6 +311,8 @@ BUILT_IN_PERMISSIONS: Dict[str, Dict[FeatureGroup, PermissionLevel]] = {
         FeatureGroup.VPN: PermissionLevel.READ,
         FeatureGroup.IPSEC: PermissionLevel.READ,
         FeatureGroup.WIREGUARD: PermissionLevel.READ,
+        FeatureGroup.L2TP: PermissionLevel.READ,
+        FeatureGroup.PKI: PermissionLevel.READ,
         FeatureGroup.ROUTING: PermissionLevel.READ,
         FeatureGroup.UNICAST_PROTOCOLS: PermissionLevel.READ,
         FeatureGroup.BGP: PermissionLevel.READ,
@@ -402,6 +420,8 @@ async def get_user_permissions(
                 FeatureGroup.FIREWALL_GLOBAL_OPTIONS,
                 FeatureGroup.NETWORK,
                 FeatureGroup.NAT,
+                FeatureGroup.NAT64,
+                FeatureGroup.NAT66,
                 FeatureGroup.DHCP,
                 FeatureGroup.INTERFACES,
                 FeatureGroup.VRF,
@@ -409,6 +429,8 @@ async def get_user_permissions(
                 FeatureGroup.VPN,
                 FeatureGroup.IPSEC,
                 FeatureGroup.WIREGUARD,
+                FeatureGroup.L2TP,
+                FeatureGroup.PKI,
                 FeatureGroup.ROUTING,
                 FeatureGroup.UNICAST_PROTOCOLS,
                 FeatureGroup.BGP,
@@ -494,6 +516,8 @@ async def get_user_permissions(
                 FeatureGroup.FIREWALL_GLOBAL_OPTIONS,
                 FeatureGroup.NETWORK,
                 FeatureGroup.NAT,
+                FeatureGroup.NAT64,
+                FeatureGroup.NAT66,
                 FeatureGroup.DHCP,
                 FeatureGroup.INTERFACES,
                 FeatureGroup.VRF,
@@ -501,6 +525,8 @@ async def get_user_permissions(
                 FeatureGroup.VPN,
                 FeatureGroup.IPSEC,
                 FeatureGroup.WIREGUARD,
+                FeatureGroup.L2TP,
+                FeatureGroup.PKI,
                 FeatureGroup.ROUTING,  # Added for three-level hierarchy
                 FeatureGroup.UNICAST_PROTOCOLS,  # Added for three-level hierarchy
                 FeatureGroup.BGP,
@@ -756,6 +782,8 @@ def _apply_parent_child_permissions(permissions: Dict[FeatureGroup, PermissionLe
             FeatureGroup.VRF,
             FeatureGroup.LOAD_BALANCING,
             FeatureGroup.NAT,
+            FeatureGroup.NAT64,
+            FeatureGroup.NAT66,
         ]
         for child in network_children:
             current = permissions.get(child, PermissionLevel.NONE)
@@ -852,6 +880,7 @@ def _apply_parent_child_permissions(permissions: Dict[FeatureGroup, PermissionLe
         vpn_children = [
             FeatureGroup.IPSEC,
             FeatureGroup.WIREGUARD,
+            FeatureGroup.L2TP,
         ]
         for child in vpn_children:
             current = permissions.get(child, PermissionLevel.NONE)

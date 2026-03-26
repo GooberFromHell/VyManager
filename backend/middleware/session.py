@@ -138,6 +138,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
                             i."prometheusAuth" as prometheus_auth,
                             i."prometheusUsername" as prometheus_username,
                             i."prometheusPassword" as prometheus_password,
+                            i.timeout,
                             s.name as site_name,
                             'ADMIN' as user_role
                         FROM active_sessions a
@@ -172,6 +173,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
                             i."prometheusAuth" as prometheus_auth,
                             i."prometheusUsername" as prometheus_username,
                             i."prometheusPassword" as prometheus_password,
+                            i.timeout,
                             s.name as site_name,
                             uir.role as user_role
                         FROM active_sessions a
@@ -236,6 +238,7 @@ class SessionMiddleware(BaseHTTPMiddleware):
                         "prometheusAuth": session.get("prometheus_auth") or False,
                         "prometheusUsername": session.get("prometheus_username"),
                         "prometheusPassword": session.get("prometheus_password"),
+                        "timeout": session.get("timeout") or 10,
                     }
                     request.state.site = {
                         "id": session["site_id"],

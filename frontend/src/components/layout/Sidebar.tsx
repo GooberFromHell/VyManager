@@ -10,272 +10,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Activity, Box, ChevronDown, FolderOpen, HeartPulse, Shield, Network, Server, Settings, LayoutDashboard, Route, Lock, LogOut, User, FileText, Building2, Power, PowerOff, Scale, SquareTerminal, Wrench } from "lucide-react";
+import { ChevronDown, LogOut, User, Building2, Power, PowerOff } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useSessionStore } from "@/store/session-store";
 import { usePermissions } from "@/hooks/usePermissions";
 import { FeatureGroup } from "@/lib/api/user-management";
-import { useTheme } from "next-themes";
-import { MonitorIcon, MoonIcon, SunIcon, SparklesIcon } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-
-interface NavItem {
-  title: string;
-  href?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tooltip?: string;
-  requiredPermission?: FeatureGroup; // If set, user must have READ access to this feature
-  children?: {
-    title: string;
-    href: string;
-    requiredPermission?: FeatureGroup; // If set, user must have READ access to this feature
-  }[];
-}
-
-const navigation: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Firewall",
-    icon: Shield,
-    tooltip: "Configure firewall rules, groups, zones, and global options",
-    children: [
-      {
-        title: "Policies",
-        href: "/firewall/policies",
-        requiredPermission: FeatureGroup.FIREWALL_POLICIES
-      },
-      {
-        title: "Bridge",
-        href: "/firewall/bridge",
-        requiredPermission: FeatureGroup.FIREWALL_BRIDGE
-      },
-      {
-        title: "Groups",
-        href: "/firewall/groups",
-        requiredPermission: FeatureGroup.FIREWALL_GROUPS
-      },
-      {
-        title: "Zones",
-        href: "/firewall/zones",
-        requiredPermission: FeatureGroup.FIREWALL_ZONES
-      },
-      {
-        title: "Global Options",
-        href: "/firewall/global-options",
-        requiredPermission: FeatureGroup.FIREWALL_GLOBAL_OPTIONS
-      },
-      {
-        title: "Flowtables",
-        href: "/firewall/flowtables",
-        requiredPermission: FeatureGroup.FIREWALL_FLOWTABLES
-      },
-    ],
-  },
-  {
-    title: "Network",
-    icon: Network,
-    tooltip: "Manage network interfaces, NAT, DHCP, and VRFs",
-    children: [
-      {
-        title: "DHCP",
-        href: "/network/dhcp",
-        requiredPermission: FeatureGroup.DHCP
-      },
-      {
-        title: "VRF",
-        href: "/network/vrf",
-        requiredPermission: FeatureGroup.VRF
-      },
-      {
-        title: "Interfaces",
-        href: "/network/interfaces",
-        requiredPermission: FeatureGroup.INTERFACES
-      },
-      {
-        title: "NAT",
-        href: "/network/nat",
-        requiredPermission: FeatureGroup.NAT
-      },
-    ],
-  },
-  {
-    title: "Routing",
-    icon: Route,
-    tooltip: "Set up routing protocols: BGP, OSPF, static routes",
-    children: [
-      {
-        title: "Unicast Protocols",
-        href: "/routing/unicast-protocols",
-        requiredPermission: FeatureGroup.UNICAST_PROTOCOLS
-      },
-      {
-        title: "Static & Failover",
-        href: "/routing/static-failover",
-        requiredPermission: FeatureGroup.STATIC_ROUTES
-      },
-      {
-        title: "Routing Infrastructure",
-        href: "/routing/infrastructure",
-        requiredPermission: FeatureGroup.ROUTING_INFRASTRUCTURE
-      },
-      {
-        title: "Multicast",
-        href: "/routing/multicast",
-        requiredPermission: FeatureGroup.MULTICAST
-      },
-    ],
-  },
-  {
-    title: "Policies",
-    icon: FileText,
-    tooltip: "Define route maps, access lists, prefix lists, and communities",
-    children: [
-      {
-        title: "Access List",
-        href: "/policies/access-list",
-        requiredPermission: FeatureGroup.ACCESS_LIST
-      },
-      {
-        title: "Prefix List",
-        href: "/policies/prefix-list",
-        requiredPermission: FeatureGroup.PREFIX_LIST
-      },
-      {
-        title: "Route",
-        href: "/policies/route",
-        requiredPermission: FeatureGroup.ROUTE_POLICY
-      },
-      {
-        title: "Route Map",
-        href: "/policies/route-map",
-        requiredPermission: FeatureGroup.ROUTE_MAP
-      },
-      {
-        title: "Local Route",
-        href: "/policies/local-route",
-        requiredPermission: FeatureGroup.LOCAL_ROUTE
-      },
-      {
-        title: "BGP AS",
-        href: "/policies/bgp-as",
-        requiredPermission: FeatureGroup.BGP_AS_PATH
-      },
-      {
-        title: "BGP Community",
-        href: "/policies/bgp-community",
-        requiredPermission: FeatureGroup.BGP_COMMUNITY
-      },
-      {
-        title: "BGP Extended Community",
-        href: "/policies/bgp-extended-community",
-        requiredPermission: FeatureGroup.BGP_EXTENDED_COMMUNITY
-      },
-      {
-        title: "BGP Large Community",
-        href: "/policies/bgp-large-community",
-        requiredPermission: FeatureGroup.BGP_LARGE_COMMUNITY
-      },
-    ],
-  },
-  {
-    title: "VPN",
-    icon: Lock,
-    tooltip: "Configure WireGuard and IPSec VPN tunnels",
-    children: [
-      {
-        title: "IPsec",
-        href: "/vpn/ipsec",
-        requiredPermission: FeatureGroup.IPSEC
-      },
-      {
-        title: "WireGuard",
-        href: "/vpn/wireguard",
-        requiredPermission: FeatureGroup.WIREGUARD
-      },
-    ],
-  },
-  {
-    title: "Load Balancing",
-    icon: Scale,
-    tooltip: "Set up WAN load balancing and HAProxy",
-    requiredPermission: FeatureGroup.LOAD_BALANCING,
-    children: [
-      {
-        title: "HAProxy",
-        href: "/load-balancing/haproxy",
-        requiredPermission: FeatureGroup.LOAD_BALANCING,
-      },
-      {
-        title: "WAN",
-        href: "/load-balancing/wan",
-        requiredPermission: FeatureGroup.LOAD_BALANCING,
-      },
-    ],
-  },
-  {
-    title: "High Availability",
-    href: "/network/high-availability",
-    icon: HeartPulse,
-    requiredPermission: FeatureGroup.HIGH_AVAILABILITY,
-  },
-  {
-    title: "Containers",
-    href: "/containers",
-    icon: Box,
-    requiredPermission: FeatureGroup.CONTAINER,
-  },
-  {
-    title: "Monitoring",
-    href: "/monitoring",
-    icon: Activity,
-    requiredPermission: FeatureGroup.MONITORING,
-  },
-  {
-    title: "Terminal",
-    href: "/system/terminal",
-    icon: SquareTerminal,
-    requiredPermission: FeatureGroup.MONITORING,
-  },
-  {
-    title: "File Browser",
-    href: "/system/file-browser",
-    icon: FolderOpen,
-    requiredPermission: FeatureGroup.FILE_BROWSER,
-  },
-  {
-    title: "Services",
-    href: "/system/services",
-    icon: Wrench,
-    requiredPermission: FeatureGroup.DNS_FORWARDING,
-  },
-  {
-    title: "System",
-    href: "/system/settings",
-    icon: Server,
-    requiredPermission: FeatureGroup.SYSTEM,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
-];
+import { ThemeSelector } from "@/components/ui/theme-selector";
+import { navigation, type NavItem } from "@/lib/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -284,7 +27,6 @@ export function Sidebar() {
   const { data: session } = useSession();
   const { activeSession, loadSession, disconnectFromInstance } = useSessionStore();
   const { canRead } = usePermissions();
-  const { setTheme } = useTheme();
 
   // Load active session on mount
   useEffect(() => {
@@ -561,6 +303,11 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="border-t border-border p-4 space-y-3 shrink-0">
+        {/* Theme Selector */}
+        <div className="space-y-2">
+          <ThemeSelector />
+        </div>
+
         {/* Active Instance Indicator */}
         {activeSession ? (
           <div className="space-y-2">
@@ -631,49 +378,16 @@ export function Sidebar() {
 
         {/* User Info & Logout */}
         <div className="rounded-lg bg-muted/50 p-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex w-full items-center gap-2 mb-2 rounded-md hover:bg-muted p-1 transition-colors text-left outline-none">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0">
-                  <User className="h-4 w-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground truncate">
-                    {session?.user?.name || session?.user?.email || "User"}
-                  </p>
-                </div>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 rounded-lg" align="end" side="right" sideOffset={4}>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <MonitorIcon className="mr-2 h-4 w-4" />
-                  Theme
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setTheme("light")}>
-                      <SunIcon className="mr-2 h-4 w-4" />
-                      Light
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("dark")}>
-                      <MoonIcon className="mr-2 h-4 w-4" />
-                      Dark
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("system")}>
-                      <MonitorIcon className="mr-2 h-4 w-4" />
-                      System
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setTheme("interstellar")}>
-                      <SparklesIcon className="mr-2 h-4 w-4 text-emerald-300" />
-                      Interstellar
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex w-full items-center gap-2 mb-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0">
+              <User className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground truncate">
+                {session?.user?.name || session?.user?.email || "User"}
+              </p>
+            </div>
+          </div>
 
           <Button
             onClick={handleLogout}

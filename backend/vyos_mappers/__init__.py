@@ -17,6 +17,10 @@ from .firewall.ipv6_versions import get_firewall_ipv6_mapper
 from .firewall.zones_versions import get_firewall_zones_mapper
 from .nat import NATMapper
 from .nat.nat_versions import get_nat_mapper
+from .nat64 import NAT64Mapper
+from .nat64.nat64_versions import get_nat64_mapper
+from .nat66 import NAT66Mapper
+from .nat66.nat66_versions import get_nat66_mapper
 from .dhcp import DHCPMapper
 from .dhcp.dhcp_versions import get_dhcp_mapper
 from .static_routes import StaticRoutesMapper
@@ -79,6 +83,12 @@ from .broadcast_relay.broadcast_relay_versions import get_broadcast_relay_mapper
 from .router_advert.router_advert_versions import get_router_advert_mapper
 from .conntrack_sync.conntrack_sync_versions import get_conntrack_sync_mapper
 from .container.container_versions import get_container_mapper
+from .ipsec import IPSecMapper
+from .ipsec.ipsec_versions import get_ipsec_mapper
+from .l2tp import L2TPMapper
+from .l2tp.l2tp_versions import get_l2tp_mapper
+from .pki import PKIMapper
+from .pki.pki_versions import get_pki_mapper
 
 # Auto-register all mappers
 # Ethernet uses factory for version-specific mappers
@@ -97,6 +107,10 @@ CommandMapperRegistry.register_feature("firewall_ipv4", get_firewall_ipv4_mapper
 CommandMapperRegistry.register_feature("firewall_ipv6", get_firewall_ipv6_mapper)
 # NAT uses factory for version-specific mappers
 CommandMapperRegistry.register_feature("nat", get_nat_mapper)
+# NAT64 uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("nat64", get_nat64_mapper)
+# NAT66 uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("nat66", get_nat66_mapper)
 # DHCP uses factory for version-specific mappers
 CommandMapperRegistry.register_feature("dhcp", get_dhcp_mapper)
 # Static Routes uses factory for version-specific mappers
@@ -185,6 +199,12 @@ CommandMapperRegistry.register_feature("router_advert", get_router_advert_mapper
 CommandMapperRegistry.register_feature("conntrack_sync", get_conntrack_sync_mapper)
 # Container uses factory for version-specific mappers
 CommandMapperRegistry.register_feature("container", get_container_mapper)
+# IPSec uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("ipsec", get_ipsec_mapper)
+# L2TP uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("l2tp", get_l2tp_mapper)
+# PKI uses factory for version-specific mappers
+CommandMapperRegistry.register_feature("pki", get_pki_mapper)
 
 __all__ = [
     "BaseFeatureMapper",
@@ -198,6 +218,8 @@ __all__ = [
     "FirewallIPv4Mapper",
     "FirewallIPv6Mapper",
     "NATMapper",
+    "NAT64Mapper",
+    "NAT66Mapper",
     "DHCPMapper",
     "StaticRoutesMapper",
     "RouteMapMapper",
@@ -234,4 +256,7 @@ __all__ = [
     "DHCPRelayMapper",
     "DHCPv6ServerMapper",
     "SNMPMapper",
+    "IPSecMapper",
+    "L2TPMapper",
+    "PKIMapper",
 ]

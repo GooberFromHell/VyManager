@@ -88,6 +88,7 @@ class InstanceResponse(BaseModel):
     prometheus_port: int = 9273
     prometheus_auth: bool = False
     prometheus_username: Optional[str] = None
+    timeout: int = 10
     created_at: datetime
     updated_at: datetime
 
@@ -114,6 +115,7 @@ class InstanceCreateRequest(BaseModel):
     prometheus_auth: bool = Field(default=False, description="Prometheus requires authentication")
     prometheus_username: Optional[str] = Field(None, description="Prometheus username")
     prometheus_password: Optional[str] = Field(None, description="Prometheus password")
+    timeout: int = Field(default=10, ge=1, le=300, description="API request timeout in seconds")
 
 
 class InstanceUpdateRequest(BaseModel):
@@ -138,6 +140,7 @@ class InstanceUpdateRequest(BaseModel):
     prometheus_auth: Optional[bool] = Field(None, description="Prometheus requires authentication")
     prometheus_username: Optional[str] = Field(None, description="Prometheus username")
     prometheus_password: Optional[str] = Field(None, description="Prometheus password")
+    timeout: Optional[int] = Field(None, ge=1, le=300, description="API request timeout in seconds")
 
 
 class ProvisionRequest(BaseModel):
@@ -340,7 +343,7 @@ async def connect_to_instance(request: Request, body: ConnectRequest):
                 instance = await conn.fetchrow(
                     """
                     SELECT i.id, i.name, i.host, i.port, i."siteId", i."isActive",
-                           i."apiKey", i.protocol, i."verifySsl", i."vyosVersion",
+                           i."apiKey", i.protocol, i."verifySsl", i."vyosVersion", i.timeout,
                            s.name as site_name,
                            'ADMIN' as role
                     FROM instances i
@@ -354,7 +357,7 @@ async def connect_to_instance(request: Request, body: ConnectRequest):
                 instance = await conn.fetchrow(
                     """
                     SELECT i.id, i.name, i.host, i.port, i."siteId", i."isActive",
-                           i."apiKey", i.protocol, i."verifySsl", i."vyosVersion",
+                           i."apiKey", i.protocol, i."verifySsl", i."vyosVersion", i.timeout,
                            s.name as site_name,
                            uir.role as role
                     FROM instances i
@@ -387,7 +390,7 @@ async def connect_to_instance(request: Request, body: ConnectRequest):
                     protocol=instance["protocol"],
                     port=instance["port"],
                     verify=instance["verifySsl"],
-                    timeout=10,
+                    timeout=instance.get("timeout") or 10,
                 )
                 vyos_service = VyOSService(device_config)
 
@@ -658,6 +661,7 @@ async def list_site_instances(request: Request, site_id: str):
                            "vyosVersion", "sshPort", "sshUsername", "sshKeyConfigured",
                            "commitConfirmEnabled", "commitConfirmMinutes",
                            "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
+                           timeout,
                            "createdAt", "updatedAt"
                     FROM instances
                     WHERE "siteId" = $1
@@ -673,6 +677,7 @@ async def list_site_instances(request: Request, site_id: str):
                            i."vyosVersion", i."sshPort", i."sshUsername", i."sshKeyConfigured",
                            i."commitConfirmEnabled", i."commitConfirmMinutes",
                            i."prometheusEnabled", i."prometheusPort", i."prometheusAuth", i."prometheusUsername",
+                           i.timeout,
                            i."createdAt", i."updatedAt"
                     FROM instances i
                     JOIN user_instance_roles uir ON i.id = uir."instanceId"
@@ -707,6 +712,7 @@ async def list_site_instances(request: Request, site_id: str):
                     prometheus_port=inst.get("prometheusPort") or 9273,
                     prometheus_auth=inst.get("prometheusAuth") or False,
                     prometheus_username=inst.get("prometheusUsername"),
+                    timeout=inst.get("timeout") or 10,
                     created_at=inst["createdAt"],
                     updated_at=inst["updatedAt"],
                 )
@@ -1192,13 +1198,15 @@ async def create_instance(request: Request, body: InstanceCreateRequest):
                     "commitConfirmEnabled", "commitConfirmMinutes",
                     "prometheusEnabled", "prometheusPort", "prometheusAuth",
                     "prometheusUsername", "prometheusPassword",
+                    timeout,
                     "createdAt", "updatedAt"
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW())
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, NOW(), NOW())
                 RETURNING id, "siteId", name, description, host, port, protocol, "verifySsl", "vyosVersion",
                           "isActive", "sshPort", "sshUsername", "sshKeyConfigured",
                           "commitConfirmEnabled", "commitConfirmMinutes",
                           "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
+                          timeout,
                           "createdAt", "updatedAt"
                 """,
                 instance_id,
@@ -1223,33 +1231,35 @@ async def create_instance(request: Request, body: InstanceCreateRequest):
                 body.prometheus_auth,
                 body.prometheus_username,
                 body.prometheus_password,
+                body.timeout,
             )
 
             clear_session_cache(instance_id)
 
-            return {
-                "id": instance["id"],
-                "site_id": instance["siteId"],
-                "name": instance["name"],
-                "description": instance["description"],
-                "host": instance["host"],
-                "port": instance["port"],
-                "protocol": instance["protocol"] or "https",
-                "verify_ssl": instance["verifySsl"] or False,
-                "vyos_version": instance["vyosVersion"],
-                "is_active": instance["isActive"],
-                "ssh_port": instance["sshPort"],
-                "ssh_username": instance["sshUsername"],
-                "ssh_key_configured": instance["sshKeyConfigured"],
-                "commit_confirm_enabled": instance.get("commitConfirmEnabled") or False,
-                "commit_confirm_minutes": instance.get("commitConfirmMinutes") or 5,
-                "prometheus_enabled": instance.get("prometheusEnabled") or False,
-                "prometheus_port": instance.get("prometheusPort") or 9273,
-                "prometheus_auth": instance.get("prometheusAuth") or False,
-                "prometheus_username": instance.get("prometheusUsername"),
-                "created_at": instance["createdAt"],
-                "updated_at": instance["updatedAt"],
-            }
+            return InstanceResponse(
+                id=instance["id"],
+                site_id=instance["siteId"],
+                name=instance["name"],
+                description=instance["description"],
+                host=instance["host"],
+                port=instance["port"],
+                protocol=instance["protocol"] or "https",
+                verify_ssl=instance["verifySsl"] or False,
+                vyos_version=instance["vyosVersion"],
+                is_active=instance["isActive"],
+                ssh_port=instance["sshPort"],
+                ssh_username=instance["sshUsername"],
+                ssh_key_configured=instance["sshKeyConfigured"],
+                commit_confirm_enabled=instance.get("commitConfirmEnabled") or False,
+                commit_confirm_minutes=instance.get("commitConfirmMinutes") or 5,
+                prometheus_enabled=instance.get("prometheusEnabled") or False,
+                prometheus_port=instance.get("prometheusPort") or 9273,
+                prometheus_auth=instance.get("prometheusAuth") or False,
+                prometheus_username=instance.get("prometheusUsername"),
+                timeout=instance.get("timeout") or 10,
+                created_at=instance["createdAt"],
+                updated_at=instance["updatedAt"],
+            )
 
     except HTTPException:
         raise
@@ -1422,6 +1432,11 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                 params.append(body.prometheus_password)
                 param_num += 1
 
+            if body.timeout is not None:
+                updates.append(f'timeout = ${param_num}')
+                params.append(body.timeout)
+                param_num += 1
+
             if not updates:
                 # No fields to update, return current instance
                 instance = await conn.fetchrow(
@@ -1430,6 +1445,7 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                            "isActive", "sshPort", "sshUsername", "sshKeyConfigured",
                            "commitConfirmEnabled", "commitConfirmMinutes",
                            "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
+                           timeout,
                            "createdAt", "updatedAt"
                     FROM instances WHERE id = $1
                     """,
@@ -1445,6 +1461,7 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                               "isActive", "sshPort", "sshUsername", "sshKeyConfigured",
                               "commitConfirmEnabled", "commitConfirmMinutes",
                               "prometheusEnabled", "prometheusPort", "prometheusAuth", "prometheusUsername",
+                              timeout,
                               "createdAt", "updatedAt"
                 """
                 instance = await conn.fetchrow(query, *params)
@@ -1484,6 +1501,7 @@ async def update_instance(request: Request, instance_id: str, body: InstanceUpda
                 prometheus_port=instance.get("prometheusPort") or 9273,
                 prometheus_auth=instance.get("prometheusAuth") or False,
                 prometheus_username=instance.get("prometheusUsername"),
+                timeout=instance.get("timeout") or 10,
                 created_at=instance["createdAt"],
                 updated_at=instance["updatedAt"],
             )

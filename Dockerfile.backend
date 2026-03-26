@@ -4,12 +4,18 @@
 
 FROM python:3.11-slim
 
+ARG VYMANAGER_VERSION=dev
+ARG VYMANAGER_ENV=production
+ENV VYMANAGER_VERSION=${VYMANAGER_VERSION}
+ENV VYMANAGER_ENV=${VYMANAGER_ENV}
+
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements
@@ -21,8 +27,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend application code
 COPY backend/ .
 
+# Copy and set entrypoint script
+COPY backend/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose port
 EXPOSE 8000
 
-# Run the FastAPI application with uvicorn
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# Use entrypoint script (imports custom CAs, then starts uvicorn)
+ENTRYPOINT ["docker-entrypoint.sh"]

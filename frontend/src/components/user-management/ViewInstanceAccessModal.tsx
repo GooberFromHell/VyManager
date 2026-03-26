@@ -47,6 +47,7 @@ import {
   Terminal,
   ArrowLeftRight,
   FolderOpen,
+  ShieldCheck,
 } from "lucide-react";
 import { userManagementService, FeatureGroup, InstanceUserListItem } from "@/lib/api/user-management";
 import { ApiError } from "@/lib/types/api";
@@ -72,6 +73,8 @@ const ROLE_STYLES: Record<string, { bg: string; text: string; icon: any }> = {
 const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.FIREWALL]: Shield,
   [FeatureGroup.NAT]: Network,
+  [FeatureGroup.NAT64]: Globe,
+  [FeatureGroup.NAT66]: Globe,
   [FeatureGroup.DHCP]: Wifi,
   [FeatureGroup.INTERFACES]: Router,
   [FeatureGroup.FIREWALL_GROUPS]: Shield,
@@ -86,6 +89,8 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
   [FeatureGroup.VPN]: Lock,
   [FeatureGroup.IPSEC]: Lock,
   [FeatureGroup.WIREGUARD]: Lock,
+  [FeatureGroup.L2TP]: Lock,
+  [FeatureGroup.PKI]: ShieldCheck,
   [FeatureGroup.ROUTING]: Router,
   [FeatureGroup.UNICAST_PROTOCOLS]: Router,
   [FeatureGroup.BGP]: Router,
@@ -145,6 +150,8 @@ const FEATURE_ICONS: Record<FeatureGroup, any> = {
 const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.FIREWALL]: "Firewall",
   [FeatureGroup.NAT]: "NAT",
+  [FeatureGroup.NAT64]: "NAT64",
+  [FeatureGroup.NAT66]: "NAT66",
   [FeatureGroup.DHCP]: "DHCP",
   [FeatureGroup.INTERFACES]: "Interfaces",
   [FeatureGroup.FIREWALL_GROUPS]: "Firewall Groups",
@@ -159,6 +166,8 @@ const FEATURE_NAMES: Record<FeatureGroup, string> = {
   [FeatureGroup.VPN]: "VPN",
   [FeatureGroup.IPSEC]: "IPsec",
   [FeatureGroup.WIREGUARD]: "WireGuard",
+  [FeatureGroup.L2TP]: "L2TP",
+  [FeatureGroup.PKI]: "PKI",
   [FeatureGroup.ROUTING]: "Routing",
   [FeatureGroup.UNICAST_PROTOCOLS]: "Unicast Protocols",
   [FeatureGroup.BGP]: "BGP",

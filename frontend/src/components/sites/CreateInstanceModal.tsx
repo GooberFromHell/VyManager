@@ -81,6 +81,7 @@ export function CreateInstanceModal({
   const [sshPort, setSshPort] = useState("22");
   const [sshUsername, setSshUsername] = useState("vyos");
   const [sshPassword, setSshPassword] = useState("");
+  const [timeout, setTimeout] = useState("10");
 
   // UI state
   const [phase, setPhase] = useState<"form" | "provisioning">("form");
@@ -98,6 +99,7 @@ export function CreateInstanceModal({
     setSshPort("22");
     setSshUsername("vyos");
     setSshPassword("");
+    setTimeout("10");
     setPhase("form");
     setLoading(false);
     setError(null);
@@ -156,6 +158,7 @@ export function CreateInstanceModal({
         description: description.trim() || null,
         host: host.trim(),
         ssh_port: sshPortNum,
+        timeout: parseInt(timeout) || 10,
       });
 
       // Step 2: Start SSE provisioning

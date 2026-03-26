@@ -44,6 +44,7 @@ export interface Instance {
   prometheus_port: number;
   prometheus_auth: boolean;
   prometheus_username?: string | null;
+  timeout: number;
   created_at: string;
   updated_at: string;
 }
@@ -107,6 +108,7 @@ export interface InstanceCreateRequest {
   prometheus_auth?: boolean;
   prometheus_username?: string;
   prometheus_password?: string;
+  timeout?: number;
 }
 
 export interface ProvisioningResult {
@@ -154,6 +156,7 @@ export interface InstanceUpdateRequest {
   prometheus_auth?: boolean;
   prometheus_username?: string;
   prometheus_password?: string;
+  timeout?: number;
 }
 
 export interface AuthSessionInfo {

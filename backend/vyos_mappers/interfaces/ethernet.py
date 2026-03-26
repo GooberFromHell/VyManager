@@ -103,6 +103,18 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
         """Get command path for enabling TCP Segmentation Offload."""
         return ["interfaces", self.interface_type, interface, "offload", "tso"]
 
+    def get_offload_hw_tc_offload(self, interface: str) -> List[str]:
+        """Get command path for enabling hardware TC offload."""
+        return ["interfaces", self.interface_type, interface, "offload", "hw-tc-offload"]
+
+    def get_offload_rfs(self, interface: str) -> List[str]:
+        """Get command path for enabling Receive Flow Steering."""
+        return ["interfaces", self.interface_type, interface, "offload", "rfs"]
+
+    def get_offload_path(self, interface: str) -> List[str]:
+        """Get command path for offload settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "offload"]
+
     # Ring Buffer
     def get_ring_buffer_rx(self, interface: str, size: str) -> List[str]:
         """Get command path for setting RX ring buffer size."""
@@ -171,6 +183,14 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
         """Get command path for source validation (for deletion)."""
         return ["interfaces", self.interface_type, interface, "ip", "source-validation"]
 
+    def get_ip_disable_forwarding(self, interface: str) -> List[str]:
+        """Get command path for disabling IP forwarding."""
+        return ["interfaces", self.interface_type, interface, "ip", "disable-forwarding"]
+
+    def get_ip_path(self, interface: str) -> List[str]:
+        """Get command path for IP settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "ip"]
+
     # Directed Broadcast (1.5+)
     def get_ip_enable_directed_broadcast(self, interface: str) -> List[str]:
         """Get command path for enabling directed broadcast."""
@@ -192,6 +212,30 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
     def get_ipv6_dup_addr_detect_transmits(self, interface: str, count: str) -> List[str]:
         """Get command path for IPv6 DAD transmits."""
         return ["interfaces", self.interface_type, interface, "ipv6", "dup-addr-detect-transmits", count]
+
+    def get_ipv6_accept_dad(self, interface: str, count: str) -> List[str]:
+        """Get command path for IPv6 accept DAD."""
+        return ["interfaces", self.interface_type, interface, "ipv6", "accept-dad", count]
+
+    def get_ipv6_address_no_default_link_local(self, interface: str) -> List[str]:
+        """Get command path for IPv6 no default link-local address."""
+        return ["interfaces", self.interface_type, interface, "ipv6", "address", "no-default-link-local"]
+
+    def get_ipv6_base_reachable_time(self, interface: str, time: str) -> List[str]:
+        """Get command path for IPv6 base reachable time."""
+        return ["interfaces", self.interface_type, interface, "ipv6", "base-reachable-time", time]
+
+    def get_ipv6_source_validation(self, interface: str, mode: str) -> List[str]:
+        """Get command path for IPv6 source validation."""
+        return ["interfaces", self.interface_type, interface, "ipv6", "source-validation", mode]
+
+    def get_ipv6_source_validation_path(self, interface: str) -> List[str]:
+        """Get command path for IPv6 source validation (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "ipv6", "source-validation"]
+
+    def get_ipv6_path(self, interface: str) -> List[str]:
+        """Get command path for IPv6 settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "ipv6"]
 
     # Flow Control
     def get_disable_flow_control(self, interface: str) -> List[str]:
@@ -224,6 +268,22 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
         """Get command path for DHCP default route distance."""
         return ["interfaces", self.interface_type, interface, "dhcp-options", "default-route-distance", distance]
 
+    def get_dhcp_options_reject(self, interface: str, server: str) -> List[str]:
+        """Get command path for DHCP reject server."""
+        return ["interfaces", self.interface_type, interface, "dhcp-options", "reject", server]
+
+    def get_dhcp_options_user_class(self, interface: str, user_class: str) -> List[str]:
+        """Get command path for DHCP user class."""
+        return ["interfaces", self.interface_type, interface, "dhcp-options", "user-class", user_class]
+
+    def get_dhcp_options_mtu(self, interface: str) -> List[str]:
+        """Get command path for DHCP MTU option."""
+        return ["interfaces", self.interface_type, interface, "dhcp-options", "mtu"]
+
+    def get_dhcp_options_path(self, interface: str) -> List[str]:
+        """Get command path for DHCP options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "dhcp-options"]
+
     # DHCPv6 Options
     def get_dhcpv6_options_duid(self, interface: str, duid: str) -> List[str]:
         """Get command path for DHCPv6 DUID."""
@@ -236,6 +296,38 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
     def get_dhcpv6_options_pd(self, interface: str, pd_id: str, prefix: str) -> List[str]:
         """Get command path for DHCPv6 prefix delegation."""
         return ["interfaces", self.interface_type, interface, "dhcpv6-options", "pd", pd_id, "length", prefix]
+
+    def get_dhcpv6_options_no_release(self, interface: str) -> List[str]:
+        """Get command path for DHCPv6 no-release."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "no-release"]
+
+    def get_dhcpv6_options_parameters_only(self, interface: str) -> List[str]:
+        """Get command path for DHCPv6 parameters-only."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "parameters-only"]
+
+    def get_dhcpv6_options_temporary(self, interface: str) -> List[str]:
+        """Get command path for DHCPv6 temporary address."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "temporary"]
+
+    def get_dhcpv6_options_pd_length(self, interface: str, pd_id: str, length: str) -> List[str]:
+        """Get command path for DHCPv6 PD length."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "pd", pd_id, "length", length]
+
+    def get_dhcpv6_options_pd_interface(self, interface: str, pd_id: str, pd_iface: str) -> List[str]:
+        """Get command path for DHCPv6 PD interface."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "pd", pd_id, "interface", pd_iface]
+
+    def get_dhcpv6_options_pd_interface_address(self, interface: str, pd_id: str, pd_iface: str, address: str) -> List[str]:
+        """Get command path for DHCPv6 PD interface address."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "pd", pd_id, "interface", pd_iface, "address", address]
+
+    def get_dhcpv6_options_pd_interface_sla_id(self, interface: str, pd_id: str, pd_iface: str, sla_id: str) -> List[str]:
+        """Get command path for DHCPv6 PD interface SLA ID."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "pd", pd_id, "interface", pd_iface, "sla-id", sla_id]
+
+    def get_dhcpv6_options_path(self, interface: str) -> List[str]:
+        """Get command path for DHCPv6 options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options"]
 
     # VLANs - Basic VLAN creation
     def get_vif(self, interface: str, vlan_id: str) -> List[str]:
@@ -370,6 +462,87 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
         """Get command path for vif DHCP hostname."""
         return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "host-name", hostname]
 
+    def get_vif_dhcp_options_default_route_distance(self, interface: str, vlan_id: str, distance: str) -> List[str]:
+        """Get command path for vif DHCP default route distance."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "default-route-distance", distance]
+
+    def get_vif_dhcp_options_mtu(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCP MTU option."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "mtu"]
+
+    def get_vif_dhcp_options_no_default_route(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCP no default route."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "no-default-route"]
+
+    def get_vif_dhcp_options_reject(self, interface: str, vlan_id: str, address: str) -> List[str]:
+        """Get command path for vif DHCP reject server."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "reject", address]
+
+    def get_vif_dhcp_options_user_class(self, interface: str, vlan_id: str, user_class: str) -> List[str]:
+        """Get command path for vif DHCP user class."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "user-class", user_class]
+
+    def get_vif_dhcp_options_vendor_class_id(self, interface: str, vlan_id: str, vendor_class_id: str) -> List[str]:
+        """Get command path for vif DHCP vendor class ID."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options", "vendor-class-id", vendor_class_id]
+
+    def get_vif_dhcp_options_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCP options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcp-options"]
+
+    # VIF DHCPv6 Options
+    def get_vif_dhcpv6_options_duid(self, interface: str, vlan_id: str, duid: str) -> List[str]:
+        """Get command path for vif DHCPv6 DUID."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "duid", duid]
+
+    def get_vif_dhcpv6_options_no_release(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 no-release."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "no-release"]
+
+    def get_vif_dhcpv6_options_parameters_only(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 parameters-only."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "parameters-only"]
+
+    def get_vif_dhcpv6_options_rapid_commit(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 rapid commit."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "rapid-commit"]
+
+    def get_vif_dhcpv6_options_temporary(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 temporary address."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "temporary"]
+
+    def get_vif_dhcpv6_options_pd(self, interface: str, vlan_id: str, pd_id: str, prefix: str) -> List[str]:
+        """Get command path for vif DHCPv6 prefix delegation."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", prefix]
+
+    def get_vif_dhcpv6_options_pd_length(self, interface: str, vlan_id: str, pd_id: str, length: str) -> List[str]:
+        """Get command path for vif DHCPv6 PD length."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "pd", pd_id, "length", length]
+
+    def get_vif_dhcpv6_options_pd_interface(self, interface: str, vlan_id: str, pd_id: str, iface: str) -> List[str]:
+        """Get command path for vif DHCPv6 PD interface."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface]
+
+    def get_vif_dhcpv6_options_pd_interface_address(self, interface: str, vlan_id: str, pd_id: str, iface: str, address: str) -> List[str]:
+        """Get command path for vif DHCPv6 PD interface address."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface, "address", address]
+
+    def get_vif_dhcpv6_options_pd_interface_sla_id(self, interface: str, vlan_id: str, pd_id: str, iface: str, sla_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 PD interface SLA ID."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface, "sla-id", sla_id]
+
+    def get_vif_dhcpv6_options_no_request_dns(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 no-request-dns (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "no-request-dns"]
+
+    def get_vif_dhcpv6_options_no_request_domain_name(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 no-request-domain-name (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options", "no-request-domain-name"]
+
+    def get_vif_dhcpv6_options_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif DHCPv6 options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "dhcpv6-options"]
+
     # VIF IPv6 Options
     def get_vif_ipv6_address_autoconf(self, interface: str, vlan_id: str) -> List[str]:
         """Get command path for vif IPv6 autoconf."""
@@ -378,6 +551,22 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
     def get_vif_ipv6_address_eui64(self, interface: str, vlan_id: str, prefix: str) -> List[str]:
         """Get command path for vif IPv6 EUI-64."""
         return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "address", "eui64", prefix]
+
+    def get_vif_ipv6_address_interface_identifier(self, interface: str, vlan_id: str, identifier: str) -> List[str]:
+        """Get command path for vif IPv6 interface identifier (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "address", "interface-identifier", identifier]
+
+    def get_vif_ipv6_address_no_default_link_local(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif IPv6 no default link-local address."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "address", "no-default-link-local"]
+
+    def get_vif_ipv6_base_reachable_time(self, interface: str, vlan_id: str, time: str) -> List[str]:
+        """Get command path for vif IPv6 base reachable time."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "base-reachable-time", time]
+
+    def get_vif_ipv6_source_validation(self, interface: str, vlan_id: str, mode: str) -> List[str]:
+        """Get command path for vif IPv6 source validation."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "source-validation", mode]
 
     # VIF-S DHCP Options
     def get_vif_s_dhcp_options_client_id(self, interface: str, vlan_id: str, client_id: str) -> List[str]:
@@ -397,6 +586,210 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
         """Get command path for vif-s IPv6 EUI-64."""
         return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "address", "eui64", prefix]
 
+    # VIF-S DHCP Options (additional)
+    def get_vif_s_dhcp_options_default_route_distance(self, interface: str, vlan_id: str, distance: str) -> List[str]:
+        """Get command path for vif-s DHCP default route distance."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options", "default-route-distance", distance]
+
+    def get_vif_s_dhcp_options_mtu(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCP MTU option."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options", "mtu"]
+
+    def get_vif_s_dhcp_options_no_default_route(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCP no default route."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options", "no-default-route"]
+
+    def get_vif_s_dhcp_options_reject(self, interface: str, vlan_id: str, address: str) -> List[str]:
+        """Get command path for vif-s DHCP reject server."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options", "reject", address]
+
+    def get_vif_s_dhcp_options_user_class(self, interface: str, vlan_id: str, user_class: str) -> List[str]:
+        """Get command path for vif-s DHCP user class."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options", "user-class", user_class]
+
+    def get_vif_s_dhcp_options_vendor_class_id(self, interface: str, vlan_id: str, vendor_class_id: str) -> List[str]:
+        """Get command path for vif-s DHCP vendor class ID."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options", "vendor-class-id", vendor_class_id]
+
+    def get_vif_s_dhcp_options_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCP options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcp-options"]
+
+    # VIF-S DHCPv6 Options
+    def get_vif_s_dhcpv6_options_duid(self, interface: str, vlan_id: str, duid: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 DUID."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "duid", duid]
+
+    def get_vif_s_dhcpv6_options_no_release(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 no-release."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "no-release"]
+
+    def get_vif_s_dhcpv6_options_parameters_only(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 parameters-only."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "parameters-only"]
+
+    def get_vif_s_dhcpv6_options_rapid_commit(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 rapid commit."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "rapid-commit"]
+
+    def get_vif_s_dhcpv6_options_temporary(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 temporary address."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "temporary"]
+
+    def get_vif_s_dhcpv6_options_pd(self, interface: str, vlan_id: str, pd_id: str, prefix: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 prefix delegation."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", prefix]
+
+    def get_vif_s_dhcpv6_options_pd_length(self, interface: str, vlan_id: str, pd_id: str, length: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 PD length."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "pd", pd_id, "length", length]
+
+    def get_vif_s_dhcpv6_options_pd_interface(self, interface: str, vlan_id: str, pd_id: str, iface: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 PD interface."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface]
+
+    def get_vif_s_dhcpv6_options_pd_interface_address(self, interface: str, vlan_id: str, pd_id: str, iface: str, address: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 PD interface address."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface, "address", address]
+
+    def get_vif_s_dhcpv6_options_pd_interface_sla_id(self, interface: str, vlan_id: str, pd_id: str, iface: str, sla_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 PD interface SLA ID."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface, "sla-id", sla_id]
+
+    def get_vif_s_dhcpv6_options_no_request_dns(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 no-request-dns (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "no-request-dns"]
+
+    def get_vif_s_dhcpv6_options_no_request_domain_name(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 no-request-domain-name (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options", "no-request-domain-name"]
+
+    def get_vif_s_dhcpv6_options_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s DHCPv6 options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "dhcpv6-options"]
+
+    # VIF-S Protocol
+    def get_vif_s_protocol(self, interface: str, vlan_id: str, protocol: str) -> List[str]:
+        """Get command path for vif-s protocol."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "protocol", protocol]
+
+    def get_vif_s_protocol_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s protocol (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "protocol"]
+
+    # VIF-S Redirect
+    def get_vif_s_redirect(self, interface: str, vlan_id: str, target: str) -> List[str]:
+        """Get command path for vif-s redirect."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "redirect", target]
+
+    def get_vif_s_redirect_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s redirect (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "redirect"]
+
+    # VIF-S IP Options
+    def get_vif_s_ip_adjust_mss(self, interface: str, vlan_id: str, mss: str) -> List[str]:
+        """Get command path for vif-s IPv4 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "adjust-mss", mss]
+
+    def get_vif_s_ip_disable_forwarding(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP disable forwarding."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "disable-forwarding"]
+
+    def get_vif_s_ip_source_validation(self, interface: str, vlan_id: str, mode: str) -> List[str]:
+        """Get command path for vif-s IP source validation."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "source-validation", mode]
+
+    def get_vif_s_ip_enable_proxy_arp(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP proxy ARP."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "enable-proxy-arp"]
+
+    def get_vif_s_ip_arp_cache_timeout(self, interface: str, vlan_id: str, timeout: str) -> List[str]:
+        """Get command path for vif-s IP ARP cache timeout."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "arp-cache-timeout", timeout]
+
+    def get_vif_s_ip_disable_arp_filter(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP disable ARP filter."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "disable-arp-filter"]
+
+    def get_vif_s_ip_enable_arp_accept(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP enable ARP accept."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "enable-arp-accept"]
+
+    def get_vif_s_ip_enable_arp_announce(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP enable ARP announce."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "enable-arp-announce"]
+
+    def get_vif_s_ip_enable_arp_ignore(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP enable ARP ignore."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "enable-arp-ignore"]
+
+    def get_vif_s_ip_enable_directed_broadcast(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP enable directed broadcast."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "enable-directed-broadcast"]
+
+    def get_vif_s_ip_proxy_arp_pvlan(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP private VLAN proxy ARP."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip", "proxy-arp-pvlan"]
+
+    def get_vif_s_ip_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IP settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ip"]
+
+    # VIF-S Mirror
+    def get_vif_s_mirror_ingress(self, interface: str, vlan_id: str, target: str) -> List[str]:
+        """Get command path for vif-s mirror ingress."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "mirror", "ingress", target]
+
+    def get_vif_s_mirror_egress(self, interface: str, vlan_id: str, target: str) -> List[str]:
+        """Get command path for vif-s mirror egress."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "mirror", "egress", target]
+
+    def get_vif_s_mirror_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s mirror (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "mirror"]
+
+    # VIF-S IPv6 Options (additional)
+    def get_vif_s_ipv6_disable_forwarding(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IPv6 disable forwarding."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "disable-forwarding"]
+
+    def get_vif_s_ipv6_adjust_mss(self, interface: str, vlan_id: str, mss: str) -> List[str]:
+        """Get command path for vif-s IPv6 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "adjust-mss", mss]
+
+    def get_vif_s_ipv6_accept_dad(self, interface: str, vlan_id: str, count: str) -> List[str]:
+        """Get command path for vif-s IPv6 accept DAD."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "accept-dad", count]
+
+    def get_vif_s_ipv6_dup_addr_detect_transmits(self, interface: str, vlan_id: str, count: str) -> List[str]:
+        """Get command path for vif-s IPv6 DAD transmits."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "dup-addr-detect-transmits", count]
+
+    def get_vif_s_ipv6_address_interface_identifier(self, interface: str, vlan_id: str, identifier: str) -> List[str]:
+        """Get command path for vif-s IPv6 interface identifier (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "address", "interface-identifier", identifier]
+
+    def get_vif_s_ipv6_address_no_default_link_local(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s IPv6 no default link-local address."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "address", "no-default-link-local"]
+
+    def get_vif_s_ipv6_base_reachable_time(self, interface: str, vlan_id: str, time: str) -> List[str]:
+        """Get command path for vif-s IPv6 base reachable time."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "base-reachable-time", time]
+
+    def get_vif_s_ipv6_source_validation(self, interface: str, vlan_id: str, mode: str) -> List[str]:
+        """Get command path for vif-s IPv6 source validation."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "ipv6", "source-validation", mode]
+
+    # VIF-S Other
+    def get_vif_s_disable_link_detect(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s disable link detection."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "disable-link-detect"]
+
+    def get_vif_s_vrf_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for vif-s VRF (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", vlan_id, "vrf"]
+
     # VIF-C DHCP Options
     def get_vif_c_dhcp_options_client_id(self, interface: str, s_vlan_id: str, c_vlan_id: str, client_id: str) -> List[str]:
         """Get command path for vif-c DHCP client ID."""
@@ -414,6 +807,201 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
     def get_vif_c_ipv6_address_eui64(self, interface: str, s_vlan_id: str, c_vlan_id: str, prefix: str) -> List[str]:
         """Get command path for vif-c IPv6 EUI-64."""
         return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "address", "eui64", prefix]
+
+    # VIF-C DHCP Options (additional)
+    def get_vif_c_dhcp_options_default_route_distance(self, interface: str, s_vlan_id: str, c_vlan_id: str, distance: str) -> List[str]:
+        """Get command path for vif-c DHCP default route distance."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options", "default-route-distance", distance]
+
+    def get_vif_c_dhcp_options_mtu(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCP MTU option."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options", "mtu"]
+
+    def get_vif_c_dhcp_options_no_default_route(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCP no default route."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options", "no-default-route"]
+
+    def get_vif_c_dhcp_options_reject(self, interface: str, s_vlan_id: str, c_vlan_id: str, address: str) -> List[str]:
+        """Get command path for vif-c DHCP reject server."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options", "reject", address]
+
+    def get_vif_c_dhcp_options_user_class(self, interface: str, s_vlan_id: str, c_vlan_id: str, user_class: str) -> List[str]:
+        """Get command path for vif-c DHCP user class."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options", "user-class", user_class]
+
+    def get_vif_c_dhcp_options_vendor_class_id(self, interface: str, s_vlan_id: str, c_vlan_id: str, vendor_class_id: str) -> List[str]:
+        """Get command path for vif-c DHCP vendor class ID."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options", "vendor-class-id", vendor_class_id]
+
+    def get_vif_c_dhcp_options_path(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCP options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcp-options"]
+
+    # VIF-C DHCPv6 Options
+    def get_vif_c_dhcpv6_options_duid(self, interface: str, s_vlan_id: str, c_vlan_id: str, duid: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 DUID."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "duid", duid]
+
+    def get_vif_c_dhcpv6_options_no_release(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 no-release."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "no-release"]
+
+    def get_vif_c_dhcpv6_options_parameters_only(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 parameters-only."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "parameters-only"]
+
+    def get_vif_c_dhcpv6_options_rapid_commit(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 rapid commit."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "rapid-commit"]
+
+    def get_vif_c_dhcpv6_options_temporary(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 temporary address."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "temporary"]
+
+    def get_vif_c_dhcpv6_options_pd(self, interface: str, s_vlan_id: str, c_vlan_id: str, pd_id: str, prefix: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 prefix delegation."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "pd", pd_id, "interface", prefix]
+
+    def get_vif_c_dhcpv6_options_pd_length(self, interface: str, s_vlan_id: str, c_vlan_id: str, pd_id: str, length: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 PD length."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "pd", pd_id, "length", length]
+
+    def get_vif_c_dhcpv6_options_pd_interface(self, interface: str, s_vlan_id: str, c_vlan_id: str, pd_id: str, iface: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 PD interface."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface]
+
+    def get_vif_c_dhcpv6_options_pd_interface_address(self, interface: str, s_vlan_id: str, c_vlan_id: str, pd_id: str, iface: str, address: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 PD interface address."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface, "address", address]
+
+    def get_vif_c_dhcpv6_options_pd_interface_sla_id(self, interface: str, s_vlan_id: str, c_vlan_id: str, pd_id: str, iface: str, sla_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 PD interface SLA ID."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "pd", pd_id, "interface", iface, "sla-id", sla_id]
+
+    def get_vif_c_dhcpv6_options_no_request_dns(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 no-request-dns (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "no-request-dns"]
+
+    def get_vif_c_dhcpv6_options_no_request_domain_name(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 no-request-domain-name (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options", "no-request-domain-name"]
+
+    def get_vif_c_dhcpv6_options_path(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c DHCPv6 options (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "dhcpv6-options"]
+
+    # VIF-C Redirect
+    def get_vif_c_redirect(self, interface: str, s_vlan_id: str, c_vlan_id: str, target: str) -> List[str]:
+        """Get command path for vif-c redirect."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "redirect", target]
+
+    def get_vif_c_redirect_path(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c redirect (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "redirect"]
+
+    # VIF-C IP Options
+    def get_vif_c_ip_adjust_mss(self, interface: str, s_vlan_id: str, c_vlan_id: str, mss: str) -> List[str]:
+        """Get command path for vif-c IPv4 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "adjust-mss", mss]
+
+    def get_vif_c_ip_disable_forwarding(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP disable forwarding."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "disable-forwarding"]
+
+    def get_vif_c_ip_source_validation(self, interface: str, s_vlan_id: str, c_vlan_id: str, mode: str) -> List[str]:
+        """Get command path for vif-c IP source validation."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "source-validation", mode]
+
+    def get_vif_c_ip_enable_proxy_arp(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP proxy ARP."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "enable-proxy-arp"]
+
+    def get_vif_c_ip_arp_cache_timeout(self, interface: str, s_vlan_id: str, c_vlan_id: str, timeout: str) -> List[str]:
+        """Get command path for vif-c IP ARP cache timeout."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "arp-cache-timeout", timeout]
+
+    def get_vif_c_ip_disable_arp_filter(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP disable ARP filter."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "disable-arp-filter"]
+
+    def get_vif_c_ip_enable_arp_accept(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP enable ARP accept."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "enable-arp-accept"]
+
+    def get_vif_c_ip_enable_arp_announce(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP enable ARP announce."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "enable-arp-announce"]
+
+    def get_vif_c_ip_enable_arp_ignore(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP enable ARP ignore."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "enable-arp-ignore"]
+
+    def get_vif_c_ip_enable_directed_broadcast(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP enable directed broadcast."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "enable-directed-broadcast"]
+
+    def get_vif_c_ip_proxy_arp_pvlan(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP private VLAN proxy ARP."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip", "proxy-arp-pvlan"]
+
+    def get_vif_c_ip_path(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IP settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ip"]
+
+    # VIF-C Mirror
+    def get_vif_c_mirror_ingress(self, interface: str, s_vlan_id: str, c_vlan_id: str, target: str) -> List[str]:
+        """Get command path for vif-c mirror ingress."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "mirror", "ingress", target]
+
+    def get_vif_c_mirror_egress(self, interface: str, s_vlan_id: str, c_vlan_id: str, target: str) -> List[str]:
+        """Get command path for vif-c mirror egress."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "mirror", "egress", target]
+
+    def get_vif_c_mirror_path(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c mirror (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "mirror"]
+
+    # VIF-C IPv6 Options (additional)
+    def get_vif_c_ipv6_disable_forwarding(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IPv6 disable forwarding."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "disable-forwarding"]
+
+    def get_vif_c_ipv6_adjust_mss(self, interface: str, s_vlan_id: str, c_vlan_id: str, mss: str) -> List[str]:
+        """Get command path for vif-c IPv6 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "adjust-mss", mss]
+
+    def get_vif_c_ipv6_accept_dad(self, interface: str, s_vlan_id: str, c_vlan_id: str, count: str) -> List[str]:
+        """Get command path for vif-c IPv6 accept DAD."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "accept-dad", count]
+
+    def get_vif_c_ipv6_dup_addr_detect_transmits(self, interface: str, s_vlan_id: str, c_vlan_id: str, count: str) -> List[str]:
+        """Get command path for vif-c IPv6 DAD transmits."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "dup-addr-detect-transmits", count]
+
+    def get_vif_c_ipv6_address_interface_identifier(self, interface: str, s_vlan_id: str, c_vlan_id: str, identifier: str) -> List[str]:
+        """Get command path for vif-c IPv6 interface identifier (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "address", "interface-identifier", identifier]
+
+    def get_vif_c_ipv6_address_no_default_link_local(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c IPv6 no default link-local address."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "address", "no-default-link-local"]
+
+    def get_vif_c_ipv6_base_reachable_time(self, interface: str, s_vlan_id: str, c_vlan_id: str, time: str) -> List[str]:
+        """Get command path for vif-c IPv6 base reachable time."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "base-reachable-time", time]
+
+    def get_vif_c_ipv6_source_validation(self, interface: str, s_vlan_id: str, c_vlan_id: str, mode: str) -> List[str]:
+        """Get command path for vif-c IPv6 source validation."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "ipv6", "source-validation", mode]
+
+    # VIF-C Other
+    def get_vif_c_disable_link_detect(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c disable link detection."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "disable-link-detect"]
+
+    def get_vif_c_vrf_path(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        """Get command path for vif-c VRF (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif-s", s_vlan_id, "vif-c", c_vlan_id, "vrf"]
 
     # Port Mirroring
     def get_mirror_ingress(self, interface: str, mirror_interface: str) -> List[str]:
@@ -449,6 +1037,282 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
     def get_evpn_path(self, interface: str) -> List[str]:
         """Get command path for EVPN settings (for deletion)."""
         return ["interfaces", self.interface_type, interface, "evpn"]
+
+    # Redirect
+    def get_redirect(self, interface: str, target: str) -> List[str]:
+        """Get command path for interface redirect."""
+        return ["interfaces", self.interface_type, interface, "redirect", target]
+
+    def get_redirect_path(self, interface: str) -> List[str]:
+        """Get command path for redirect (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "redirect"]
+
+    # EAPoL - Passphrase
+    def get_eapol_passphrase(self, interface: str, passphrase: str) -> List[str]:
+        """Get command path for EAPoL passphrase."""
+        return ["interfaces", self.interface_type, interface, "eapol", "passphrase", passphrase]
+
+    def get_eapol_path(self, interface: str) -> List[str]:
+        """Get command path for EAPoL settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "eapol"]
+
+    # VyOS 1.5 Only - Interrupt Coalescing
+    def get_interrupt_coalescing_adaptive_rx(self, interface: str) -> List[str]:
+        """Get command path for interrupt coalescing adaptive RX."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "adaptive-rx"]
+
+    def get_interrupt_coalescing_adaptive_tx(self, interface: str) -> List[str]:
+        """Get command path for interrupt coalescing adaptive TX."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "adaptive-tx"]
+
+    def get_interrupt_coalescing_cqe_mode_rx(self, interface: str) -> List[str]:
+        """Get command path for interrupt coalescing CQE mode RX."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "cqe-mode-rx"]
+
+    def get_interrupt_coalescing_cqe_mode_tx(self, interface: str) -> List[str]:
+        """Get command path for interrupt coalescing CQE mode TX."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "cqe-mode-tx"]
+
+    def get_interrupt_coalescing_rx_usecs(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX usecs."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-usecs", value]
+
+    def get_interrupt_coalescing_rx_frames(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX frames."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-frames", value]
+
+    def get_interrupt_coalescing_tx_usecs(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX usecs."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-usecs", value]
+
+    def get_interrupt_coalescing_tx_frames(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX frames."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-frames", value]
+
+    def get_interrupt_coalescing_rx_usecs_irq(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX usecs IRQ."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-usecs-irq", value]
+
+    def get_interrupt_coalescing_rx_usecs_low(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX usecs low."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-usecs-low", value]
+
+    def get_interrupt_coalescing_rx_usecs_high(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX usecs high."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-usecs-high", value]
+
+    def get_interrupt_coalescing_tx_usecs_irq(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX usecs IRQ."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-usecs-irq", value]
+
+    def get_interrupt_coalescing_tx_usecs_low(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX usecs low."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-usecs-low", value]
+
+    def get_interrupt_coalescing_tx_usecs_high(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX usecs high."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-usecs-high", value]
+
+    def get_interrupt_coalescing_rx_frames_irq(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX frames IRQ."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-frames-irq", value]
+
+    def get_interrupt_coalescing_rx_frame_low(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX frame low."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-frame-low", value]
+
+    def get_interrupt_coalescing_rx_frame_high(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing RX frame high."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "rx-frame-high", value]
+
+    def get_interrupt_coalescing_tx_frames_irq(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX frames IRQ."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-frames-irq", value]
+
+    def get_interrupt_coalescing_tx_frame_low(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX frame low."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-frame-low", value]
+
+    def get_interrupt_coalescing_tx_frame_high(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX frame high."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-frame-high", value]
+
+    def get_interrupt_coalescing_pkt_rate_low(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing packet rate low."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "pkt-rate-low", value]
+
+    def get_interrupt_coalescing_pkt_rate_high(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing packet rate high."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "pkt-rate-high", value]
+
+    def get_interrupt_coalescing_sample_interval(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing sample interval."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "sample-interval", value]
+
+    def get_interrupt_coalescing_stats_block_usecs(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing stats block usecs."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "stats-block-usecs", value]
+
+    def get_interrupt_coalescing_tx_aggr_max_bytes(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX aggregation max bytes."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-aggr-max-bytes", value]
+
+    def get_interrupt_coalescing_tx_aggr_max_frames(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX aggregation max frames."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-aggr-max-frames", value]
+
+    def get_interrupt_coalescing_tx_aggr_time_usecs(self, interface: str, value: str) -> List[str]:
+        """Get command path for interrupt coalescing TX aggregation time usecs."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing", "tx-aggr-time-usecs", value]
+
+    def get_interrupt_coalescing_path(self, interface: str) -> List[str]:
+        """Get command path for interrupt coalescing (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "interrupt-coalescing"]
+
+    # VyOS 1.5 Only - DHCPv6
+    def get_dhcpv6_options_no_request_dns(self, interface: str) -> List[str]:
+        """Get command path for DHCPv6 no-request-dns (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "no-request-dns"]
+
+    def get_dhcpv6_options_no_request_domain_name(self, interface: str) -> List[str]:
+        """Get command path for DHCPv6 no-request-domain-name (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "dhcpv6-options", "no-request-domain-name"]
+
+    # VyOS 1.5 Only - IPv6 interface-identifier
+    def get_ipv6_address_interface_identifier(self, interface: str, identifier: str) -> List[str]:
+        """Get command path for IPv6 interface identifier (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "ipv6", "address", "interface-identifier", identifier]
+
+    # VyOS 1.5 Only - Switchdev
+    def get_switchdev(self, interface: str) -> List[str]:
+        """Get command path for switchdev (1.5+)."""
+        return ["interfaces", self.interface_type, interface, "switchdev"]
+
+    # VIF - Additional methods
+    def get_vif_egress_qos(self, interface: str, vlan_id: str, value: str) -> List[str]:
+        """Get command path for VIF egress QoS."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "egress-qos", value]
+
+    def get_vif_egress_qos_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF egress QoS (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "egress-qos"]
+
+    def get_vif_ingress_qos(self, interface: str, vlan_id: str, value: str) -> List[str]:
+        """Get command path for VIF ingress QoS."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ingress-qos", value]
+
+    def get_vif_ingress_qos_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF ingress QoS (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ingress-qos"]
+
+    def get_vif_redirect(self, interface: str, vlan_id: str, target: str) -> List[str]:
+        """Get command path for VIF redirect."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "redirect", target]
+
+    def get_vif_redirect_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF redirect (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "redirect"]
+
+    def get_vif_ip_adjust_mss(self, interface: str, vlan_id: str, mss: str) -> List[str]:
+        """Get command path for VIF IPv4 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "adjust-mss", mss]
+
+    def get_vif_ip_adjust_mss_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for deleting VIF IPv4 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "adjust-mss"]
+
+    def get_vif_ip_adjust_mss_clamp_mss_to_pmtu(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IPv4 TCP MSS clamping to PMTU."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "adjust-mss", "clamp-mss-to-pmtu"]
+
+    def get_vif_ip_disable_forwarding(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP disable forwarding."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "disable-forwarding"]
+
+    def get_vif_ipv6_adjust_mss_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for deleting VIF IPv6 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "adjust-mss"]
+
+    def get_vif_ipv6_adjust_mss_clamp_mss_to_pmtu(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IPv6 TCP MSS clamping to PMTU."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "adjust-mss", "clamp-mss-to-pmtu"]
+
+    def get_vif_ip_source_validation(self, interface: str, vlan_id: str, mode: str) -> List[str]:
+        """Get command path for VIF IP source validation."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "source-validation", mode]
+
+    def get_vif_ip_enable_proxy_arp(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP proxy ARP."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "enable-proxy-arp"]
+
+    def get_vif_ip_arp_cache_timeout(self, interface: str, vlan_id: str, timeout: str) -> List[str]:
+        """Get command path for VIF IP ARP cache timeout."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "arp-cache-timeout", timeout]
+
+    def get_vif_ip_disable_arp_filter(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP disable ARP filter."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "disable-arp-filter"]
+
+    def get_vif_ip_enable_arp_accept(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP enable ARP accept."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "enable-arp-accept"]
+
+    def get_vif_ip_enable_arp_announce(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP enable ARP announce."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "enable-arp-announce"]
+
+    def get_vif_ip_enable_arp_ignore(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP enable ARP ignore."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "enable-arp-ignore"]
+
+    def get_vif_ip_enable_directed_broadcast(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP enable directed broadcast."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "enable-directed-broadcast"]
+
+    def get_vif_ip_proxy_arp_pvlan(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP private VLAN proxy ARP."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip", "proxy-arp-pvlan"]
+
+    def get_vif_ip_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IP settings (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ip"]
+
+    def get_vif_mirror_ingress(self, interface: str, vlan_id: str, target: str) -> List[str]:
+        """Get command path for VIF mirror ingress."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "mirror", "ingress", target]
+
+    def get_vif_mirror_egress(self, interface: str, vlan_id: str, target: str) -> List[str]:
+        """Get command path for VIF mirror egress."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "mirror", "egress", target]
+
+    def get_vif_mirror_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF mirror (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "mirror"]
+
+    def get_vif_ipv6_disable_forwarding(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF IPv6 disable forwarding."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "disable-forwarding"]
+
+    def get_vif_ipv6_adjust_mss(self, interface: str, vlan_id: str, mss: str) -> List[str]:
+        """Get command path for VIF IPv6 TCP MSS."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "adjust-mss", mss]
+
+    def get_vif_ipv6_accept_dad(self, interface: str, vlan_id: str, count: str) -> List[str]:
+        """Get command path for VIF IPv6 accept DAD."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "accept-dad", count]
+
+    def get_vif_ipv6_dup_addr_detect_transmits(self, interface: str, vlan_id: str, count: str) -> List[str]:
+        """Get command path for VIF IPv6 DAD transmits."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "ipv6", "dup-addr-detect-transmits", count]
+
+    # VIF Other
+    def get_vif_disable_link_detect(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF disable link detection."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "disable-link-detect"]
+
+    def get_vif_vrf_path(self, interface: str, vlan_id: str) -> List[str]:
+        """Get command path for VIF VRF (for deletion)."""
+        return ["interfaces", self.interface_type, interface, "vif", vlan_id, "vrf"]
 
     # ========================================================================
     # Config Parsing Methods (for READ operations)
@@ -502,6 +1366,9 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "mirror": self._parse_mirror(config),
             "eapol": self._parse_eapol(config),
             "evpn": self._parse_evpn(config),
+            "redirect": config.get("redirect"),
+            "interrupt_coalescing": self._parse_interrupt_coalescing(config),
+            "switchdev": "switchdev" in config,
         }
 
     # ========================================================================
@@ -534,6 +1401,8 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "rps": flag("rps"),
             "sg": flag("sg"),
             "tso": flag("tso"),
+            "hw_tc_offload": flag("hw-tc-offload"),
+            "rfs": flag("rfs"),
         }
 
     def _parse_ring_buffer(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -567,6 +1436,7 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "enable_proxy_arp": "enable-proxy-arp" in ip_config,
             "proxy_arp_pvlan": "proxy-arp-pvlan" in ip_config,
             "source_validation": ip_config.get("source-validation"),
+            "disable_forwarding": "disable-forwarding" in ip_config,
             # v1.5+ features - included in base for normalization
             # Override in v1.4 to exclude or set to None
             "enable_directed_broadcast": "enable-directed-broadcast" in ip_config,
@@ -598,6 +1468,10 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "adjust_mss": ipv6_config.get("adjust-mss"),
             "disable_forwarding": "disable-forwarding" in ipv6_config,
             "dup_addr_detect_transmits": ipv6_config.get("dup-addr-detect-transmits"),
+            "accept_dad": ipv6_config.get("accept-dad"),
+            "no_default_link_local": "no-default-link-local" in ipv6_config.get("address", {}),
+            "base_reachable_time": ipv6_config.get("base-reachable-time"),
+            "source_validation": ipv6_config.get("source-validation"),
         }
 
     def _parse_dhcp_options(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -611,6 +1485,9 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "vendor_class_id": dhcp_options.get("vendor-class-id"),
             "no_default_route": "no-default-route" in dhcp_options,
             "default_route_distance": dhcp_options.get("default-route-distance"),
+            "reject": dhcp_options.get("reject"),
+            "user_class": dhcp_options.get("user-class"),
+            "mtu": "mtu" in dhcp_options,
         }
 
     def _parse_dhcpv6_options(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -622,6 +1499,104 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "duid": dhcpv6_options.get("duid"),
             "rapid_commit": "rapid-commit" in dhcpv6_options,
             "pd": dhcpv6_options.get("pd"),
+            "no_release": "no-release" in dhcpv6_options,
+            "parameters_only": "parameters-only" in dhcpv6_options,
+            "temporary": "temporary" in dhcpv6_options,
+        }
+
+    def _parse_sub_dhcp_options(self, sub_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse DHCP options for a sub-interface (VIF/VIF-S/VIF-C)."""
+        dhcp_options = sub_config.get("dhcp-options", {})
+        if not dhcp_options:
+            return None
+        return {
+            "client_id": dhcp_options.get("client-id"),
+            "host_name": dhcp_options.get("host-name"),
+            "vendor_class_id": dhcp_options.get("vendor-class-id"),
+            "no_default_route": "no-default-route" in dhcp_options,
+            "default_route_distance": dhcp_options.get("default-route-distance"),
+            "reject": dhcp_options.get("reject"),
+            "user_class": dhcp_options.get("user-class"),
+            "mtu": "mtu" in dhcp_options,
+        }
+
+    def _parse_sub_dhcpv6_options(self, sub_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse DHCPv6 options for a sub-interface (VIF/VIF-S/VIF-C)."""
+        dhcpv6_options = sub_config.get("dhcpv6-options", {})
+        if not dhcpv6_options:
+            return None
+        return {
+            "duid": dhcpv6_options.get("duid"),
+            "rapid_commit": "rapid-commit" in dhcpv6_options,
+            "pd": dhcpv6_options.get("pd"),
+            "no_release": "no-release" in dhcpv6_options,
+            "parameters_only": "parameters-only" in dhcpv6_options,
+            "temporary": "temporary" in dhcpv6_options,
+            "no_request_dns": "no-request-dns" in dhcpv6_options,
+            "no_request_domain_name": "no-request-domain-name" in dhcpv6_options,
+        }
+
+    def _parse_sub_ip_config(self, sub_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse IP configuration for a sub-interface (VIF/VIF-S/VIF-C)."""
+        ip_config = sub_config.get("ip", {})
+        if not ip_config:
+            return None
+        return {
+            "adjust_mss": ip_config.get("adjust-mss"),
+            "arp_cache_timeout": ip_config.get("arp-cache-timeout"),
+            "disable_arp_filter": "disable-arp-filter" in ip_config,
+            "enable_arp_accept": "enable-arp-accept" in ip_config,
+            "enable_arp_announce": "enable-arp-announce" in ip_config,
+            "enable_arp_ignore": "enable-arp-ignore" in ip_config,
+            "enable_proxy_arp": "enable-proxy-arp" in ip_config,
+            "proxy_arp_pvlan": "proxy-arp-pvlan" in ip_config,
+            "source_validation": ip_config.get("source-validation"),
+            "disable_forwarding": "disable-forwarding" in ip_config,
+            "enable_directed_broadcast": "enable-directed-broadcast" in ip_config,
+        }
+
+    def _parse_sub_ipv6_config(self, sub_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse IPv6 configuration for a sub-interface (VIF/VIF-S/VIF-C)."""
+        ipv6_config = sub_config.get("ipv6", {})
+
+        # Parse IPv6 addresses (autoconf, eui64, interface-identifier)
+        ipv6_addresses = []
+        if "ipv6" in sub_config and "address" in sub_config["ipv6"]:
+            ipv6_addr = sub_config["ipv6"]["address"]
+            if isinstance(ipv6_addr, dict):
+                if "autoconf" in ipv6_addr:
+                    ipv6_addresses.append("autoconf")
+                if "eui64" in ipv6_addr:
+                    eui64_addrs = ipv6_addr["eui64"]
+                    if isinstance(eui64_addrs, list):
+                        ipv6_addresses.extend([f"eui64:{addr}" for addr in eui64_addrs])
+                    elif isinstance(eui64_addrs, str):
+                        ipv6_addresses.append(f"eui64:{eui64_addrs}")
+                if "interface-identifier" in ipv6_addr:
+                    ipv6_addresses.append(f"interface-identifier:{ipv6_addr['interface-identifier']}")
+
+        if not ipv6_config and not ipv6_addresses:
+            return None
+
+        return {
+            "address": ipv6_addresses if ipv6_addresses else None,
+            "adjust_mss": ipv6_config.get("adjust-mss"),
+            "disable_forwarding": "disable-forwarding" in ipv6_config,
+            "dup_addr_detect_transmits": ipv6_config.get("dup-addr-detect-transmits"),
+            "accept_dad": ipv6_config.get("accept-dad"),
+            "no_default_link_local": "no-default-link-local" in ipv6_config.get("address", {}),
+            "base_reachable_time": ipv6_config.get("base-reachable-time"),
+            "source_validation": ipv6_config.get("source-validation"),
+        }
+
+    def _parse_sub_mirror(self, sub_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse mirror settings for a sub-interface (VIF/VIF-S/VIF-C)."""
+        mirror = sub_config.get("mirror", {})
+        if not mirror:
+            return None
+        return {
+            "ingress": mirror.get("ingress"),
+            "egress": mirror.get("egress"),
         }
 
     def _parse_vif(self, config: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -640,6 +1615,10 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
                         elif isinstance(addr, str):
                             vif_addresses = [addr]
 
+                    # Parse egress/ingress QoS (VIF only)
+                    egress_qos = vif_config.get("egress-qos")
+                    ingress_qos = vif_config.get("ingress-qos")
+
                     vif_parsed.append({
                         "vlan_id": vif_id,
                         "addresses": vif_addresses,
@@ -648,6 +1627,19 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
                         "mac": vif_config.get("mac"),
                         "vrf": vif_config.get("vrf"),
                         "disable": "disable" in vif_config,
+                        "mss_clamping": (
+                            (isinstance(vif_config.get("ip"), dict) and vif_config.get("ip").get("adjust-mss") == "clamp-mss-to-pmtu")
+                            or (isinstance(vif_config.get("ipv6"), dict) and vif_config.get("ipv6").get("adjust-mss") == "clamp-mss-to-pmtu")
+                        ),
+                        "disable_link_detect": "disable-link-detect" in vif_config,
+                        "dhcp_options": self._parse_sub_dhcp_options(vif_config),
+                        "dhcpv6_options": self._parse_sub_dhcpv6_options(vif_config),
+                        "ip": self._parse_sub_ip_config(vif_config),
+                        "ipv6": self._parse_sub_ipv6_config(vif_config),
+                        "egress_qos": egress_qos,
+                        "ingress_qos": ingress_qos,
+                        "mirror": self._parse_sub_mirror(vif_config),
+                        "redirect": vif_config.get("redirect"),
                     })
         return vif_parsed if vif_parsed else None
 
@@ -690,6 +1682,13 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
                                     "mac": vif_c_config.get("mac"),
                                     "vrf": vif_c_config.get("vrf"),
                                     "disable": "disable" in vif_c_config,
+                                    "disable_link_detect": "disable-link-detect" in vif_c_config,
+                                    "dhcp_options": self._parse_sub_dhcp_options(vif_c_config),
+                                    "dhcpv6_options": self._parse_sub_dhcpv6_options(vif_c_config),
+                                    "ip": self._parse_sub_ip_config(vif_c_config),
+                                    "ipv6": self._parse_sub_ipv6_config(vif_c_config),
+                                    "mirror": self._parse_sub_mirror(vif_c_config),
+                                    "redirect": vif_c_config.get("redirect"),
                                 })
 
                     vif_s_parsed.append({
@@ -700,6 +1699,14 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
                         "mac": vif_s_config.get("mac"),
                         "vrf": vif_s_config.get("vrf"),
                         "disable": "disable" in vif_s_config,
+                        "disable_link_detect": "disable-link-detect" in vif_s_config,
+                        "protocol": vif_s_config.get("protocol"),
+                        "dhcp_options": self._parse_sub_dhcp_options(vif_s_config),
+                        "dhcpv6_options": self._parse_sub_dhcpv6_options(vif_s_config),
+                        "ip": self._parse_sub_ip_config(vif_s_config),
+                        "ipv6": self._parse_sub_ipv6_config(vif_s_config),
+                        "mirror": self._parse_sub_mirror(vif_s_config),
+                        "redirect": vif_s_config.get("redirect"),
                         "vif_c": vif_c_parsed if vif_c_parsed else None,
                     })
         return vif_s_parsed if vif_s_parsed else None
@@ -723,6 +1730,42 @@ class EthernetInterfaceMapper(BaseFeatureMapper):
             "ca_cert_file": eapol.get("ca-cert-file"),
             "cert_file": eapol.get("cert-file"),
             "key_file": eapol.get("key-file"),
+            "passphrase": eapol.get("passphrase"),
+        }
+
+    def _parse_interrupt_coalescing(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse interrupt coalescing settings (1.5+)."""
+        ic = config.get("interrupt-coalescing", {})
+        if not ic:
+            return None
+        return {
+            "adaptive_rx": "adaptive-rx" in ic,
+            "adaptive_tx": "adaptive-tx" in ic,
+            "cqe_mode_rx": "cqe-mode-rx" in ic,
+            "cqe_mode_tx": "cqe-mode-tx" in ic,
+            "rx_usecs": ic.get("rx-usecs"),
+            "rx_frames": ic.get("rx-frames"),
+            "tx_usecs": ic.get("tx-usecs"),
+            "tx_frames": ic.get("tx-frames"),
+            "rx_usecs_irq": ic.get("rx-usecs-irq"),
+            "rx_usecs_low": ic.get("rx-usecs-low"),
+            "rx_usecs_high": ic.get("rx-usecs-high"),
+            "tx_usecs_irq": ic.get("tx-usecs-irq"),
+            "tx_usecs_low": ic.get("tx-usecs-low"),
+            "tx_usecs_high": ic.get("tx-usecs-high"),
+            "rx_frames_irq": ic.get("rx-frames-irq"),
+            "rx_frame_low": ic.get("rx-frame-low"),
+            "rx_frame_high": ic.get("rx-frame-high"),
+            "tx_frames_irq": ic.get("tx-frames-irq"),
+            "tx_frame_low": ic.get("tx-frame-low"),
+            "tx_frame_high": ic.get("tx-frame-high"),
+            "pkt_rate_low": ic.get("pkt-rate-low"),
+            "pkt_rate_high": ic.get("pkt-rate-high"),
+            "sample_interval": ic.get("sample-interval"),
+            "stats_block_usecs": ic.get("stats-block-usecs"),
+            "tx_aggr_max_bytes": ic.get("tx-aggr-max-bytes"),
+            "tx_aggr_max_frames": ic.get("tx-aggr-max-frames"),
+            "tx_aggr_time_usecs": ic.get("tx-aggr-time-usecs"),
         }
 
     def _parse_evpn(self, config: Dict[str, Any]) -> Dict[str, Any]:

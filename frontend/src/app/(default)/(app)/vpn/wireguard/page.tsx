@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ClickableClient } from "@/components/ui/clickable-items";
 import { cn } from "@/lib/utils";
 import {
   Shield,
@@ -648,7 +649,17 @@ export default function WireGuardPage() {
                                       <Users className="h-3.5 w-3.5 text-primary" />
                                     </div>
                                     <div>
-                                      <span className="font-medium">{peer.name}</span>
+                                      <ClickableClient
+                                        clientName={peer.name}
+                                        interfaceName={currentInterface.name}
+                                        data={{ interface: currentInterface, peer }}
+                                        variant="link"
+                                        size="sm"
+                                        showIcon={false}
+                                        className="p-0 h-auto font-medium"
+                                      >
+                                        {peer.name}
+                                      </ClickableClient>
                                       {peer.description && (
                                         <p className="text-xs text-muted-foreground truncate max-w-[150px]">
                                           {peer.description}

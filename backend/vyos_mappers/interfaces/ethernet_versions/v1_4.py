@@ -32,9 +32,64 @@ class EthernetMapper_v1_4(EthernetInterfaceMapper):
             f"Current device is running v1.4"
         )
 
+    def get_interrupt_coalescing_adaptive_rx(self, interface: str) -> List[str]:
+        raise ValueError("interrupt-coalescing requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_interrupt_coalescing_adaptive_tx(self, interface: str) -> List[str]:
+        raise ValueError("interrupt-coalescing requires VyOS 1.5+. Current device is running v1.4")
+
+    # (Don't need to override every single interrupt-coalescing method -
+    # the builder will check capabilities before calling these)
+
+    def get_dhcpv6_options_no_request_dns(self, interface: str) -> List[str]:
+        raise ValueError("dhcpv6 no-request-dns requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_dhcpv6_options_no_request_domain_name(self, interface: str) -> List[str]:
+        raise ValueError("dhcpv6 no-request-domain-name requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_ipv6_address_interface_identifier(self, interface: str, identifier: str) -> List[str]:
+        raise ValueError("ipv6 interface-identifier requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_switchdev(self, interface: str) -> List[str]:
+        raise ValueError("switchdev requires VyOS 1.5+. Current device is running v1.4")
+
+    # VIF 1.5-only overrides
+    def get_vif_dhcpv6_options_no_request_dns(self, interface: str, vlan_id: str) -> List[str]:
+        raise ValueError("vif dhcpv6 no-request-dns requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_vif_dhcpv6_options_no_request_domain_name(self, interface: str, vlan_id: str) -> List[str]:
+        raise ValueError("vif dhcpv6 no-request-domain-name requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_vif_ipv6_address_interface_identifier(self, interface: str, vlan_id: str, identifier: str) -> List[str]:
+        raise ValueError("vif ipv6 interface-identifier requires VyOS 1.5+. Current device is running v1.4")
+
+    # VIF-S 1.5-only overrides
+    def get_vif_s_dhcpv6_options_no_request_dns(self, interface: str, vlan_id: str) -> List[str]:
+        raise ValueError("vif-s dhcpv6 no-request-dns requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_vif_s_dhcpv6_options_no_request_domain_name(self, interface: str, vlan_id: str) -> List[str]:
+        raise ValueError("vif-s dhcpv6 no-request-domain-name requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_vif_s_ipv6_address_interface_identifier(self, interface: str, vlan_id: str, identifier: str) -> List[str]:
+        raise ValueError("vif-s ipv6 interface-identifier requires VyOS 1.5+. Current device is running v1.4")
+
+    # VIF-C 1.5-only overrides
+    def get_vif_c_dhcpv6_options_no_request_dns(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        raise ValueError("vif-c dhcpv6 no-request-dns requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_vif_c_dhcpv6_options_no_request_domain_name(self, interface: str, s_vlan_id: str, c_vlan_id: str) -> List[str]:
+        raise ValueError("vif-c dhcpv6 no-request-domain-name requires VyOS 1.5+. Current device is running v1.4")
+
+    def get_vif_c_ipv6_address_interface_identifier(self, interface: str, s_vlan_id: str, c_vlan_id: str, identifier: str) -> List[str]:
+        raise ValueError("vif-c ipv6 interface-identifier requires VyOS 1.5+. Current device is running v1.4")
+
     # ========================================================================
     # Parsing Overrides - Normalize unavailable features
     # ========================================================================
+
+    def _parse_interrupt_coalescing(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Interrupt coalescing not available in v1.4."""
+        return None
 
     def _parse_ip_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -57,6 +112,7 @@ class EthernetMapper_v1_4(EthernetInterfaceMapper):
             "enable_arp_ignore": "enable-arp-ignore" in ip_config,
             "enable_proxy_arp": "enable-proxy-arp" in ip_config,
             "proxy_arp_pvlan": "proxy-arp-pvlan" in ip_config,
+            "disable_forwarding": "disable-forwarding" in ip_config,
             "source_validation": ip_config.get("source-validation"),
             # v1.5+ features - NOT available in 1.4, always None for normalization
             "enable_directed_broadcast": None,  # Feature not available in 1.4

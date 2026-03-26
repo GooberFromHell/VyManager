@@ -26,51 +26,6 @@ const DEFAULT_PERFORMANCE_OPTION: PerformanceOption = {
 export default function SettingsPage() {
   const [rebootModalOpen, setRebootModalOpen] = useState(false);
   const [poweroffModalOpen, setPoweroffModalOpen] = useState(false);
-  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
-  const [systemConfigLoading, setSystemConfigLoading] = useState(true);
-  const [performanceOptions, setPerformanceOptions] = useState<PerformanceOption[]>([DEFAULT_PERFORMANCE_OPTION]);
-  const [performanceSaving, setPerformanceSaving] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([systemService.getConfig(true), systemService.getCapabilities()])
-      .then(([config, caps]) => {
-        if (cancelled) return;
-        setSystemConfig(config);
-        if (caps.performance_options?.length) {
-          setPerformanceOptions([DEFAULT_PERFORMANCE_OPTION, ...caps.performance_options]);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setSystemConfig(null);
-      })
-      .finally(() => {
-        if (!cancelled) setSystemConfigLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handlePerformanceChange = async (value: string) => {
-    const newValue = value === "" ? null : value;
-    setPerformanceSaving(true);
-    try {
-      const result = await systemService.updatePerformance(newValue);
-      if (result.success) {
-        setSystemConfig((prev) => (prev ? { ...prev, performance: newValue } : null));
-        toast.success("Performance option updated", result.message);
-      } else {
-        toast.error("Update failed", result.error ?? result.message);
-      }
-    } catch (err: unknown) {
-      const msg = err && typeof err === "object" && "message" in err ? String((err as { message: string }).message) : "Failed to update performance option";
-      toast.error("Update failed", msg);
-    } finally {
-      setPerformanceSaving(false);
-    }
-  };
 
   const handleRebootSuccess = () => {
     // Modal will close automatically
