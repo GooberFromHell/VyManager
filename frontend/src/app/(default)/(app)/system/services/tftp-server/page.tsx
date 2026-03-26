@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Pencil, FolderOpen } from "lucide-react";
@@ -62,9 +61,9 @@ export default function TFTPServerPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin" />
           <span className="text-sm">Loading TFTP server configuration...</span>
         </div>
       </div>
@@ -73,7 +72,7 @@ export default function TFTPServerPage() {
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading TFTP Server"
           message={error}
@@ -92,19 +91,20 @@ export default function TFTPServerPage() {
 
   if (isNotConfigured) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="page-compact">
         <PageHeader
           title="TFTP Server"
           description="Trivial File Transfer Protocol server configuration"
           actions={
             <>
               {canWrite(FeatureGroup.TFTP_SERVER) && (
-                <Button variant="outline" onClick={() => setEditOpen(true)}>
+                <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit
                 </Button>
               )}
               <Button
+                size="sm"
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={loading}
@@ -118,16 +118,14 @@ export default function TFTPServerPage() {
           }
         />
 
-        <Card>
-          <CardContent>
-            <EmptyState
-              icon={FolderOpen}
-              title="TFTP Server is not configured"
-              description="Configure a directory and listen address to start serving files via TFTP"
-              action={canWrite(FeatureGroup.TFTP_SERVER) ? { label: "Configure TFTP Server", onClick: () => setEditOpen(true), icon: Pencil } : undefined}
-            />
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-border card-accent p-3">
+          <EmptyState
+            icon={FolderOpen}
+            title="TFTP Server is not configured"
+            description="Configure a directory and listen address to start serving files via TFTP"
+            action={canWrite(FeatureGroup.TFTP_SERVER) ? { label: "Configure TFTP Server", onClick: () => setEditOpen(true), icon: Pencil } : undefined}
+          />
+        </div>
 
         <EditTFTPServerModal
           open={editOpen}
@@ -141,87 +139,84 @@ export default function TFTPServerPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">TFTP Server</h1>
-          <p className="text-muted-foreground mt-1">
-            Trivial File Transfer Protocol server configuration
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {canWrite(FeatureGroup.TFTP_SERVER) && (
-            <Button variant="outline" onClick={() => setEditOpen(true)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
+    <div className="page-compact">
+      <PageHeader
+        title="TFTP Server"
+        description="Trivial File Transfer Protocol server configuration"
+        actions={
+          <>
+            {canWrite(FeatureGroup.TFTP_SERVER) && (
+              <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
+              Refresh
             </Button>
-          )}
-          <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FolderOpen className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold">TFTP Server</h3>
+      <div className="rounded-lg border border-border card-accent p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <FolderOpen className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">TFTP Server</h3>
+        </div>
+        <div className="space-y-1">
+          <div className="kv-row">
+            <span className="text-xs text-muted-foreground">Directory</span>
+            {config?.directory ? (
+              <span className="text-xs font-mono">{config.directory}</span>
+            ) : (
+              <span className="text-xs text-muted-foreground italic">
+                Not configured
+              </span>
+            )}
           </div>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Directory</span>
-              {config?.directory ? (
-                <span className="font-mono">{config.directory}</span>
+
+          <div className="kv-row">
+            <span className="text-xs text-muted-foreground">Port</span>
+            <Badge variant="secondary" className="text-xs">
+              {config?.port ? config.port : "69 (default)"}
+            </Badge>
+          </div>
+
+          <div>
+            <span className="text-xs text-muted-foreground">Listen Addresses</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {(config?.listen_addresses || []).length > 0 ? (
+                config!.listen_addresses.map((addr) => (
+                  <Badge key={addr} variant="secondary" className="text-xs">
+                    {addr}
+                  </Badge>
+                ))
               ) : (
-                <span className="text-muted-foreground italic">
-                  Not configured
+                <span className="text-xs text-muted-foreground italic">
+                  All interfaces
                 </span>
               )}
             </div>
+          </div>
 
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Port</span>
-              <Badge variant="secondary">
-                {config?.port ? config.port : "69 (default)"}
+          {capabilities?.has_allow_upload && (
+            <div className="kv-row">
+              <span className="text-xs text-muted-foreground">Allow Upload</span>
+              <Badge
+                className="text-xs"
+                variant={
+                  config?.allow_upload ? "default" : "outline"
+                }
+              >
+                {config?.allow_upload ? "Enabled" : "Disabled"}
               </Badge>
             </div>
-
-            <div>
-              <span className="text-muted-foreground">Listen Addresses</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {(config?.listen_addresses || []).length > 0 ? (
-                  config!.listen_addresses.map((addr) => (
-                    <Badge key={addr} variant="secondary">
-                      {addr}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-muted-foreground italic">
-                    All interfaces
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {capabilities?.has_allow_upload && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Allow Upload</span>
-                <Badge
-                  variant={
-                    config?.allow_upload ? "default" : "outline"
-                  }
-                >
-                  {config?.allow_upload ? "Enabled" : "Disabled"}
-                </Badge>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
 
       <EditTFTPServerModal
         open={editOpen}

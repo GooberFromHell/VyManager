@@ -196,30 +196,27 @@ export function Sidebar() {
   const visibleNavigation = filterNavigation(navigation);
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-border bg-card">
+    <div className="flex h-screen w-56 flex-col border-r border-border bg-sidebar">
       {/* Header */}
-      <div className="flex h-16 items-center border-b border-border px-6 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center">
+      <div className="flex h-11 items-center border-b border-border px-4 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center">
             <Image
               src="/vy-icon.png"
               alt="VyOS Logo"
-              width={40}
-              height={40}
+              width={28}
+              height={28}
               className="object-contain"
               loader={({ src }) => src}
             />
           </div>
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">VyManager</h1>
-            <p className="text-xs text-muted-foreground">VyOS Management</p>
-          </div>
+          <h1 className="text-sm font-bold text-foreground tracking-tight">VyManager</h1>
         </div>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4 min-h-0">
-        <nav className="space-y-1">
+      <ScrollArea className="flex-1 px-2 py-2 min-h-0">
+        <nav className="space-y-0.5">
           {visibleNavigation.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href ||
@@ -233,26 +230,24 @@ export function Sidebar() {
                   open={isOpen}
                   onOpenChange={() => toggleItem(item.title)}
                 >
-                  <CollapsibleTrigger className="group flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
-                    <div className="flex items-center gap-3">
+                  <CollapsibleTrigger className="group flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-[0.8125rem] font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
+                    <div className="flex items-center gap-2">
                       <Icon className={cn(
-                        "h-4 w-4",
+                        "h-3.5 w-3.5",
                         isActive ? "text-primary" : "text-muted-foreground"
                       )} />
                       <span className={cn(
                         isActive ? "text-foreground" : "text-muted-foreground"
                       )}>{item.title}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 text-muted-foreground transition-transform duration-200 ease-[var(--ease-out-quart)]",
-                          isOpen && "rotate-180"
-                        )}
-                      />
-                    </div>
+                    <ChevronDown
+                      className={cn(
+                        "h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ease-[var(--ease-out-quart)]",
+                        isOpen && "rotate-180"
+                      )}
+                    />
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-1 space-y-1 pl-4">
+                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-3">
                     {item.children.map((child) => {
                       const isChildActive = pathname === child.href;
                       return (
@@ -260,15 +255,18 @@ export function Sidebar() {
                           key={child.href}
                           href={child.href}
                           className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                            "relative flex items-center gap-2 rounded-md px-2.5 py-1 text-[0.8125rem] transition-colors",
                             isChildActive
-                              ? "bg-accent text-accent-foreground font-medium"
+                              ? "bg-primary/10 text-foreground font-medium"
                               : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
                           )}
                         >
+                          {isChildActive && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3.5 bg-primary rounded-r" />
+                          )}
                           <span className={cn(
-                            "h-1.5 w-1.5 rounded-full",
-                            isChildActive ? "bg-primary" : "bg-muted-foreground/40"
+                            "h-1 w-1 rounded-full",
+                            isChildActive ? "bg-primary" : "bg-muted-foreground/30"
                           )} />
                           {child.title}
                         </Link>
@@ -284,14 +282,17 @@ export function Sidebar() {
                 key={item.title}
                 href={item.href!}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "relative flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.8125rem] font-medium transition-colors",
                   isActive
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-primary/10 text-foreground"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
                 )}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-r" />
+                )}
                 <Icon className={cn(
-                  "h-4 w-4",
+                  "h-3.5 w-3.5",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )} />
                 {item.title}
@@ -302,101 +303,74 @@ export function Sidebar() {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t border-border p-4 space-y-3 shrink-0">
-        {/* Theme Selector */}
-        <div className="space-y-2">
-          <ThemeSelector />
-        </div>
+      <div className="border-t border-border p-2.5 space-y-2 shrink-0">
+        <ThemeSelector />
 
-        {/* Active Instance Indicator */}
+        {/* Active Instance */}
         {activeSession ? (
-          <div className="space-y-2">
-            <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                  <Building2 className="h-4 w-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-primary truncate">
-                    {activeSession.instance_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {activeSession.site_name}
-                  </p>
-                </div>
-                <div className="relative" title="Connected">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <div className="absolute inset-0 h-2 w-2 rounded-full bg-green-500 animate-ping opacity-40" />
-                </div>
+          <div className="rounded-md bg-primary/10 border border-primary/20 p-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[0.6875rem] font-medium text-primary truncate">
+                  {activeSession.instance_name}
+                </p>
+                <p className="text-[0.625rem] text-muted-foreground truncate">
+                  {activeSession.site_name}
+                </p>
               </div>
-              <Button
-                onClick={async () => {
-                  await disconnectFromInstance();
-                  router.push("/sites");
-                }}
-                variant="outline"
-                size="sm"
-                className="w-full justify-center gap-2 text-xs"
-              >
-                <PowerOff className="h-3 w-3" />
-                Disconnect Instance
-              </Button>
+              <div className="relative" title="Connected">
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                <div className="absolute inset-0 h-1.5 w-1.5 rounded-full bg-green-500 animate-ping opacity-40" />
+              </div>
             </div>
+            <Button
+              onClick={async () => {
+                await disconnectFromInstance();
+                router.push("/sites");
+              }}
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 text-[0.6875rem] h-7"
+            >
+              <PowerOff className="h-3 w-3" />
+              Disconnect
+            </Button>
           </div>
         ) : (
-          <div className="space-y-2">
-            <div className="rounded-lg bg-muted/50 border border-border p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    No Instance
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Not connected
-                  </p>
-                </div>
-                <div
-                  className="h-2 w-2 rounded-full bg-gray-500"
-                  title="Disconnected"
-                />
-              </div>
-              <Button
-                onClick={() => router.push("/sites")}
-                variant="default"
-                size="sm"
-                className="w-full justify-center gap-2 text-xs"
-              >
-                <Power className="h-3 w-3" />
-                Connect to Instance
-              </Button>
+          <div className="rounded-md bg-muted/50 border border-border p-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <p className="text-[0.6875rem] text-muted-foreground">No instance connected</p>
             </div>
+            <Button
+              onClick={() => router.push("/sites")}
+              variant="default"
+              size="sm"
+              className="w-full justify-center gap-1.5 text-[0.6875rem] h-7"
+            >
+              <Power className="h-3 w-3" />
+              Connect
+            </Button>
           </div>
         )}
 
-        {/* User Info & Logout */}
-        <div className="rounded-lg bg-muted/50 p-3">
-          <div className="flex w-full items-center gap-2 mb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0">
-              <User className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground truncate">
-                {session?.user?.name || session?.user?.email || "User"}
-              </p>
-            </div>
+        {/* User */}
+        <div className="flex items-center gap-2 rounded-md bg-muted/50 p-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 shrink-0">
+            <User className="h-3 w-3 text-primary" />
           </div>
-
+          <p className="text-[0.6875rem] font-medium text-foreground truncate flex-1">
+            {session?.user?.name || session?.user?.email || "User"}
+          </p>
           <Button
             onClick={handleLogout}
-            variant="outline"
-            className="w-full justify-center gap-2 text-xs"
+            variant="ghost"
             size="sm"
+            className="h-6 w-6 p-0 shrink-0"
+            title="Logout"
           >
             <LogOut className="h-3 w-3" />
-            Logout
           </Button>
         </div>
       </div>

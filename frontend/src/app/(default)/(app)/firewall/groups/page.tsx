@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, RefreshCw, AlertCircle, Search, Shield, Pencil, Trash2, Link2 } from "lucide-react";
@@ -127,8 +126,8 @@ export default function FirewallGroupsPage() {
 
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center h-48">
+          <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
     );
   }
@@ -136,7 +135,7 @@ export default function FirewallGroupsPage() {
   return (
     <>
       <TooltipProvider>
-      <div className="space-y-6 p-6">
+      <div className="page-compact">
         {/* Header */}
         <PageHeader
           title="Firewall Groups"
@@ -152,66 +151,58 @@ export default function FirewallGroupsPage() {
         )}
 
         {/* Stats Dashboard */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Shield className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{groups?.total || 0}</p>
-                  <p className="text-xs text-muted-foreground">Total Groups</p>
-                </div>
+        <div className="grid grid-cols-4 gap-3">
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Shield className="h-4 w-4 text-primary" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{groups?.total || 0}</p>
+                <p className="text-xs text-muted-foreground">Total Groups</p>
+              </div>
+            </div>
+          </div>
 
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                  <Shield className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {(groups?.by_type["address-group"] || 0) + (groups?.by_type["ipv6-address-group"] || 0)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Address Groups</p>
-                </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
+                <Shield className="h-4 w-4 text-blue-500" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-2xl font-bold text-foreground">
+                  {(groups?.by_type["address-group"] || 0) + (groups?.by_type["ipv6-address-group"] || 0)}
+                </p>
+                <p className="text-xs text-muted-foreground">Address Groups</p>
+              </div>
+            </div>
+          </div>
 
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-                  <Shield className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {(groups?.by_type["network-group"] || 0) + (groups?.by_type["ipv6-network-group"] || 0)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Network Groups</p>
-                </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
+                <Shield className="h-4 w-4 text-green-500" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-2xl font-bold text-foreground">
+                  {(groups?.by_type["network-group"] || 0) + (groups?.by_type["ipv6-network-group"] || 0)}
+                </p>
+                <p className="text-xs text-muted-foreground">Network Groups</p>
+              </div>
+            </div>
+          </div>
 
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-                  <Shield className="h-5 w-5 text-purple-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{groups?.by_type["port-group"] || 0}</p>
-                  <p className="text-xs text-muted-foreground">Port Groups</p>
-                </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+                <Shield className="h-4 w-4 text-purple-500" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{groups?.by_type["port-group"] || 0}</p>
+                <p className="text-xs text-muted-foreground">Port Groups</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Error Alert */}
@@ -267,7 +258,7 @@ export default function FirewallGroupsPage() {
               })}
             </div>
 
-            <Button onClick={() => setCreateModalOpen(true)}>
+            <Button size="sm" onClick={() => setCreateModalOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Create Group
             </Button>
@@ -276,33 +267,30 @@ export default function FirewallGroupsPage() {
 
         {/* Group Cards */}
         {!error && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredGroups.length === 0 ? (
-              <Card className="border-border">
-                <CardContent>
-                  {searchQuery || typeFilter !== "all" ? (
-                    <EmptyState
-                      icon={Shield}
-                      title="No groups found matching your filters"
-                    />
-                  ) : (
-                    <EmptyState
-                      icon={Shield}
-                      title="No firewall groups configured"
-                      description="Create address, network, or port groups to reuse across firewall rules"
-                      action={{ label: "Create Group", onClick: () => setCreateModalOpen(true), icon: Plus }}
-                    />
-                  )}
-                </CardContent>
-              </Card>
+              <div className="rounded-lg border border-border card-accent p-3">
+                {searchQuery || typeFilter !== "all" ? (
+                  <EmptyState
+                    icon={Shield}
+                    title="No groups found matching your filters"
+                  />
+                ) : (
+                  <EmptyState
+                    icon={Shield}
+                    title="No firewall groups configured"
+                    description="Create address, network, or port groups to reuse across firewall rules"
+                    action={{ label: "Create Group", onClick: () => setCreateModalOpen(true), icon: Plus }}
+                  />
+                )}
+              </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {filteredGroups.map((group) => {
                     const color = getGroupTypeColor(group.type);
                     return (
-                      <Card key={`${group.type}-${group.name}`} className="border-border hover:border-primary/50 transition-colors group">
-                        <CardContent className="p-4">
+                      <div key={`${group.type}-${group.name}`} className="rounded-lg border border-border card-accent p-3 hover:border-primary/50 transition-colors group">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-${color}-500/10 flex-shrink-0`}>
@@ -459,8 +447,7 @@ export default function FirewallGroupsPage() {
                               </div>
                             )}
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
                     );
                   })}
                 </div>

@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Power, PowerOff, Settings as SettingsIcon, Server } from "lucide-react";
+import { Power, PowerOff, Server } from "lucide-react";
 import { systemService, type SystemConfig, type PerformanceOption } from "@/lib/api/system";
 import { useToast } from "@/hooks/useToast";
+import { PageHeader } from "@/components/ui/page-header";
 
 const DEFAULT_PERFORMANCE_OPTION: PerformanceOption = {
   value: "default",
@@ -39,21 +40,15 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="p-8 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SettingsIcon className="h-8 w-8" />
-            Settings
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage system power and configuration settings
-          </p>
-        </div>
+      <div className="page-compact">
+        <PageHeader
+          title="Settings"
+          description="Manage system power and configuration settings"
+        />
 
         {/* System Options Section */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">System</h2>
+          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">System</h2>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -93,8 +88,8 @@ export default function SettingsPage() {
 
         {/* Power Management Section */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Power Management</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Power Management</h2>
+          <div className="grid gap-3 md:grid-cols-2">
             {/* Reboot Card */}
             <Card>
               <CardHeader>

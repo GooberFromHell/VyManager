@@ -234,10 +234,10 @@ export default function RouteMapPage() {
     return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
             <h2 className="text-xl font-semibold text-foreground">Error Loading Route Maps</h2>
             <p className="text-muted-foreground max-w-md">{error}</p>
-            <Button onClick={() => fetchConfig(true)} variant="outline">
+            <Button onClick={() => fetchConfig(true)} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
@@ -251,13 +251,13 @@ export default function RouteMapPage() {
       <div className="flex h-full">
         {/* Left Sidebar - Route Map List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
-          <div className="p-6 pb-4 shrink-0">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Map className="h-5 w-5 text-primary" />
+          <div className="p-3 pb-3 shrink-0">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Map className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-foreground">Route Maps</h1>
+                <h1 className="text-sm font-semibold text-foreground">Route Maps</h1>
                 <p className="text-xs text-muted-foreground">
                   {routeMaps.length} map{routeMaps.length !== 1 ? "s" : ""} · {totalRules} rule{totalRules !== 1 ? "s" : ""}
                 </p>
@@ -265,7 +265,7 @@ export default function RouteMapPage() {
             </div>
 
             {/* Search Route Maps */}
-            <div className="relative mb-4">
+            <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search route-maps..."
@@ -360,11 +360,11 @@ export default function RouteMapPage() {
           {selectedRouteMapData ? (
             <>
               {/* Header */}
-              <div className="p-6 pb-4 border-b border-border">
-                <div className="flex items-center justify-between mb-4">
+              <div className="p-3 pb-3 border-b border-border">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold text-foreground font-mono">
+                      <h2 className="text-lg font-bold text-foreground font-mono">
                         {selectedRouteMapData.name}
                       </h2>
                       <Button
@@ -416,12 +416,12 @@ export default function RouteMapPage() {
               )}
 
               {/* Rules Table */}
-              <div className="flex-1 p-6 pt-4 overflow-hidden">
+              <div className="flex-1 p-3 pt-3 overflow-hidden">
                 {filteredRules.length === 0 ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <Map className="h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <div className="rounded-lg border border-border card-accent p-3">
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <Map className="h-8 w-8 text-muted-foreground mb-4" />
+                      <h3 className="text-sm font-semibold text-foreground mb-2">
                         {ruleSearchQuery ? "No Rules Match Search" : "No Rules Configured"}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-4 text-center max-w-sm">
@@ -430,15 +430,15 @@ export default function RouteMapPage() {
                           : "Add rules to this route-map to control route matching and modification"}
                       </p>
                       {!ruleSearchQuery && (
-                        <Button onClick={() => setAddRuleModalOpen(true)}>
+                        <Button onClick={() => setAddRuleModalOpen(true)} size="sm">
                           <Plus className="h-4 w-4 mr-2" />
                           Add First Rule
                         </Button>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ) : (
-                  <Card>
+                  <div className="rounded-md border border-border overflow-hidden">
                     <ScrollArea className="h-[calc(100vh-350px)]">
                       <DndContext
                         sensors={sensors}
@@ -446,7 +446,7 @@ export default function RouteMapPage() {
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                       >
-                        <Table>
+                        <Table className="table-dense">
                           <TableHeader>
                             <TableRow className="hover:bg-transparent">
                               <TableHead className="w-12"></TableHead>
@@ -476,7 +476,7 @@ export default function RouteMapPage() {
                         </Table>
                       </DndContext>
                     </ScrollArea>
-                  </Card>
+                  </div>
                 )}
               </div>
             </>
@@ -493,7 +493,7 @@ export default function RouteMapPage() {
                     : "Select a route-map from the sidebar to view its rules"}
                 </p>
                 {routeMaps.length === 0 && (
-                  <Button onClick={() => setCreateModalOpen(true)}>
+                  <Button onClick={() => setCreateModalOpen(true)} size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Route Map
                   </Button>

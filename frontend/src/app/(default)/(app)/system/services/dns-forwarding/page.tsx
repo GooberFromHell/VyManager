@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -103,7 +102,7 @@ export default function DNSForwardingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-48">
         <LoadingSpinner />
       </div>
     );
@@ -111,7 +110,7 @@ export default function DNSForwardingPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-4">
         <ErrorAlert
           message={error}
           onRetry={() => {
@@ -126,7 +125,7 @@ export default function DNSForwardingPage() {
 
   if (!config) {
     return (
-      <div className="p-6">
+      <div className="p-4">
         <EmptyState
           icon={Globe}
           title="DNS Forwarding Not Configured"
@@ -139,217 +138,198 @@ export default function DNSForwardingPage() {
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-6 space-y-6">
-        {/* Header */}
+      <div className="page-compact">
         <PageHeader
           title="DNS Forwarding"
           description="Configure DNS forwarding service"
           actions={
             <>
               {!isReadOnly && (
-                <Button variant="outline" onClick={() => setEditOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
                   Edit
                 </Button>
               )}
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
                 onClick={handleRefresh}
                 disabled={refreshing}
+                className="h-8 w-8 p-0"
               >
-                <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
               </Button>
             </>
           }
         />
 
-        {/* Global Settings & Upstream Servers */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Settings2 className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Global Settings</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Listen Addresses</span>
-                  <div className="flex flex-wrap gap-1 justify-end">
-                    {config.listen_addresses.length > 0 ? (
-                      config.listen_addresses.map((addr) => (
-                        <Badge key={addr} variant="secondary">
-                          {addr}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-muted-foreground italic">None</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Cache Size</span>
-                  <span>{config.cache_size}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">DNSSEC</span>
-                  <Badge variant="outline">{config.dnssec || "off"}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">No Serve RFC1918</span>
-                  <Badge variant={config.no_serve_rfc1918 ? "default" : "secondary"}>
-                    {config.no_serve_rfc1918 ? "Yes" : "No"}
-                  </Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">System Nameservers</span>
-                  <Badge
-                    variant={config.use_system_nameservers ? "default" : "secondary"}
-                  >
-                    {config.use_system_nameservers ? "Yes" : "No"}
-                  </Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Ignore Hosts File</span>
-                  <Badge variant={config.ignore_hosts_file ? "default" : "secondary"}>
-                    {config.ignore_hosts_file ? "Yes" : "No"}
-                  </Badge>
+        {/* Global Settings + Upstream in compact grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings2 className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Global Settings</h3>
+            </div>
+            <div className="space-y-0">
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">Listen Addresses</span>
+                <div className="flex flex-wrap gap-1 justify-end">
+                  {config.listen_addresses.length > 0 ? (
+                    config.listen_addresses.map((addr) => (
+                      <Badge key={addr} variant="secondary" className="text-xs">{addr}</Badge>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground italic text-xs">None</span>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">Cache Size</span>
+                <span className="text-xs font-mono">{config.cache_size}</span>
+              </div>
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">DNSSEC</span>
+                <Badge variant="outline" className="text-xs">{config.dnssec || "off"}</Badge>
+              </div>
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">No Serve RFC1918</span>
+                <Badge variant={config.no_serve_rfc1918 ? "default" : "secondary"} className="text-xs">
+                  {config.no_serve_rfc1918 ? "Yes" : "No"}
+                </Badge>
+              </div>
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">System Nameservers</span>
+                <Badge variant={config.use_system_nameservers ? "default" : "secondary"} className="text-xs">
+                  {config.use_system_nameservers ? "Yes" : "No"}
+                </Badge>
+              </div>
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">Ignore Hosts File</span>
+                <Badge variant={config.ignore_hosts_file ? "default" : "secondary"} className="text-xs">
+                  {config.ignore_hosts_file ? "Yes" : "No"}
+                </Badge>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Server className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Upstream Servers</h3>
+          <div className="flex flex-col gap-3">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Server className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold">Upstream Servers</h3>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {config.name_servers.length > 0 ? (
                   config.name_servers.map((server) => (
                     <div
                       key={server}
-                      className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-md bg-muted/50"
+                      className="flex items-center gap-2 text-xs py-1 px-2 rounded bg-muted/50"
                     >
-                      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{server}</span>
+                      <Globe className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-mono">{server}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">
+                  <p className="text-xs text-muted-foreground italic">
                     No upstream servers configured
                   </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
 
-        {/* Allow From Networks */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Allow From Networks</h3>
+            <div className="rounded-lg border border-border card-accent p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold">Allow From Networks</h3>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {config.allow_from.length > 0 ? (
+                  config.allow_from.map((network) => (
+                    <Badge key={network} variant="secondary" className="text-xs font-mono">{network}</Badge>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    No networks configured
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {config.allow_from.length > 0 ? (
-                config.allow_from.map((network) => (
-                  <Badge key={network} variant="secondary">
-                    {network}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground italic">
-                  No networks configured
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Domain Forwarding Rules */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Domain Forwarding Rules</h3>
-            {!isReadOnly && (
-              <Button onClick={() => setCreateDomainOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Domain
-              </Button>
-            )}
-          </div>
-
-          {config.domains.length > 0 ? (
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Domain</TableHead>
-                    <TableHead>Servers</TableHead>
-                    <TableHead>ADDNTA</TableHead>
-                    <TableHead>Recursion</TableHead>
-                    {!isReadOnly && <TableHead className="w-[100px]">Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {config.domains.map((domain) => (
-                    <TableRow key={domain.name}>
-                      <TableCell className="font-medium">{domain.name}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {domain.servers.map((server) => (
-                            <Badge key={server.address} variant="secondary">
-                              {server.address}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={domain.addnta ? "default" : "secondary"}>
-                          {domain.addnta ? "Yes" : "No"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            domain.recursion_desired ? "default" : "secondary"
-                          }
-                        >
-                          {domain.recursion_desired ? "Yes" : "No"}
-                        </Badge>
-                      </TableCell>
-                      {!isReadOnly && (
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteDomain(domain)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent>
-                <EmptyState
-                  icon={Globe}
-                  title="No domain forwarding rules configured"
-                  action={!isReadOnly ? { label: "Add Domain", onClick: () => setCreateDomainOpen(true), icon: Plus } : undefined}
-                />
-              </CardContent>
-            </Card>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold section-header">Domain Forwarding Rules</h3>
+          {!isReadOnly && (
+            <Button size="sm" onClick={() => setCreateDomainOpen(true)}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              Add Domain
+            </Button>
           )}
         </div>
+
+        {config.domains.length > 0 ? (
+          <div className="rounded-md border border-border overflow-hidden">
+            <Table className="table-dense">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Domain</TableHead>
+                  <TableHead>Servers</TableHead>
+                  <TableHead>ADDNTA</TableHead>
+                  <TableHead>Recursion</TableHead>
+                  {!isReadOnly && <TableHead className="w-[70px]">Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {config.domains.map((domain) => (
+                  <TableRow key={domain.name}>
+                    <TableCell className="font-medium text-xs">{domain.name}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {domain.servers.map((server) => (
+                          <Badge key={server.address} variant="secondary" className="text-xs font-mono">
+                            {server.address}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={domain.addnta ? "default" : "secondary"} className="text-xs">
+                        {domain.addnta ? "Yes" : "No"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={domain.recursion_desired ? "default" : "secondary"} className="text-xs">
+                        {domain.recursion_desired ? "Yes" : "No"}
+                      </Badge>
+                    </TableCell>
+                    {!isReadOnly && (
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleDeleteDomain(domain)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="rounded-md border border-border p-3">
+            <EmptyState
+              icon={Globe}
+              title="No domain forwarding rules configured"
+              action={!isReadOnly ? { label: "Add Domain", onClick: () => setCreateDomainOpen(true), icon: Plus } : undefined}
+              compact
+            />
+          </div>
+        )}
       </div>
 
       {/* Modals */}

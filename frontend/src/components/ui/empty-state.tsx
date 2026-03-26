@@ -13,7 +13,7 @@ interface EmptyStateProps {
     onClick: () => void;
     icon?: LucideIcon;
   };
-  compact?: boolean; // true for inside table rows (smaller spacing)
+  compact?: boolean;
   className?: string;
 }
 
@@ -28,26 +28,26 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center gap-3 animate-fade-in",
-        compact ? "py-8" : "py-16",
+        "flex flex-col items-center justify-center text-center gap-2 animate-fade-in",
+        compact ? "py-4" : "py-10",
         className
       )}
     >
       <Icon
         className={cn(
-          "text-muted-foreground animate-gentle-float",
-          compact ? "h-8 w-8" : "h-12 w-12"
+          "text-muted-foreground/60",
+          compact ? "h-6 w-6" : "h-9 w-9"
         )}
       />
       <div>
         <p className="text-sm font-medium text-foreground">{title}</p>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
         )}
       </div>
       {action && (
-        <Button variant="outline" size="sm" onClick={action.onClick}>
-          {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+        <Button variant="outline" size="sm" onClick={action.onClick} className="mt-1">
+          {action.icon && <action.icon className="mr-1.5 h-3.5 w-3.5" />}
           {action.label}
         </Button>
       )}

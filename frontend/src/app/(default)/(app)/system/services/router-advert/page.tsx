@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -116,7 +115,7 @@ export default function RouterAdvertPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="page-compact">
         <ErrorAlert
           message={error}
           onRetry={() => {
@@ -133,7 +132,7 @@ export default function RouterAdvertPage() {
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-6 space-y-6">
+      <div className="page-compact">
         {/* Header */}
         <PageHeader
           title="Router Advertisement"
@@ -141,7 +140,7 @@ export default function RouterAdvertPage() {
           actions={
             <>
               {!isReadOnly && (
-                <Button onClick={() => setAddOpen(true)}>
+                <Button size="sm" onClick={() => setAddOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Interface
                 </Button>
@@ -162,8 +161,8 @@ export default function RouterAdvertPage() {
 
         {/* Interfaces table */}
         {interfaces.length > 0 ? (
-          <Card>
-            <Table>
+          <div className="rounded-md border border-border overflow-hidden">
+            <Table className="table-dense">
               <TableHeader>
                 <TableRow>
                   <TableHead>Interface</TableHead>
@@ -182,7 +181,7 @@ export default function RouterAdvertPage() {
                     <TableCell className="font-medium">{iface.name}</TableCell>
 
                     <TableCell>
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="text-xs">
                         {iface.prefixes.length}{" "}
                         {iface.prefixes.length === 1 ? "prefix" : "prefixes"}
                       </Badge>
@@ -190,12 +189,12 @@ export default function RouterAdvertPage() {
 
                     <TableCell>
                       {iface.name_servers.length > 0 ? (
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="text-xs">
                           {iface.name_servers.length}{" "}
                           {iface.name_servers.length === 1 ? "server" : "servers"}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground text-sm italic">
+                        <span className="text-muted-foreground text-xs italic">
                           None
                         </span>
                       )}
@@ -204,13 +203,13 @@ export default function RouterAdvertPage() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {iface.managed_flag && (
-                          <Badge variant="default">Managed</Badge>
+                          <Badge variant="default" className="text-xs">Managed</Badge>
                         )}
                         {iface.other_config_flag && (
-                          <Badge variant="outline">Other Config</Badge>
+                          <Badge variant="outline" className="text-xs">Other Config</Badge>
                         )}
                         {!iface.managed_flag && !iface.other_config_flag && (
-                          <span className="text-muted-foreground text-sm italic">
+                          <span className="text-muted-foreground text-xs italic">
                             None
                           </span>
                         )}
@@ -218,7 +217,7 @@ export default function RouterAdvertPage() {
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="text-xs">
                         {iface.default_preference ?? "medium"}
                       </Badge>
                     </TableCell>
@@ -228,14 +227,14 @@ export default function RouterAdvertPage() {
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
-                            size="icon"
+                            className="h-7 w-7 p-0"
                             onClick={() => handleEditInterface(iface)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
-                            size="icon"
+                            className="h-7 w-7 p-0"
                             onClick={() => handleDeleteInterface(iface)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -247,18 +246,16 @@ export default function RouterAdvertPage() {
                 ))}
               </TableBody>
             </Table>
-          </Card>
+          </div>
         ) : (
-          <Card>
-            <CardContent>
-              <EmptyState
-                icon={Radio}
-                title="Router Advertisement Not Configured"
-                description="Router Advertisement is not configured on any interface"
-                action={!isReadOnly ? { label: "Add Interface", onClick: () => setAddOpen(true), icon: Plus } : undefined}
-              />
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <EmptyState
+              icon={Radio}
+              title="Router Advertisement Not Configured"
+              description="Router Advertisement is not configured on any interface"
+              action={!isReadOnly ? { label: "Add Interface", onClick: () => setAddOpen(true), icon: Plus } : undefined}
+            />
+          </div>
         )}
       </div>
 

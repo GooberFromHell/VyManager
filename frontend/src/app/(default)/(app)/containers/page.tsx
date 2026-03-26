@@ -35,7 +35,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { CreateContainerModal } from "@/components/containers/CreateContainerModal";
 import { EditContainerModal } from "@/components/containers/EditContainerModal";
 import { DeleteContainerModal } from "@/components/containers/DeleteContainerModal";
@@ -107,15 +106,15 @@ export default function ContainersPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading Containers"
           message={error}
@@ -127,7 +126,7 @@ export default function ContainersPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       <PageHeader
         title="Containers"
         description="Manage OCI containers, networks, and registries on your VyOS device"
@@ -156,7 +155,7 @@ export default function ContainersPage() {
             <Box className="h-4 w-4" />
             Containers
             {config?.containers.length ? (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="ml-1 text-xs">
                 {config.containers.length}
               </Badge>
             ) : null}
@@ -165,7 +164,7 @@ export default function ContainersPage() {
             <Network className="h-4 w-4" />
             Networks
             {config?.networks.length ? (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="ml-1 text-xs">
                 {config.networks.length}
               </Badge>
             ) : null}
@@ -174,7 +173,7 @@ export default function ContainersPage() {
             <Database className="h-4 w-4" />
             Registries
             {config?.registries.length ? (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="ml-1 text-xs">
                 {config.registries.length}
               </Badge>
             ) : null}
@@ -182,9 +181,9 @@ export default function ContainersPage() {
         </TabsList>
 
         {/* Containers Tab */}
-        <TabsContent value="containers" className="space-y-4">
+        <TabsContent value="containers" className="space-y-3">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Container Instances</h3>
+            <h3 className="text-sm font-semibold">Container Instances</h3>
             {canWrite(FeatureGroup.CONTAINER) && (
               <Button size="sm" onClick={() => setCreateContainerOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -200,115 +199,113 @@ export default function ContainersPage() {
               description="No containers are configured on this device."
             />
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Image</TableHead>
-                      <TableHead>Network</TableHead>
-                      <TableHead>Ports</TableHead>
-                      <TableHead>Restart</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table className="table-dense">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Image</TableHead>
+                    <TableHead>Network</TableHead>
+                    <TableHead>Ports</TableHead>
+                    <TableHead>Restart</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {config?.containers.map((container) => (
+                    <TableRow key={container.name}>
+                      <TableCell className="font-mono font-medium">
+                        {container.name}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground max-w-[200px] truncate">
+                        {container.image || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {container.networks.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {container.networks.map((net) => (
+                              <Badge
+                                key={net}
+                                variant="outline"
+                                className="font-mono text-xs"
+                              >
+                                {net}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {container.ports.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {container.ports.map((port) => (
+                              <Badge
+                                key={port.name}
+                                variant="secondary"
+                                className="font-mono text-xs"
+                              >
+                                {port.source}&rarr;{port.destination}/
+                                {port.protocol}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {container.restart ? (
+                          <Badge variant="outline" className="text-xs">{container.restart}</Badge>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {container.disabled ? (
+                          <Badge variant="destructive" className="text-xs">Disabled</Badge>
+                        ) : (
+                          <Badge variant="default" className="text-xs">Enabled</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {canWrite(FeatureGroup.CONTAINER) && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setEditingContainer(container)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive"
+                              onClick={() =>
+                                setDeletingContainer(container.name)
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {config?.containers.map((container) => (
-                      <TableRow key={container.name}>
-                        <TableCell className="font-mono font-medium">
-                          {container.name}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm text-muted-foreground max-w-[200px] truncate">
-                          {container.image || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {container.networks.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {container.networks.map((net) => (
-                                <Badge
-                                  key={net}
-                                  variant="outline"
-                                  className="font-mono text-xs"
-                                >
-                                  {net}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {container.ports.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {container.ports.map((port) => (
-                                <Badge
-                                  key={port.name}
-                                  variant="secondary"
-                                  className="font-mono text-xs"
-                                >
-                                  {port.source}&rarr;{port.destination}/
-                                  {port.protocol}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {container.restart ? (
-                            <Badge variant="outline">{container.restart}</Badge>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {container.disabled ? (
-                            <Badge variant="destructive">Disabled</Badge>
-                          ) : (
-                            <Badge variant="default">Enabled</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {canWrite(FeatureGroup.CONTAINER) && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => setEditingContainer(container)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() =>
-                                  setDeletingContainer(container.name)
-                                }
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </TabsContent>
 
         {/* Networks Tab */}
-        <TabsContent value="networks" className="space-y-4">
+        <TabsContent value="networks" className="space-y-3">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Container Networks</h3>
+            <h3 className="text-sm font-semibold">Container Networks</h3>
             {canWrite(FeatureGroup.CONTAINER) && (
               <Button size="sm" onClick={() => setCreateNetworkOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -324,84 +321,82 @@ export default function ContainersPage() {
               description="No container networks are configured."
             />
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Prefix(es)</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>MTU</TableHead>
-                      <TableHead>VRF</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {config?.networks.map((network) => (
-                      <TableRow key={network.name}>
-                        <TableCell className="font-mono font-medium">
-                          {network.name}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {network.prefixes.map((prefix) => (
-                              <Badge
-                                key={prefix}
-                                variant="outline"
-                                className="font-mono text-xs"
-                              >
-                                {prefix}
-                              </Badge>
-                            ))}
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table className="table-dense">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Prefix(es)</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>MTU</TableHead>
+                    <TableHead>VRF</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {config?.networks.map((network) => (
+                    <TableRow key={network.name}>
+                      <TableCell className="font-mono font-medium">
+                        {network.name}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {network.prefixes.map((prefix) => (
+                            <Badge
+                              key={prefix}
+                              variant="outline"
+                              className="font-mono text-xs"
+                            >
+                              {prefix}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {network.description || "—"}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {network.mtu || "—"}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {network.vrf || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {canWrite(FeatureGroup.CONTAINER) && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setEditingNetwork(network)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive"
+                              onClick={() =>
+                                setDeletingNetwork(network.name)
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {network.description || "—"}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {network.mtu || "—"}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {network.vrf || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {canWrite(FeatureGroup.CONTAINER) && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => setEditingNetwork(network)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() =>
-                                  setDeletingNetwork(network.name)
-                                }
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </TabsContent>
 
         {/* Registries Tab */}
-        <TabsContent value="registries" className="space-y-4">
+        <TabsContent value="registries" className="space-y-3">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Container Registries</h3>
+            <h3 className="text-sm font-semibold">Container Registries</h3>
             {canWrite(FeatureGroup.CONTAINER) && (
               <Button size="sm" onClick={() => setCreateRegistryOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -417,74 +412,72 @@ export default function ContainersPage() {
               description="No container registries are configured."
             />
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>URL</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {config?.registries.map((registry) => (
-                      <TableRow key={registry.url}>
-                        <TableCell className="font-mono font-medium">
-                          {registry.url}
-                        </TableCell>
-                        <TableCell className="font-mono text-muted-foreground">
-                          {registry.username || "—"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            {registry.disabled && (
-                              <Badge variant="destructive">Disabled</Badge>
-                            )}
-                            {registry.insecure && (
-                              <Badge
-                                variant="outline"
-                                className="text-yellow-500 border-yellow-500/50"
-                              >
-                                Insecure
-                              </Badge>
-                            )}
-                            {!registry.disabled && !registry.insecure && (
-                              <Badge variant="default">Active</Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {canWrite(FeatureGroup.CONTAINER) && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => setEditingRegistry(registry)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() =>
-                                  setDeletingRegistry(registry.url)
-                                }
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table className="table-dense">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>URL</TableHead>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {config?.registries.map((registry) => (
+                    <TableRow key={registry.url}>
+                      <TableCell className="font-mono font-medium">
+                        {registry.url}
+                      </TableCell>
+                      <TableCell className="font-mono text-muted-foreground">
+                        {registry.username || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {registry.disabled && (
+                            <Badge variant="destructive" className="text-xs">Disabled</Badge>
                           )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                          {registry.insecure && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs text-yellow-500 border-yellow-500/50"
+                            >
+                              Insecure
+                            </Badge>
+                          )}
+                          {!registry.disabled && !registry.insecure && (
+                            <Badge variant="default" className="text-xs">Active</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {canWrite(FeatureGroup.CONTAINER) && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setEditingRegistry(registry)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive"
+                              onClick={() =>
+                                setDeletingRegistry(registry.url)
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </TabsContent>
       </Tabs>

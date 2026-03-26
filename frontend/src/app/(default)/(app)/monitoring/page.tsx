@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -170,15 +169,15 @@ export default function MonitoringPage() {
 
   return (
     <>
-      <div className="p-6 space-y-4">
+      <div className="page-compact">
         {/* Page Header */}
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-primary/10 p-2">
-            <Activity className="h-6 w-6 text-primary" />
+            <Activity className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Monitoring</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-sm font-semibold text-foreground">Monitoring</h1>
+            <p className="text-xs text-muted-foreground">
               Real-time monitoring via SSH
             </p>
           </div>
@@ -191,13 +190,13 @@ export default function MonitoringPage() {
 
         {/* Loading / Error / No Session states */}
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : loadError ? (
           <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4">
             <div className="flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-destructive">Error</p>
                 <p className="text-sm text-destructive/80">{loadError}</p>
@@ -205,19 +204,19 @@ export default function MonitoringPage() {
             </div>
           </div>
         ) : !session ? (
-          <Card>
-            <CardContent className="py-12 text-center space-y-2">
-              <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="py-8 text-center space-y-2">
+              <AlertCircle className="h-5 w-5 text-muted-foreground mx-auto" />
               <p className="text-sm font-medium">No Active Instance</p>
               <p className="text-sm text-muted-foreground">
                 Connect to a VyOS instance to start monitoring.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : !sshStatus?.configured ? (
-          <Card>
-            <CardContent className="py-12 text-center space-y-3">
-              <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="py-8 text-center space-y-3">
+              <AlertCircle className="h-5 w-5 text-muted-foreground mx-auto" />
               <p className="text-sm font-medium">SSH Not Configured</p>
               <p className="text-sm text-muted-foreground">
                 SSH key monitoring is not set up for{" "}
@@ -274,13 +273,13 @@ export default function MonitoringPage() {
                   <p className="text-xs text-destructive">{sshTestError}</p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <>
             {/* Command Controls */}
-            <Card>
-              <CardContent className="p-4 space-y-3">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <div className="space-y-3">
                 {/* Row 1: Command selector + params + start/stop + status */}
                 <div className="flex items-center gap-3 flex-wrap">
                   {/* Command Selector */}
@@ -335,6 +334,7 @@ export default function MonitoringPage() {
                   {/* Start / Stop */}
                   {!isRunning ? (
                     <Button
+                      size="sm"
                       onClick={handleStartClick}
                       disabled={startDisabled}
                       className="gap-2"
@@ -344,6 +344,7 @@ export default function MonitoringPage() {
                     </Button>
                   ) : (
                     <Button
+                      size="sm"
                       variant="destructive"
                       onClick={handleStop}
                       disabled={status === "stopping"}
@@ -460,8 +461,8 @@ export default function MonitoringPage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Data View */}
             {activeCommand ? (
@@ -493,20 +494,20 @@ export default function MonitoringPage() {
                   />
                 )}
                 {isTerminalCommand && (
-                  <Card className="overflow-hidden">
+                  <div className="rounded-md border border-border overflow-hidden">
                     <MonitoringTerminal output={output} onClear={handleClear} />
-                  </Card>
+                  </div>
                 )}
               </>
             ) : (
-              <Card>
-                <CardContent className="py-16 text-center space-y-2">
-                  <Activity className="h-10 w-10 text-muted-foreground mx-auto" />
+              <div className="rounded-lg border border-border card-accent p-3">
+                <div className="py-12 text-center space-y-2">
+                  <Activity className="h-5 w-5 text-muted-foreground mx-auto" />
                   <p className="text-sm font-medium text-muted-foreground">
                     Select a command and click Start to begin monitoring
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </>
         )}

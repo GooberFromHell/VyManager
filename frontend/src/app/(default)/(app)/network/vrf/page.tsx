@@ -138,12 +138,12 @@ export default function VRFPage() {
       <div className="flex h-full">
         {/* Left Sidebar - VRF Instance Selector */}
         <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-          <div className="p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Network className="h-6 w-6 text-primary" />
+          <div className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Network className="h-4 w-4 text-primary" />
               <div>
-                <h2 className="text-lg font-semibold text-foreground">VRF Instances</h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h2 className="text-sm font-semibold text-foreground">VRF Instances</h2>
+                <p className="text-xs text-muted-foreground">
                   Virtual Routing & Forwarding
                 </p>
               </div>

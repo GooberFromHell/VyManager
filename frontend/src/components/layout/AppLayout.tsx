@@ -13,12 +13,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header with Search */}
-        <header className="relative z-40 flex h-14 items-center justify-between border-b border-border px-6 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
-          <div className="flex-1" />
-          <div className="flex items-center gap-4">
-            <SearchBar />
-          </div>
+        {/* Compact top header */}
+        <header className="relative z-40 flex h-11 items-center justify-end border-b border-border px-4 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
+          <SearchBar />
         </header>
 
         {/* Main Content */}

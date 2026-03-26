@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Pencil, Terminal, Shield, Key } from "lucide-react";
@@ -49,15 +48,15 @@ export default function SSHPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading SSH"
           message={error}
@@ -69,141 +68,136 @@ export default function SSHPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       <PageHeader
         title="SSH"
         description="Secure Shell access configuration"
         actions={
           <>
             {canWrite(FeatureGroup.SSH) && (
-              <Button variant="outline" onClick={() => setEditOpen(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Pencil className="mr-1.5 h-3.5 w-3.5" />
                 Edit
               </Button>
             )}
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             </Button>
           </>
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Terminal className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">General</h3>
+      {/* General + Auth — compact side-by-side sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="rounded-lg border border-border card-accent p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">General</h3>
+          </div>
+          <div className="text-sm space-y-0">
+            <div className="kv-row">
+              <span className="text-muted-foreground text-xs">Port</span>
+              <span className="font-mono text-xs">{config?.port || 22}</span>
             </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Port</span>
-                <span className="font-mono">{config?.port || 22}</span>
+            <div className="kv-row">
+              <span className="text-muted-foreground text-xs">Listen Addresses</span>
+              <div className="flex flex-wrap gap-1 justify-end">
+                {(config?.listen_addresses || []).length > 0
+                  ? config!.listen_addresses.map((addr) => <Badge key={addr} variant="secondary" className="text-xs">{addr}</Badge>)
+                  : <span className="text-muted-foreground italic text-xs">All interfaces</span>}
               </div>
-              <div>
-                <span className="text-muted-foreground">Listen Addresses</span>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {(config?.listen_addresses || []).length > 0
-                    ? config!.listen_addresses.map((addr) => <Badge key={addr} variant="secondary">{addr}</Badge>)
-                    : <span className="text-muted-foreground italic">All interfaces</span>}
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Log Level</span>
-                <Badge variant="outline">{config?.loglevel || "INFO"}</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Keepalive Interval</span>
-                <span>{config?.client_keepalive_interval || "—"}s</span>
-              </div>
-              {config?.vrf && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">VRF</span>
-                  <span>{config.vrf}</span>
-                </div>
-              )}
             </div>
-          </CardContent>
-        </Card>
+            <div className="kv-row">
+              <span className="text-muted-foreground text-xs">Log Level</span>
+              <Badge variant="outline" className="text-xs">{config?.loglevel || "INFO"}</Badge>
+            </div>
+            <div className="kv-row">
+              <span className="text-muted-foreground text-xs">Keepalive</span>
+              <span className="text-xs">{config?.client_keepalive_interval || "—"}s</span>
+            </div>
+            {config?.vrf && (
+              <div className="kv-row">
+                <span className="text-muted-foreground text-xs">VRF</span>
+                <span className="text-xs font-mono">{config.vrf}</span>
+              </div>
+            )}
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Authentication</h3>
+        <div className="rounded-lg border border-border card-accent p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">Authentication</h3>
+          </div>
+          <div className="text-sm space-y-0">
+            <div className="kv-row">
+              <span className="text-muted-foreground text-xs">Password Auth</span>
+              <Badge variant={config?.disable_password_authentication ? "destructive" : "default"} className="text-xs">
+                {config?.disable_password_authentication ? "Disabled" : "Enabled"}
+              </Badge>
             </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Password Auth</span>
-                <Badge variant={config?.disable_password_authentication ? "destructive" : "default"}>
-                  {config?.disable_password_authentication ? "Disabled" : "Enabled"}
-                </Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Host Validation</span>
-                <Badge variant={config?.disable_host_validation ? "destructive" : "default"}>
-                  {config?.disable_host_validation ? "Disabled" : "Enabled"}
-                </Badge>
-              </div>
-              {config?.access_control && (
-                <>
-                  <div>
-                    <span className="text-muted-foreground">Allowed Users</span>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {(config.access_control.allow_users || []).length > 0
-                        ? config.access_control.allow_users.map((u) => <Badge key={u} variant="secondary">{u}</Badge>)
-                        : <span className="text-muted-foreground italic">All users</span>}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Denied Users</span>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {(config.access_control.deny_users || []).length > 0
-                        ? config.access_control.deny_users.map((u) => <Badge key={u} variant="destructive">{u}</Badge>)
-                        : <span className="text-muted-foreground italic">None</span>}
-                    </div>
-                  </div>
-                </>
-              )}
+            <div className="kv-row">
+              <span className="text-muted-foreground text-xs">Host Validation</span>
+              <Badge variant={config?.disable_host_validation ? "destructive" : "default"} className="text-xs">
+                {config?.disable_host_validation ? "Disabled" : "Enabled"}
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
+            {config?.access_control && (
+              <>
+                <div className="kv-row flex-col items-start gap-1">
+                  <span className="text-muted-foreground text-xs">Allowed Users</span>
+                  <div className="flex flex-wrap gap-1">
+                    {(config.access_control.allow_users || []).length > 0
+                      ? config.access_control.allow_users.map((u) => <Badge key={u} variant="secondary" className="text-xs">{u}</Badge>)
+                      : <span className="text-muted-foreground italic text-xs">All users</span>}
+                  </div>
+                </div>
+                <div className="kv-row flex-col items-start gap-1">
+                  <span className="text-muted-foreground text-xs">Denied Users</span>
+                  <div className="flex flex-wrap gap-1">
+                    {(config.access_control.deny_users || []).length > 0
+                      ? config.access_control.deny_users.map((u) => <Badge key={u} variant="destructive" className="text-xs">{u}</Badge>)
+                      : <span className="text-muted-foreground italic text-xs">None</span>}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
-        <Card className="md:col-span-2">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Key className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Cryptography</h3>
+      {/* Cryptography — full width, dense badge layout */}
+      <div className="rounded-lg border border-border card-accent p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <Key className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">Cryptography</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div>
+            <span className="text-muted-foreground text-[0.6875rem] uppercase tracking-wide">Ciphers</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {(config?.ciphers || []).length > 0
+                ? config!.ciphers.map((c) => <Badge key={c} variant="outline" className="font-mono text-[0.6875rem]">{c}</Badge>)
+                : <span className="text-muted-foreground italic">Default</span>}
             </div>
-            <div className="grid grid-cols-3 gap-6 text-sm">
-              <div>
-                <span className="text-muted-foreground">Ciphers</span>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {(config?.ciphers || []).length > 0
-                    ? config!.ciphers.map((c) => <Badge key={c} variant="outline" className="font-mono text-xs">{c}</Badge>)
-                    : <span className="text-muted-foreground italic">Default</span>}
-                </div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Key Exchange</span>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {(config?.key_exchange || []).length > 0
-                    ? config!.key_exchange.map((k) => <Badge key={k} variant="outline" className="font-mono text-xs">{k}</Badge>)
-                    : <span className="text-muted-foreground italic">Default</span>}
-                </div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">MACs</span>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {(config?.mac || []).length > 0
-                    ? config!.mac.map((m) => <Badge key={m} variant="outline" className="font-mono text-xs">{m}</Badge>)
-                    : <span className="text-muted-foreground italic">Default</span>}
-                </div>
-              </div>
+          </div>
+          <div>
+            <span className="text-muted-foreground text-[0.6875rem] uppercase tracking-wide">Key Exchange</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {(config?.key_exchange || []).length > 0
+                ? config!.key_exchange.map((k) => <Badge key={k} variant="outline" className="font-mono text-[0.6875rem]">{k}</Badge>)
+                : <span className="text-muted-foreground italic">Default</span>}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div>
+            <span className="text-muted-foreground text-[0.6875rem] uppercase tracking-wide">MACs</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {(config?.mac || []).length > 0
+                ? config!.mac.map((m) => <Badge key={m} variant="outline" className="font-mono text-[0.6875rem]">{m}</Badge>)
+                : <span className="text-muted-foreground italic">Default</span>}
+            </div>
+          </div>
+        </div>
       </div>
 
       {config && (

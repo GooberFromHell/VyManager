@@ -53,17 +53,16 @@ export default function ServicesLayout({
     <SplitLayout
       sidebar={
         <>
-          <div className="flex h-16 items-center border-b px-6 shrink-0">
-            <h2 className="text-lg font-semibold text-foreground">Services</h2>
+          <div className="flex h-10 items-center border-b px-4 shrink-0">
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Services</h2>
           </div>
-          <ScrollArea className="flex-1 px-3">
-            <div className="space-y-1 py-3">
+          <ScrollArea className="flex-1 px-2">
+            <div className="space-y-0.5 py-2">
               {services.map((service) => (
                 <NavItem
                   key={service.id}
                   icon={service.icon}
                   name={service.name}
-                  description={service.description}
                   active={isActive(service.href)}
                   onClick={() => router.push(service.href)}
                 />

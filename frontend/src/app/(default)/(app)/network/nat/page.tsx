@@ -526,8 +526,8 @@ export default function NATPage() {
         <div className="flex-1 flex flex-col">
           {selectedType === "cgnat" ? (
             <div className="flex-1 flex flex-col">
-              <div className="p-6 pb-4 border-b border-border">
-                <div className="flex items-start justify-between mb-4">
+              <div className="p-4 pb-3 border-b border-border">
+                <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h1 className="text-2xl font-bold text-foreground">
                       CGNAT Rules
@@ -548,7 +548,7 @@ export default function NATPage() {
                   </Button>
                 </div>
               </div>
-              <div className="p-6 flex-1 overflow-auto">
+              <div className="p-4 flex-1 overflow-auto">
                 <CGNATView
                   config={config?.cgnat}
                   onRefresh={() => fetchConfig(true)}
@@ -560,8 +560,8 @@ export default function NATPage() {
           ) : (
           <>
           {/* Header */}
-          <div className="p-6 pb-4 border-b border-border">
-            <div className="flex items-start justify-between mb-4">
+          <div className="p-4 pb-3 border-b border-border">
+            <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-foreground">
                   {selectedType === "source" ? "Source NAT Rules" : selectedType === "destination" ? "Destination NAT Rules" : "Static NAT Rules"}
@@ -589,9 +589,9 @@ export default function NATPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-5 gap-4 mb-4">
-              <Card>
-                <CardContent className="pt-6">
+            <div className="grid grid-cols-5 gap-3 mb-3">
+              <Card className="card-accent">
+                <CardContent className="pt-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <Shield className="h-5 w-5 text-primary" />
@@ -604,8 +604,8 @@ export default function NATPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="card-accent">
+                <CardContent className="pt-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10">
                       <ArrowRightLeft className="h-5 w-5 text-blue-500" />
@@ -618,8 +618,8 @@ export default function NATPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="card-accent">
+                <CardContent className="pt-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-purple-500/10">
                       <ArrowLeftRight className="h-5 w-5 text-purple-500" />
@@ -632,8 +632,8 @@ export default function NATPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="card-accent">
+                <CardContent className="pt-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-orange-500/10">
                       <Network className="h-5 w-5 text-orange-500" />
@@ -646,8 +646,8 @@ export default function NATPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="card-accent">
+                <CardContent className="pt-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-green-500/10">
                       <Globe className="h-5 w-5 text-green-500" />
@@ -693,8 +693,8 @@ export default function NATPage() {
                 </Card>
               </div>
             ) : (
-              <div className="p-6 pt-0">
-                <div className="rounded-lg border border-border bg-card">
+              <div className="p-4 pt-0">
+                <div className="rounded-md border border-border bg-card">
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

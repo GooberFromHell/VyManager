@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -346,8 +345,8 @@ export default function FirewallGlobalOptionsPage() {
 
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center h-48">
+          <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
     );
   }
@@ -419,16 +418,16 @@ export default function FirewallGlobalOptionsPage() {
   ];
 
   return (
-      <div className="space-y-4 p-6">
+      <div className="page-compact">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Settings className="h-5 w-5 text-primary" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <Settings className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Global Options</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-lg font-semibold text-foreground">Global Options</h1>
+              <p className="text-xs text-muted-foreground">
                 Configure global firewall settings
               </p>
             </div>
@@ -477,15 +476,13 @@ export default function FirewallGlobalOptionsPage() {
         )}
 
         {/* Main Content - 2 Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Left Column */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* ICMP Settings */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-semibold">ICMP Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-3 pt-0">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <p className="text-sm font-semibold mb-2">ICMP Settings</p>
+              <div>
                 <SettingSelect
                   label="All Ping"
                   value={allPing}
@@ -500,15 +497,13 @@ export default function FirewallGlobalOptionsPage() {
                   options={enableDisableOptions}
                   description="Accept/reject broadcast ping"
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Source Routing */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-semibold">Source Routing</CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-3 pt-0">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <p className="text-sm font-semibold mb-2">Source Routing</p>
+              <div>
                 <SettingSelect
                   label="IPv4 Source Routing"
                   value={ipSrcRoute}
@@ -521,15 +516,13 @@ export default function FirewallGlobalOptionsPage() {
                   onChange={setIpv6SrcRoute}
                   options={enableDisableOptions}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* ICMP Redirects */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-semibold">ICMP Redirects</CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-3 pt-0">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <p className="text-sm font-semibold mb-2">ICMP Redirects</p>
+              <div>
                 <SettingSelect
                   label="Receive Redirects (IPv4)"
                   value={receiveRedirects}
@@ -548,15 +541,13 @@ export default function FirewallGlobalOptionsPage() {
                   onChange={setSendRedirects}
                   options={enableDisableOptions}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Security Options */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-semibold">Security Options</CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-3 pt-0">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <p className="text-sm font-semibold mb-2">Security Options</p>
+              <div>
                 <SettingSelect
                   label="Log Martians"
                   value={logMartians}
@@ -585,18 +576,16 @@ export default function FirewallGlobalOptionsPage() {
                   options={enableDisableOptions}
                   description="RFC1337 TIME-WAIT protection"
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Right Column */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* State Policies */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-semibold">State Policies</CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-3 pt-0 space-y-4">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <p className="text-sm font-semibold mb-2">State Policies</p>
+              <div className="space-y-4">
                 {/* Established */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -731,16 +720,14 @@ export default function FirewallGlobalOptionsPage() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Bridged Traffic - Only show if VyOS 1.5+ */}
             {isV15 && (
-              <Card>
-                <CardHeader className="py-3 px-4">
-                  <CardTitle className="text-sm font-semibold">Bridged Traffic</CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 pb-3 pt-0">
+              <div className="rounded-lg border border-border card-accent p-3">
+                <p className="text-sm font-semibold mb-2">Bridged Traffic</p>
+                <div>
                   <div className="flex items-center justify-between py-2 border-b border-border/50">
                     <span className="text-sm">Apply to IPv4 Bridged Traffic</span>
                     <Checkbox
@@ -755,17 +742,15 @@ export default function FirewallGlobalOptionsPage() {
                       onCheckedChange={(c) => setBridgedIpv6(c === true)}
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Connection Timeouts - Only show if VyOS 1.5+ */}
             {isV15 && (
-              <Card>
-                <CardHeader className="py-3 px-4">
-                  <CardTitle className="text-sm font-semibold">Connection Timeouts</CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 pb-3 pt-0 space-y-3">
+              <div className="rounded-lg border border-border card-accent p-3">
+                <p className="text-sm font-semibold mb-2">Connection Timeouts</p>
+                <div className="space-y-3">
                   {/* General */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -843,8 +828,8 @@ export default function FirewallGlobalOptionsPage() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         </div>

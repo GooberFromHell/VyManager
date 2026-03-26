@@ -140,7 +140,7 @@ export default function TerminalPage() {
   // ============================================================================
 
   return (
-    <div className="flex flex-col h-full p-6 gap-4">
+    <div className="page-compact flex flex-col h-full gap-3">
       {/* Header */}
       <div className="shrink-0">
         <PageHeader
@@ -212,11 +212,11 @@ export default function TerminalPage() {
       {/* Body                                                                */}
       {/* ------------------------------------------------------------------ */}
       {loading ? (
-        <div className="flex items-center justify-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center h-48">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : loadError ? (
-        <div className="flex items-center justify-center h-96">
+        <div className="flex items-center justify-center h-48">
           <ErrorAlert
             title="Failed to load"
             message={loadError}

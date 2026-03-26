@@ -42,13 +42,13 @@ export default function InfrastructurePage() {
   return (
     <div className="flex h-full">
       {/* Left Sidebar - Infrastructure Selector */}
-      <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-        <div className="p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Settings className="h-6 w-6 text-primary" />
+      <div className="w-64 border-r border-border bg-card flex flex-col h-full">
+        <div className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Settings className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Routing Infrastructure</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 className="text-sm font-semibold text-foreground">Routing Infrastructure</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Advanced routing features
               </p>
             </div>
@@ -58,15 +58,15 @@ export default function InfrastructurePage() {
         <Separator />
 
         {/* Infrastructure List */}
-        <ScrollArea className="flex-1 px-3">
-          <div className="space-y-1 py-3">
+        <ScrollArea className="flex-1 px-2">
+          <div className="space-y-0.5 py-2">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-sm text-muted-foreground">Loading infrastructure...</p>
+              <div className="flex items-center justify-center py-6">
+                <p className="text-xs text-muted-foreground">Loading infrastructure...</p>
               </div>
             ) : infrastructure.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-sm text-muted-foreground">No accessible infrastructure</p>
+              <div className="flex items-center justify-center py-6">
+                <p className="text-xs text-muted-foreground">No accessible infrastructure</p>
               </div>
             ) : (
               infrastructure.map((infra) => {
@@ -76,32 +76,29 @@ export default function InfrastructurePage() {
                     key={infra.id}
                     onClick={() => setSelectedInfra(infra.id)}
                     className={cn(
-                      "w-full text-left rounded-lg px-3 py-3 transition-all",
+                      "w-full text-left rounded-md px-2 py-2 transition-all",
                       selectedInfra === infra.id
                         ? "bg-accent text-accent-foreground shadow-sm"
                         : "hover:bg-accent/50"
                     )}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2">
                       <div className={cn(
-                        "mt-0.5 rounded-md p-1.5",
+                        "mt-0.5 rounded-md p-1",
                         selectedInfra === infra.id ? "bg-primary/10" : "bg-muted"
                       )}>
                         <Icon className={cn(
-                          "h-4 w-4",
+                          "h-3.5 w-3.5",
                           selectedInfra === infra.id ? "text-primary" : "text-muted-foreground"
                         )} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className={cn(
-                            "font-medium text-sm",
-                            selectedInfra === infra.id ? "text-foreground" : "text-foreground"
-                          )}>
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <span className="font-medium text-sm text-foreground">
                             {infra.name}
                           </span>
                           {selectedInfra === infra.id && (
-                            <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
+                            <ChevronRight className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                           )}
                         </div>
                         <span className="text-xs text-muted-foreground">

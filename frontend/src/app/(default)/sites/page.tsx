@@ -280,21 +280,20 @@ export default function SitesPage() {
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Left Navigation */}
       <div className="w-64 border-r border-border bg-card flex flex-col h-full">
-        <div className="p-4">
+        <div className="p-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center">
+            <div className="flex h-8 w-8 items-center justify-center">
               <Image
                 src="/vy-icon.png"
                 alt="VyOS Logo"
-                width={40}
-                height={40}
+                width={32}
+                height={32}
                 className="object-contain"
                 loader={({ src }) => src}
               />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Site Manager</h2>
-              <p className="text-xs text-muted-foreground">Manage infrastructure</p>
+              <h2 className="text-base font-semibold text-foreground">Site Manager</h2>
             </div>
           </div>
         </div>
@@ -303,12 +302,12 @@ export default function SitesPage() {
 
         {/* Navigation Items */}
         <ScrollArea className="flex-1 px-3">
-          <div className="space-y-1 py-3">
+          <div className="space-y-1 py-2">
             {/* Sites */}
             <button
               onClick={() => setSelectedSection("sites")}
               className={cn(
-                "w-full text-left rounded-lg px-3 py-3 transition-all duration-200 ease-[var(--ease-out-quart)]",
+                "w-full text-left rounded-lg px-3 py-2 transition-all duration-200 ease-[var(--ease-out-quart)]",
                 selectedSection === "sites"
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "hover:bg-accent/50"
@@ -335,7 +334,7 @@ export default function SitesPage() {
             <button
               onClick={() => setSelectedSection("user-management")}
               className={cn(
-                "w-full text-left rounded-lg px-3 py-3 transition-all duration-200 ease-[var(--ease-out-quart)]",
+                "w-full text-left rounded-lg px-3 py-2 transition-all duration-200 ease-[var(--ease-out-quart)]",
                 selectedSection === "user-management"
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "hover:bg-accent/50"
@@ -362,7 +361,7 @@ export default function SitesPage() {
             <button
               onClick={() => setSelectedSection("authentication")}
               className={cn(
-                "w-full text-left rounded-lg px-3 py-3 transition-all duration-200 ease-[var(--ease-out-quart)]",
+                "w-full text-left rounded-lg px-3 py-2 transition-all duration-200 ease-[var(--ease-out-quart)]",
                 selectedSection === "authentication"
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "hover:bg-accent/50"
@@ -389,7 +388,7 @@ export default function SitesPage() {
             <button
               onClick={() => setSelectedSection("management")}
               className={cn(
-                "w-full text-left rounded-lg px-3 py-3 transition-all duration-200 ease-[var(--ease-out-quart)]",
+                "w-full text-left rounded-lg px-3 py-2 transition-all duration-200 ease-[var(--ease-out-quart)]",
                 selectedSection === "management"
                   ? "bg-accent text-accent-foreground shadow-sm"
                   : "hover:bg-accent/50"
@@ -420,8 +419,8 @@ export default function SitesPage() {
         </ScrollArea>
 
         {/* User Info & Logout */}
-        <div className="border-t border-border p-4">
-          <div className="rounded-lg bg-muted/50 p-3">
+        <div className="border-t border-border p-3">
+          <div className="rounded-lg bg-muted/50 p-2.5">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                 <User className="h-4 w-4 text-primary" />
@@ -447,12 +446,12 @@ export default function SitesPage() {
 
       {/* Middle Submenu - Site List */}
       {selectedSection === "sites" && (
-        <div className="w-80 shrink-0 border-r border-border bg-card flex flex-col h-full overflow-hidden">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
+        <div className="w-72 shrink-0 border-r border-border bg-card flex flex-col h-full overflow-hidden">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Sites</h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h2 className="text-base font-semibold text-foreground">Sites</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {sites.length} {sites.length === 1 ? "site" : "sites"}
                 </p>
               </div>
@@ -480,7 +479,7 @@ export default function SitesPage() {
 
             {/* Add Site Button */}
             <Button
-              className="w-full mt-4 gap-2"
+              className="w-full mt-3 gap-2"
               onClick={() => setCreateSiteOpen(true)}
             >
               <Plus className="h-4 w-4" />
@@ -515,8 +514,8 @@ export default function SitesPage() {
           {/* Site List */}
           <ScrollArea className="flex-1 px-3">
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
               <div className="p-4">
@@ -532,7 +531,7 @@ export default function SitesPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-1 py-3">
+              <div className="space-y-1 py-2">
                 {filteredSites.map((site) => (
                   <div
                     key={site.id}
@@ -545,7 +544,7 @@ export default function SitesPage() {
                   >
                     <button
                       onClick={() => setSelectedSite(site)}
-                      className="w-full text-left px-3 py-3 pr-10"
+                      className="w-full text-left px-3 py-2 pr-10"
                     >
                       <div className="flex items-start gap-3">
                         <div className={cn(
@@ -634,10 +633,10 @@ export default function SitesPage() {
         {selectedSection === "sites" && selectedSite ? (
           <>
             {/* Header */}
-            <div className="px-6 pt-6 pb-4 animate-fade-up" key={selectedSite.id}>
+            <div className="px-4 pt-4 pb-3 animate-fade-up" key={selectedSite.id}>
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl font-bold text-foreground truncate">
+                  <h1 className="text-xl font-bold text-foreground truncate">
                     {selectedSite.name}
                   </h1>
                   {selectedSite.description && (
@@ -680,7 +679,7 @@ export default function SitesPage() {
 
             {/* Toolbar */}
             {instances.length > 0 && (
-              <div className="flex items-center gap-3 px-6 pb-4">
+              <div className="flex items-center gap-3 px-4 pb-3">
                 {/* Search Input */}
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -724,19 +723,19 @@ export default function SitesPage() {
             )}
 
             {/* Instances Grid/Table */}
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-4">
               {instancesLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : instances.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
+                <div className="flex items-center justify-center py-10">
                   <div className="text-center">
-                    <Server className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                    <Server className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                    <h3 className="text-base font-semibold text-foreground mb-1">
                       No Instances
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-6">
+                    <p className="text-sm text-muted-foreground mb-4">
                       No instances configured for this site yet.
                     </p>
                     {selectedSite.role === "ADMIN" && (
@@ -748,10 +747,10 @@ export default function SitesPage() {
                   </div>
                 </div>
               ) : filteredInstances.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
+                <div className="flex items-center justify-center py-10">
                   <div className="text-center">
-                    <Search className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                    <Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                    <h3 className="text-base font-semibold text-foreground mb-1">
                       No Instances Found
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -772,7 +771,7 @@ export default function SitesPage() {
                   onDelete={handleDeleteInstance}
                 />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                   {filteredInstances.map((instance, index) => (
                     <div
                       key={instance.id}
@@ -797,7 +796,7 @@ export default function SitesPage() {
               )}
 
               {selectedSite && instances.length > 0 && (
-                <div className="mt-10 pt-6 border-t border-border/50">
+                <div className="mt-6 pt-4 border-t border-border/50">
                   <SiteToolsSection
                     siteId={selectedSite.id}
                     siteName={selectedSite.name}
@@ -808,11 +807,11 @@ export default function SitesPage() {
             </div>
           </>
         ) : selectedSection === "user-management" ? (
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-4">
             <UserManagement />
           </div>
         ) : selectedSection === "authentication" ? (
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-4">
             <AuthenticationSettings />
           </div>
         ) : selectedSection === "management" ? (
@@ -822,8 +821,8 @@ export default function SitesPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <Building2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <Building2 className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+              <h3 className="text-base font-semibold text-foreground mb-1">
                 Select a Site
               </h3>
               <p className="text-sm text-muted-foreground">

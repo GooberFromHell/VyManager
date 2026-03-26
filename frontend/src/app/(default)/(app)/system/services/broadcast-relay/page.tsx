@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -17,7 +16,6 @@ import {
   RefreshCw,
   Pencil,
   Trash2,
-  Radio,
   ArrowLeftRight,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -95,15 +93,15 @@ export default function BroadcastRelayPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading Broadcast Relay"
           message={error}
@@ -120,19 +118,19 @@ export default function BroadcastRelayPage() {
   const colSpan = hasWriteAccess ? 7 : 6;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       <PageHeader
         title="Broadcast Relay"
         description="Forward UDP broadcast packets between network interfaces"
         actions={
           <>
             {hasWriteAccess && (
-              <Button onClick={() => setCreateOpen(true)}>
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create New
               </Button>
             )}
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
               <RefreshCw
                 className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
               />
@@ -142,8 +140,8 @@ export default function BroadcastRelayPage() {
         }
       />
 
-      <div className="rounded-lg border border-border">
-        <Table>
+      <div className="rounded-md border border-border overflow-hidden">
+        <Table className="table-dense">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[80px]">ID</TableHead>
@@ -185,7 +183,7 @@ export default function BroadcastRelayPage() {
                     {relay.interfaces.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {relay.interfaces.map((iface) => (
-                          <Badge key={iface} variant="secondary">
+                          <Badge key={iface} variant="secondary" className="text-xs">
                             {iface}
                           </Badge>
                         ))}
@@ -194,23 +192,23 @@ export default function BroadcastRelayPage() {
                       <span className="text-muted-foreground italic">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className="font-mono text-xs">
                     {relay.address ?? (
                       <span className="text-muted-foreground italic">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className="font-mono text-xs">
                     {relay.port ?? (
                       <span className="text-muted-foreground italic">—</span>
                     )}
                   </TableCell>
                   <TableCell>
                     {relay.disabled ? (
-                      <Badge variant="outline" className="text-muted-foreground">
+                      <Badge variant="outline" className="text-xs text-muted-foreground">
                         Disabled
                       </Badge>
                     ) : (
-                      <Badge variant="default" className="bg-green-600/20 text-green-400 border-green-600/30">
+                      <Badge variant="default" className="text-xs bg-green-600/20 text-green-400 border-green-600/30">
                         Enabled
                       </Badge>
                     )}
@@ -220,14 +218,14 @@ export default function BroadcastRelayPage() {
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          className="h-7 w-7 p-0"
                           onClick={() => handleEditClick(relay)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          className="h-7 w-7 p-0"
                           onClick={() => handleDeleteClick(relay)}
                         >
                           <Trash2 className="h-4 w-4" />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -122,7 +121,7 @@ export default function SNMPPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="page-compact">
         <ErrorAlert
           message={error}
           onRetry={() => {
@@ -137,7 +136,7 @@ export default function SNMPPage() {
 
   if (!config) {
     return (
-      <div className="p-6">
+      <div className="page-compact">
         <div className="rounded-lg border border-border bg-muted/50 p-8 text-center">
           <Radio className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">SNMP Not Configured</h3>
@@ -145,7 +144,7 @@ export default function SNMPPage() {
             No SNMP configuration found on this device.
           </p>
           {!isReadOnly && (
-            <Button onClick={() => setEditOpen(true)}>
+            <Button size="sm" onClick={() => setEditOpen(true)}>
               <Settings2 className="h-4 w-4 mr-2" />
               Configure SNMP
             </Button>
@@ -164,7 +163,7 @@ export default function SNMPPage() {
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-6 space-y-6">
+      <div className="page-compact">
         {/* Header */}
         <PageHeader
           title="SNMP"
@@ -172,7 +171,7 @@ export default function SNMPPage() {
           actions={
             <>
               {!isReadOnly && (
-                <Button variant="outline" onClick={() => setEditOpen(true)}>
+                <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
@@ -192,94 +191,90 @@ export default function SNMPPage() {
         />
 
         {/* General Settings & Listen Addresses */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Settings2 className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">General Settings</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings2 className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">General Settings</h3>
+            </div>
+            <div className="space-y-1">
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Contact</span>
+                <span className="text-xs">
+                  {config.contact || (
+                    <span className="text-muted-foreground italic">
+                      Not set
+                    </span>
+                  )}
+                </span>
               </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Contact</span>
-                  <span>
-                    {config.contact || (
-                      <span className="text-muted-foreground italic">
-                        Not set
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Description</span>
-                  <span>
-                    {config.description || (
-                      <span className="text-muted-foreground italic">
-                        Not set
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Location</span>
-                  <span>
-                    {config.location || (
-                      <span className="text-muted-foreground italic">
-                        Not set
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Trap Source</span>
-                  <span>
-                    {config.trap_source || (
-                      <span className="text-muted-foreground italic">
-                        Not set
-                      </span>
-                    )}
-                  </span>
-                </div>
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Description</span>
+                <span className="text-xs">
+                  {config.description || (
+                    <span className="text-muted-foreground italic">
+                      Not set
+                    </span>
+                  )}
+                </span>
               </div>
-            </CardContent>
-          </Card>
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Location</span>
+                <span className="text-xs">
+                  {config.location || (
+                    <span className="text-muted-foreground italic">
+                      Not set
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Trap Source</span>
+                <span className="text-xs">
+                  {config.trap_source || (
+                    <span className="text-muted-foreground italic">
+                      Not set
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Radio className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Listen Addresses</h3>
-              </div>
-              <div className="space-y-2">
-                {config.listen_addresses.length > 0 ? (
-                  config.listen_addresses.map((listen) => (
-                    <div
-                      key={`${listen.address}:${listen.port || "default"}`}
-                      className="flex items-center gap-2 text-sm py-1.5 px-3 rounded-md bg-muted/50"
-                    >
-                      <Radio className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="font-mono">{listen.address}</span>
-                      {listen.port && (
-                        <Badge variant="outline">port {listen.port}</Badge>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    No listen addresses configured
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Radio className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Listen Addresses</h3>
+            </div>
+            <div className="space-y-1">
+              {config.listen_addresses.length > 0 ? (
+                config.listen_addresses.map((listen) => (
+                  <div
+                    key={`${listen.address}:${listen.port || "default"}`}
+                    className="flex items-center gap-2 text-xs py-1 px-2 rounded-md bg-muted/50"
+                  >
+                    <Radio className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="font-mono">{listen.address}</span>
+                    {listen.port && (
+                      <Badge variant="outline" className="text-xs">port {listen.port}</Badge>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  No listen addresses configured
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Communities */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Communities</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold section-header">Communities</h3>
             {!isReadOnly && (
-              <Button onClick={() => setCreateCommunityOpen(true)}>
+              <Button size="sm" onClick={() => setCreateCommunityOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Community
               </Button>
@@ -287,8 +282,8 @@ export default function SNMPPage() {
           </div>
 
           {config.communities.length > 0 ? (
-            <Card>
-              <Table>
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table className="table-dense">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
@@ -308,6 +303,7 @@ export default function SNMPPage() {
                       </TableCell>
                       <TableCell>
                         <Badge
+                          className="text-xs"
                           variant={
                             community.authorization === "rw"
                               ? "default"
@@ -321,12 +317,12 @@ export default function SNMPPage() {
                         <div className="flex flex-wrap gap-1">
                           {community.clients.length > 0 ? (
                             community.clients.map((client) => (
-                              <Badge key={client} variant="secondary">
+                              <Badge key={client} variant="secondary" className="text-xs">
                                 {client}
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-muted-foreground italic text-sm">
+                            <span className="text-muted-foreground italic text-xs">
                               Any
                             </span>
                           )}
@@ -336,12 +332,12 @@ export default function SNMPPage() {
                         <div className="flex flex-wrap gap-1">
                           {community.networks.length > 0 ? (
                             community.networks.map((network) => (
-                              <Badge key={network} variant="secondary">
+                              <Badge key={network} variant="secondary" className="text-xs">
                                 {network}
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-muted-foreground italic text-sm">
+                            <span className="text-muted-foreground italic text-xs">
                               Any
                             </span>
                           )}
@@ -352,7 +348,7 @@ export default function SNMPPage() {
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
-                              size="icon"
+                              className="h-7 w-7 p-0"
                               onClick={() => handleDeleteCommunity(community)}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -364,35 +360,34 @@ export default function SNMPPage() {
                   ))}
                 </TableBody>
               </Table>
-            </Card>
+            </div>
           ) : (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <Users className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  No SNMP communities configured
-                </p>
-                {!isReadOnly && (
-                  <Button
-                    variant="outline"
-                    className="mt-3"
-                    onClick={() => setCreateCommunityOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Community
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-border card-accent p-3 py-8 text-center">
+              <Users className="h-5 w-5 text-muted-foreground mx-auto mb-3" />
+              <p className="text-xs text-muted-foreground">
+                No SNMP communities configured
+              </p>
+              {!isReadOnly && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => setCreateCommunityOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Community
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
         {/* Trap Targets */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Trap Targets</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold section-header">Trap Targets</h3>
             {!isReadOnly && (
-              <Button onClick={() => setCreateTrapTargetOpen(true)}>
+              <Button size="sm" onClick={() => setCreateTrapTargetOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Trap Target
               </Button>
@@ -400,8 +395,8 @@ export default function SNMPPage() {
           </div>
 
           {config.trap_targets.length > 0 ? (
-            <Card>
-              <Table>
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table className="table-dense">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Address</TableHead>
@@ -417,16 +412,16 @@ export default function SNMPPage() {
                       </TableCell>
                       <TableCell>
                         {target.community || (
-                          <span className="text-muted-foreground italic">
+                          <span className="text-muted-foreground italic text-xs">
                             Not set
                           </span>
                         )}
                       </TableCell>
                       <TableCell>
                         {target.port ? (
-                          <Badge variant="outline">{target.port}</Badge>
+                          <Badge variant="outline" className="text-xs">{target.port}</Badge>
                         ) : (
-                          <span className="text-muted-foreground italic">
+                          <span className="text-muted-foreground italic text-xs">
                             Default
                           </span>
                         )}
@@ -435,26 +430,25 @@ export default function SNMPPage() {
                   ))}
                 </TableBody>
               </Table>
-            </Card>
+            </div>
           ) : (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <Radio className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  No trap targets configured
-                </p>
-                {!isReadOnly && (
-                  <Button
-                    variant="outline"
-                    className="mt-3"
-                    onClick={() => setCreateTrapTargetOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Trap Target
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-border card-accent p-3 py-8 text-center">
+              <Radio className="h-5 w-5 text-muted-foreground mx-auto mb-3" />
+              <p className="text-xs text-muted-foreground">
+                No trap targets configured
+              </p>
+              {!isReadOnly && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => setCreateTrapTargetOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Trap Target
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
@@ -462,32 +456,30 @@ export default function SNMPPage() {
         {hasV3Config && (
           <div>
             <div
-              className="flex items-center gap-2 mb-4 cursor-pointer"
+              className="flex items-center gap-2 mb-2 cursor-pointer"
               onClick={() => setV3Expanded(!v3Expanded)}
             >
               {v3Expanded ? (
-                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
-              <Shield className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">SNMPv3</h3>
+              <Shield className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold section-header">SNMPv3</h3>
             </div>
 
             {v3Expanded && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Engine ID */}
                 {config.v3.engineid && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Engine ID</span>
-                        <span className="font-mono">
-                          {config.v3.engineid}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="rounded-lg border border-border card-accent p-3">
+                    <div className="kv-row">
+                      <span className="text-xs text-muted-foreground">Engine ID</span>
+                      <span className="text-xs font-mono">
+                        {config.v3.engineid}
+                      </span>
+                    </div>
+                  </div>
                 )}
 
                 {/* Groups */}
@@ -497,8 +489,8 @@ export default function SNMPPage() {
                       <Users className="h-4 w-4" />
                       Groups
                     </h4>
-                    <Card>
-                      <Table>
+                    <div className="rounded-md border border-border overflow-hidden">
+                      <Table className="table-dense">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Name</TableHead>
@@ -515,29 +507,29 @@ export default function SNMPPage() {
                               </TableCell>
                               <TableCell>
                                 {group.mode ? (
-                                  <Badge variant="secondary">
+                                  <Badge variant="secondary" className="text-xs">
                                     {group.mode}
                                   </Badge>
                                 ) : (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
                               </TableCell>
                               <TableCell>
                                 {group.seclevel ? (
-                                  <Badge variant="outline">
+                                  <Badge variant="outline" className="text-xs">
                                     {group.seclevel}
                                   </Badge>
                                 ) : (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
                               </TableCell>
                               <TableCell>
                                 {group.view || (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
@@ -546,7 +538,7 @@ export default function SNMPPage() {
                           ))}
                         </TableBody>
                       </Table>
-                    </Card>
+                    </div>
                   </div>
                 )}
 
@@ -557,8 +549,8 @@ export default function SNMPPage() {
                       <Users className="h-4 w-4" />
                       Users
                     </h4>
-                    <Card>
-                      <Table>
+                    <div className="rounded-md border border-border overflow-hidden">
+                      <Table className="table-dense">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Name</TableHead>
@@ -576,38 +568,38 @@ export default function SNMPPage() {
                               </TableCell>
                               <TableCell>
                                 {user.auth_type ? (
-                                  <Badge variant="secondary">
+                                  <Badge variant="secondary" className="text-xs">
                                     {user.auth_type}
                                   </Badge>
                                 ) : (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
                               </TableCell>
                               <TableCell>
                                 {user.privacy_type ? (
-                                  <Badge variant="secondary">
+                                  <Badge variant="secondary" className="text-xs">
                                     {user.privacy_type}
                                   </Badge>
                                 ) : (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
                               </TableCell>
                               <TableCell>
                                 {user.group || (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
                               </TableCell>
                               <TableCell>
                                 {user.mode ? (
-                                  <Badge variant="outline">{user.mode}</Badge>
+                                  <Badge variant="outline" className="text-xs">{user.mode}</Badge>
                                 ) : (
-                                  <span className="text-muted-foreground italic">
+                                  <span className="text-muted-foreground italic text-xs">
                                     Not set
                                   </span>
                                 )}
@@ -616,7 +608,7 @@ export default function SNMPPage() {
                           ))}
                         </TableBody>
                       </Table>
-                    </Card>
+                    </div>
                   </div>
                 )}
 
@@ -627,8 +619,8 @@ export default function SNMPPage() {
                       <Eye className="h-4 w-4" />
                       Views
                     </h4>
-                    <Card>
-                      <Table>
+                    <div className="rounded-md border border-border overflow-hidden">
+                      <Table className="table-dense">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Name</TableHead>
@@ -647,7 +639,7 @@ export default function SNMPPage() {
                                     <Badge
                                       key={oid}
                                       variant="secondary"
-                                      className="font-mono"
+                                      className="text-xs font-mono"
                                     >
                                       {oid}
                                     </Badge>
@@ -658,7 +650,7 @@ export default function SNMPPage() {
                           ))}
                         </TableBody>
                       </Table>
-                    </Card>
+                    </div>
                   </div>
                 )}
               </div>

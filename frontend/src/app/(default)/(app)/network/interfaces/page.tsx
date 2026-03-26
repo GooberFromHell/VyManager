@@ -202,7 +202,7 @@ export default function InterfacesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -210,12 +210,12 @@ export default function InterfacesPage() {
 
   return (
     <>
-      <div className="space-y-6 p-6">
+      <div className="page-compact">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Network Interfaces</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-lg font-semibold text-foreground">Network Interfaces</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
               Manage and monitor network interface configurations
             </p>
           </div>
@@ -231,10 +231,10 @@ export default function InterfacesPage() {
 
           {/* ===== Ethernet Tab ===== */}
           <TabsContent value="ethernet">
-            <div className="space-y-6 mt-4">
+            <div className="space-y-3 mt-3">
               {/* Stats Dashboard */}
-              <div className="grid grid-cols-3 gap-4">
-                <Card className="border-border">
+              <div className="grid grid-cols-3 gap-3">
+                <Card className="border-border card-accent">
                   <CardContent className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -248,7 +248,7 @@ export default function InterfacesPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border">
+                <Card className="border-border card-accent">
                   <CardContent className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
@@ -262,7 +262,7 @@ export default function InterfacesPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border">
+                <Card className="border-border card-accent">
                   <CardContent className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
@@ -346,14 +346,14 @@ export default function InterfacesPage() {
 
               {/* Interface Cards */}
               {!error && (
-                <div className="space-y-4 mt-6">
+                <div className="space-y-3 mt-4">
                   {/* Ethernet Interfaces */}
                   {(typeFilter === "all" || typeFilter === "ethernet") && filteredInterfaces.length > 0 && (
                     <div className="space-y-3">
                       {typeFilter === "all" && (
-                        <h2 className="text-lg font-semibold text-foreground">Ethernet Interfaces</h2>
+                        <h2 className="text-base font-semibold text-foreground">Ethernet Interfaces</h2>
                       )}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {filteredInterfaces.map((iface) => {
                           const vlanCount = (iface.vif?.length || 0) + (iface.vif_s?.length || 0);
                           return (
@@ -445,9 +445,9 @@ export default function InterfacesPage() {
                   {(typeFilter === "all" || typeFilter === "vlan") && filteredVlans.length > 0 && (
                     <div className="space-y-3">
                       {typeFilter === "all" && (
-                        <h2 className="text-lg font-semibold text-foreground">VLANs</h2>
+                        <h2 className="text-base font-semibold text-foreground">VLANs</h2>
                       )}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {filteredVlans.map((vlan) => (
                           <Card key={vlan.fullName} className="border-border hover:border-primary/50 transition-colors group">
                             <CardContent className="px-4">
@@ -573,10 +573,10 @@ export default function InterfacesPage() {
 
           {/* ===== Tunnel Tab ===== */}
           <TabsContent value="tunnel">
-            <div className="space-y-6 mt-4">
+            <div className="space-y-3 mt-3">
               {/* Header */}
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-foreground">Tunnel Interfaces</h2>
+                <h2 className="text-base font-semibold text-foreground">Tunnel Interfaces</h2>
                 <Button onClick={() => setIsCreateTunnelModalOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Create Tunnel
@@ -592,7 +592,7 @@ export default function InterfacesPage() {
 
               {/* Tunnel Cards */}
               {!tunnelLoading && tunnelInterfaces.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {tunnelInterfaces.map((tun) => (
                     <Card key={tun.name} className="border-border hover:border-primary/50 transition-colors group">
                       <CardContent className="px-4">
@@ -706,10 +706,10 @@ export default function InterfacesPage() {
 
           {/* ===== VXLAN Tab ===== */}
           <TabsContent value="vxlan">
-            <div className="space-y-6 mt-4">
+            <div className="space-y-3 mt-3">
               {/* Header */}
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-foreground">VXLAN Interfaces</h2>
+                <h2 className="text-base font-semibold text-foreground">VXLAN Interfaces</h2>
                 <Button onClick={() => setIsCreateVxlanModalOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Create VXLAN
@@ -725,7 +725,7 @@ export default function InterfacesPage() {
 
               {/* VXLAN Cards */}
               {!vxlanLoading && vxlanInterfaces.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {vxlanInterfaces.map((vx) => (
                     <Card key={vx.name} className="border-border hover:border-primary/50 transition-colors group">
                       <CardContent className="px-4">

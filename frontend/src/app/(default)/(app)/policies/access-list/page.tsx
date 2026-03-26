@@ -225,12 +225,12 @@ export default function AccessListPage() {
   const handleTabChange = (value: string) => {
     const newType = value as "ipv4" | "ipv6";
     setSelectedListType(newType);
-    
+
     // Reset reorder state
     setHasChanges(false);
     setReorderedRules([]);
     setOriginalRules([]);
-    
+
     // Select first list of new type
     const lists = newType === "ipv4" ? config?.ipv4_lists || [] : config?.ipv6_lists || [];
     if (lists.length > 0) {
@@ -269,10 +269,10 @@ export default function AccessListPage() {
     return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
             <h2 className="text-xl font-semibold text-foreground">Error Loading Access Lists</h2>
             <p className="text-muted-foreground max-w-md">{error}</p>
-            <Button onClick={() => fetchConfig(true)} variant="outline">
+            <Button onClick={() => fetchConfig(true)} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
@@ -286,13 +286,13 @@ export default function AccessListPage() {
       <div className="flex h-full">
         {/* Left Sidebar - Access List List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
-          <div className="p-6 pb-4 shrink-0">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <ListFilter className="h-5 w-5 text-primary" />
+          <div className="p-3 pb-3 shrink-0">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <ListFilter className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-foreground">Access Lists</h1>
+                <h1 className="text-sm font-semibold text-foreground">Access Lists</h1>
                 <p className="text-xs text-muted-foreground">
                   {config?.total_ipv4 || 0} IPv4 · {config?.total_ipv6 || 0} IPv6
                 </p>
@@ -300,7 +300,7 @@ export default function AccessListPage() {
             </div>
 
             {/* Tabs for IPv4/IPv6 */}
-            <Tabs value={selectedListType} onValueChange={handleTabChange} className="mb-4">
+            <Tabs value={selectedListType} onValueChange={handleTabChange} className="mb-3">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="ipv4">IPv4</TabsTrigger>
                 <TabsTrigger value="ipv6">IPv6</TabsTrigger>
@@ -308,7 +308,7 @@ export default function AccessListPage() {
             </Tabs>
 
             {/* Search Lists */}
-            <div className="relative mb-4">
+            <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search lists..."
@@ -403,11 +403,11 @@ export default function AccessListPage() {
           {selectedListData ? (
             <>
               {/* Header */}
-              <div className="p-6 pb-4 border-b border-border">
-                <div className="flex items-center justify-between mb-4">
+              <div className="p-3 pb-3 border-b border-border">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold text-foreground font-mono">
+                      <h2 className="text-lg font-bold text-foreground font-mono">
                         {selectedListData.number}
                       </h2>
                       <Badge variant="outline">
@@ -427,8 +427,8 @@ export default function AccessListPage() {
                       </p>
                     )}
                     {capabilities && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {selectedListType === "ipv4" 
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {selectedListType === "ipv4"
                           ? `Valid ranges: ${capabilities.access_list_ranges.standard} (standard), ${capabilities.access_list_ranges.extended} (extended)`
                           : "IPv6 access lists use alphanumeric names"}
                       </p>
@@ -469,12 +469,12 @@ export default function AccessListPage() {
               )}
 
               {/* Rules Table */}
-              <div className="flex-1 p-6 pt-4 overflow-hidden">
+              <div className="flex-1 p-3 pt-3 overflow-hidden">
                 {filteredRules.length === 0 ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <ListFilter className="h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <div className="rounded-lg border border-border card-accent p-3">
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <ListFilter className="h-8 w-8 text-muted-foreground mb-4" />
+                      <h3 className="text-sm font-semibold text-foreground mb-2">
                         {ruleSearchQuery ? "No Rules Match Search" : "No Rules Configured"}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-4 text-center max-w-sm">
@@ -483,15 +483,15 @@ export default function AccessListPage() {
                           : "Add rules to this access list to control traffic filtering"}
                       </p>
                       {!ruleSearchQuery && (
-                        <Button onClick={() => setAddRuleModalOpen(true)}>
+                        <Button onClick={() => setAddRuleModalOpen(true)} size="sm">
                           <Plus className="h-4 w-4 mr-2" />
                           Add First Rule
                         </Button>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ) : (
-                  <Card>
+                  <div className="rounded-md border border-border overflow-hidden">
                     <ScrollArea className="h-[calc(100vh-350px)]">
                       <DndContext
                         sensors={sensors}
@@ -499,7 +499,7 @@ export default function AccessListPage() {
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                       >
-                        <Table>
+                        <Table className="table-dense">
                           <TableHeader>
                             <TableRow className="hover:bg-transparent">
                               <TableHead className="w-12"></TableHead>
@@ -530,7 +530,7 @@ export default function AccessListPage() {
                         </Table>
                       </DndContext>
                     </ScrollArea>
-                  </Card>
+                  </div>
                 )}
               </div>
             </>
@@ -547,7 +547,7 @@ export default function AccessListPage() {
                     : "Select an access list from the sidebar to view its rules"}
                 </p>
                 {currentLists.length === 0 && (
-                  <Button onClick={() => setCreateModalOpen(true)}>
+                  <Button onClick={() => setCreateModalOpen(true)} size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Access List
                   </Button>

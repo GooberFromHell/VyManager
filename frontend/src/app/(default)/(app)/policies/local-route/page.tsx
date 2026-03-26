@@ -196,10 +196,10 @@ export default function LocalRoutePage() {
     return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
             <h2 className="text-xl font-semibold text-foreground">Error Loading Local Route Rules</h2>
             <p className="text-muted-foreground max-w-md">{error}</p>
-            <Button onClick={() => fetchConfig(true)} variant="outline">
+            <Button onClick={() => fetchConfig(true)} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
@@ -212,15 +212,15 @@ export default function LocalRoutePage() {
     <>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-border bg-card/30 shrink-0">
-          <div className="flex items-center justify-between mb-4">
+        <div className="p-3 pb-3 border-b border-border bg-card/30 shrink-0">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Route className="h-5 w-5 text-primary" />
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Route className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Local Route</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-sm font-semibold text-foreground">Local Route</h1>
+                <p className="text-xs text-muted-foreground">
                   Policy-based routing for IPv4 and IPv6 traffic
                 </p>
               </div>
@@ -271,7 +271,7 @@ export default function LocalRoutePage() {
 
         {/* Error Alert */}
         {error && (
-          <div className="mx-6 mt-4 bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
+          <div className="mx-3 mt-3 bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium text-destructive">Error</p>
@@ -284,11 +284,11 @@ export default function LocalRoutePage() {
         )}
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-3 overflow-auto">
           <Tabs value={selectedTab}>
             <TabsContent value="ipv4" className="mt-0">
               {/* Search */}
-              <div className="mb-4">
+              <div className="mb-3">
                 <div className="relative max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -302,27 +302,27 @@ export default function LocalRoutePage() {
               </div>
 
               {displayedRules.length === 0 ? (
-                <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
-                  <Route className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                  <Route className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-sm font-semibold text-foreground mb-2">
                     {searchQuery ? "No rules match your search" : "No IPv4 local route rules configured"}
                   </h3>
                   {!searchQuery && (
-                    <p className="text-sm text-muted-foreground mb-6">
+                    <p className="text-sm text-muted-foreground mb-4">
                       Create your first rule to start policy-based routing
                     </p>
                   )}
                   {!searchQuery && (
-                    <Button onClick={() => setCreateModalOpen(true)}>
+                    <Button onClick={() => setCreateModalOpen(true)} size="sm">
                       <Plus className="h-4 w-4 mr-2" />
                       Create IPv4 Rule
                     </Button>
                   )}
                 </div>
               ) : (
-                <div className="border border-border rounded-lg overflow-hidden">
+                <div className="rounded-md border border-border overflow-hidden">
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <Table>
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"></TableHead>
@@ -355,7 +355,7 @@ export default function LocalRoutePage() {
 
             <TabsContent value="ipv6" className="mt-0">
               {/* Search */}
-              <div className="mb-4">
+              <div className="mb-3">
                 <div className="relative max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -369,27 +369,27 @@ export default function LocalRoutePage() {
               </div>
 
               {displayedRules.length === 0 ? (
-                <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
-                  <Route className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                  <Route className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-sm font-semibold text-foreground mb-2">
                     {searchQuery ? "No rules match your search" : "No IPv6 local route rules configured"}
                   </h3>
                   {!searchQuery && (
-                    <p className="text-sm text-muted-foreground mb-6">
+                    <p className="text-sm text-muted-foreground mb-4">
                       Create your first rule to start policy-based routing
                     </p>
                   )}
                   {!searchQuery && (
-                    <Button onClick={() => setCreateModalOpen(true)}>
+                    <Button onClick={() => setCreateModalOpen(true)} size="sm">
                       <Plus className="h-4 w-4 mr-2" />
                       Create IPv6 Rule
                     </Button>
                   )}
                 </div>
               ) : (
-                <div className="border border-border rounded-lg overflow-hidden">
+                <div className="rounded-md border border-border overflow-hidden">
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <Table>
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"></TableHead>

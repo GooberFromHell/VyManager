@@ -878,7 +878,7 @@ export default function FirewallPoliciesPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="border-b border-border bg-card/50 px-6 py-4">
+          <div className="border-b border-border bg-card/50 px-4 py-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
@@ -916,7 +916,7 @@ export default function FirewallPoliciesPage() {
             </div>
 
             {/* Search and Default Action */}
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-4 mt-3">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -983,8 +983,8 @@ export default function FirewallPoliciesPage() {
                 </Card>
               </div>
             ) : (
-              <div className="p-6 pt-0">
-                <div className="rounded-lg border border-border bg-card">
+              <div className="p-4 pt-0">
+                <div className="rounded-md border border-border bg-card">
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

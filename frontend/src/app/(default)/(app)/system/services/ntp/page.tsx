@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -63,15 +62,15 @@ export default function NTPPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading NTP"
           message={error}
@@ -87,68 +86,66 @@ export default function NTPPage() {
   const allowClients = config?.allow_clients || [];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       <PageHeader
         title="NTP"
         description="Network Time Protocol server configuration"
         actions={
           <>
             {canWrite(FeatureGroup.NTP) && (
-              <Button variant="outline" onClick={() => setEditSettingsOpen(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit Settings
+              <Button variant="outline" size="sm" onClick={() => setEditSettingsOpen(true)}>
+                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                Settings
               </Button>
             )}
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             </Button>
           </>
         }
       />
 
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="font-semibold text-sm mb-3">Settings</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Listen Addresses:</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {listenAddresses.length > 0
-                  ? listenAddresses.map((addr) => <Badge key={addr} variant="secondary">{addr}</Badge>)
-                  : <span className="text-muted-foreground italic">Not configured</span>}
-              </div>
+      {/* Settings — compact inline */}
+      <div className="rounded-lg border border-border card-accent p-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-muted-foreground text-xs">Listen Addresses</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {listenAddresses.length > 0
+                ? listenAddresses.map((addr) => <Badge key={addr} variant="secondary" className="text-xs">{addr}</Badge>)
+                : <span className="text-muted-foreground italic text-xs">Not configured</span>}
             </div>
-            <div>
-              <span className="text-muted-foreground">Allowed Clients:</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {allowClients.length > 0
-                  ? allowClients.map((net) => <Badge key={net} variant="secondary">{net}</Badge>)
-                  : <span className="text-muted-foreground italic">Not configured</span>}
-              </div>
-            </div>
-            {config?.vrf && (
-              <div>
-                <span className="text-muted-foreground">VRF:</span>
-                <span className="ml-2">{config.vrf}</span>
-              </div>
-            )}
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <span className="text-muted-foreground text-xs">Allowed Clients</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {allowClients.length > 0
+                ? allowClients.map((net) => <Badge key={net} variant="secondary" className="text-xs">{net}</Badge>)
+                : <span className="text-muted-foreground italic text-xs">Not configured</span>}
+            </div>
+          </div>
+          {config?.vrf && (
+            <div>
+              <span className="text-muted-foreground text-xs">VRF</span>
+              <span className="ml-2 text-xs font-mono">{config.vrf}</span>
+            </div>
+          )}
+        </div>
+      </div>
 
+      {/* NTP Servers table */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">NTP Servers</h2>
+        <h2 className="text-sm font-semibold section-header">NTP Servers</h2>
         {canWrite(FeatureGroup.NTP) && (
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
             Add Server
           </Button>
         )}
       </div>
 
-      <div className="rounded-lg border border-border">
-        <Table>
+      <div className="rounded-md border border-border overflow-hidden">
+        <Table className="table-dense">
           <TableHeader>
             <TableRow>
               <TableHead>Server</TableHead>
@@ -156,7 +153,7 @@ export default function NTPPage() {
               <TableHead>Prefer</TableHead>
               <TableHead>Noselect</TableHead>
               {canWrite(FeatureGroup.NTP) && (
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
+                <TableHead className="w-[70px] text-right">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -176,18 +173,19 @@ export default function NTPPage() {
             ) : (
               servers.map((server) => (
                 <TableRow key={server.address}>
-                  <TableCell className="font-mono">{server.address}</TableCell>
-                  <TableCell>{server.pool ? <Badge>Pool</Badge> : "—"}</TableCell>
-                  <TableCell>{server.prefer ? <Badge variant="secondary">Prefer</Badge> : "—"}</TableCell>
-                  <TableCell>{server.noselect ? <Badge variant="outline">Noselect</Badge> : "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">{server.address}</TableCell>
+                  <TableCell>{server.pool ? <Badge className="text-xs">Pool</Badge> : "—"}</TableCell>
+                  <TableCell>{server.prefer ? <Badge variant="secondary" className="text-xs">Prefer</Badge> : "—"}</TableCell>
+                  <TableCell>{server.noselect ? <Badge variant="outline" className="text-xs">Noselect</Badge> : "—"}</TableCell>
                   {canWrite(FeatureGroup.NTP) && (
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="h-7 w-7 p-0"
                         onClick={() => setDeletingServer(server.address)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>
                   )}

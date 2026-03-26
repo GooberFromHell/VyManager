@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Pencil, Server, Network, Settings, Radio } from "lucide-react";
@@ -49,15 +48,15 @@ export default function DHCPRelayPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading DHCP Relay"
           message={error}
@@ -82,19 +81,19 @@ export default function DHCPRelayPage() {
     listenAddresses.length === 0;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       <PageHeader
         title="DHCP Relay"
         description="DHCP relay agent configuration"
         actions={
           <>
             {canWrite(FeatureGroup.DHCP_RELAY) && (
-              <Button variant="outline" onClick={() => setEditOpen(true)}>
+              <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Button>
             )}
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
@@ -103,112 +102,102 @@ export default function DHCPRelayPage() {
       />
 
       {hasNoConfig ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="flex flex-col items-center justify-center">
-              <Radio className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm font-medium text-foreground">No DHCP relay configured</p>
-              <p className="text-xs text-muted-foreground mt-1">Configure DHCP relay to forward DHCP requests to upstream servers</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-border card-accent p-3">
+          <div className="flex flex-col items-center justify-center py-6">
+            <Radio className="h-5 w-5 text-muted-foreground mb-2" />
+            <p className="text-sm font-medium text-foreground">No DHCP relay configured</p>
+            <p className="text-xs text-muted-foreground mt-1">Configure DHCP relay to forward DHCP requests to upstream servers</p>
+          </div>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Server className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Relay Servers</h3>
-              </div>
-              <div className="space-y-3 text-sm">
-                {servers.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {servers.map((server) => (
-                      <Badge key={server} variant="secondary" className="font-mono">
-                        {server}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground italic">No servers configured</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Server className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Relay Servers</h3>
+            </div>
+            <div className="space-y-3 text-xs">
+              {servers.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {servers.map((server) => (
+                    <Badge key={server} variant="secondary" className="text-xs font-mono">
+                      {server}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-muted-foreground italic">No servers configured</span>
+              )}
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Network className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Relay Interfaces</h3>
-              </div>
-              <div className="space-y-3 text-sm">
-                {interfaces.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {interfaces.map((iface) => (
-                      <Badge key={iface} variant="secondary" className="font-mono">
-                        {iface}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground italic">No interfaces configured</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Network className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Relay Interfaces</h3>
+            </div>
+            <div className="space-y-3 text-xs">
+              {interfaces.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {interfaces.map((iface) => (
+                    <Badge key={iface} variant="secondary" className="text-xs font-mono">
+                      {iface}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-muted-foreground italic">No interfaces configured</span>
+              )}
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Settings className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Relay Options</h3>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Relay Options</h3>
+            </div>
+            <div className="space-y-1">
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Hop Count</span>
+                <span className="text-xs">{relayOptions.hop_count ?? <span className="text-muted-foreground italic">Default</span>}</span>
               </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Hop Count</span>
-                  <span>{relayOptions.hop_count ?? <span className="text-muted-foreground italic">Default</span>}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Max Size</span>
-                  <span>{relayOptions.max_size ?? <span className="text-muted-foreground italic">Default</span>}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Relay Agents Packets</span>
-                  <span>
-                    {relayOptions.relay_agents_packets ? (
-                      <Badge variant="outline">{relayOptions.relay_agents_packets}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground italic">Default</span>
-                    )}
-                  </span>
-                </div>
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Max Size</span>
+                <span className="text-xs">{relayOptions.max_size ?? <span className="text-muted-foreground italic">Default</span>}</span>
               </div>
-            </CardContent>
-          </Card>
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Relay Agents Packets</span>
+                <span className="text-xs">
+                  {relayOptions.relay_agents_packets ? (
+                    <Badge variant="outline" className="text-xs">{relayOptions.relay_agents_packets}</Badge>
+                  ) : (
+                    <span className="text-muted-foreground italic">Default</span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
 
           {capabilities?.has_listen_address && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Radio className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Listen Addresses</h3>
-                </div>
-                <div className="space-y-3 text-sm">
-                  {listenAddresses.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {listenAddresses.map((addr) => (
-                        <Badge key={addr} variant="secondary" className="font-mono">
-                          {addr}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground italic">No listen addresses configured</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-border card-accent p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Radio className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold">Listen Addresses</h3>
+              </div>
+              <div className="space-y-3 text-xs">
+                {listenAddresses.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {listenAddresses.map((addr) => (
+                      <Badge key={addr} variant="secondary" className="text-xs font-mono">
+                        {addr}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground italic">No listen addresses configured</span>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}

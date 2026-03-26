@@ -117,15 +117,15 @@ export default function FlowtablesPage() {
     <>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="border-b border-border bg-card/50 px-6 py-4">
+        <div className="border-b border-border bg-card/50 px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Zap className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                <Zap className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Flowtables</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-lg font-bold text-foreground">Flowtables</h1>
+                <p className="text-xs text-muted-foreground">
                   Manage fast-path packet offloading for established connections
                 </p>
               </div>
@@ -133,31 +133,31 @@ export default function FlowtablesPage() {
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
                 onClick={() => fetchConfig(true)}
                 disabled={loading}
               >
                 <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
               </Button>
-              <Button onClick={() => setCreateModalOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button size="sm" onClick={() => setCreateModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-1.5" />
                 Create Flowtable
               </Button>
             </div>
           </div>
 
           {/* Search and Stats */}
-          <div className="flex items-center gap-4 mt-4">
+          <div className="flex items-center gap-3 mt-3">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search flowtables..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-9 h-8 text-sm"
               />
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               {filteredFlowtables.length} flowtable{filteredFlowtables.length !== 1 ? "s" : ""}
             </div>
             {capabilities && (
@@ -178,42 +178,42 @@ export default function FlowtablesPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-3">
           {loading ? (
             <LoadingSpinner message="Loading flowtables configuration..." />
           ) : error ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-48">
               <Card className="border-destructive max-w-md">
-                <CardContent className="flex items-center gap-4 py-8">
-                  <AlertCircle className="h-8 w-8 text-destructive" />
+                <CardContent className="flex items-center gap-3 py-6">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-destructive">Error Loading Configuration</h3>
                     <p className="text-sm text-muted-foreground mt-1">{error}</p>
                   </div>
-                  <Button onClick={() => fetchConfig(true)} variant="outline">
+                  <Button size="sm" onClick={() => fetchConfig(true)} variant="outline">
                     Try Again
                   </Button>
                 </CardContent>
               </Card>
             </div>
           ) : filteredFlowtables.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-48">
               <Card className="max-w-md">
-                <CardContent className="flex flex-col items-center text-center py-12 px-8">
-                  <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Zap className="h-8 w-8 text-muted-foreground" />
+                <CardContent className="flex flex-col items-center text-center py-8 px-8">
+                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                    <Zap className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">
+                  <h3 className="text-base font-semibold text-foreground">
                     {searchQuery ? "No matching flowtables" : "No flowtables configured"}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-2 mb-6">
+                  <p className="text-sm text-muted-foreground mt-2 mb-4">
                     {searchQuery
                       ? "Try adjusting your search query"
                       : "Flowtables enable fast-path packet processing by offloading established connections to hardware or software acceleration."}
                   </p>
                   {!searchQuery && (
-                    <Button onClick={() => setCreateModalOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
+                    <Button size="sm" onClick={() => setCreateModalOpen(true)}>
+                      <Plus className="h-4 w-4 mr-1.5" />
                       Create Your First Flowtable
                     </Button>
                   )}
@@ -221,8 +221,8 @@ export default function FlowtablesPage() {
               </Card>
             </div>
           ) : (
-            <div className="rounded-lg border border-border bg-card">
-              <Table>
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table className="table-dense">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="w-[200px]">Name</TableHead>
@@ -270,7 +270,7 @@ export default function FlowtablesPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

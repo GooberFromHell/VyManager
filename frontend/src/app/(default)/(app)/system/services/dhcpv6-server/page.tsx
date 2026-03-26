@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -128,7 +127,7 @@ export default function DHCPv6ServerPage() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="page-compact">
         <ErrorAlert
           message={error}
           onRetry={() => {
@@ -143,7 +142,7 @@ export default function DHCPv6ServerPage() {
 
   if (!config) {
     return (
-      <div className="p-6">
+      <div className="page-compact">
         <div className="rounded-lg border border-border bg-muted/50 p-8 text-center">
           <Network className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">
@@ -153,7 +152,7 @@ export default function DHCPv6ServerPage() {
             No DHCPv6 server configuration found on this device.
           </p>
           {!isReadOnly && (
-            <Button onClick={() => setCreateNetworkOpen(true)}>
+            <Button size="sm" onClick={() => setCreateNetworkOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Shared Network
             </Button>
@@ -165,7 +164,7 @@ export default function DHCPv6ServerPage() {
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-6 space-y-6">
+      <div className="page-compact">
         {/* Header */}
         <PageHeader
           title="DHCPv6 Server"
@@ -186,26 +185,24 @@ export default function DHCPv6ServerPage() {
 
         {/* Preference */}
         {config.preference !== undefined && config.preference !== null && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Settings2 className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Global Settings</h3>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Preference</span>
-                <Badge variant="secondary">{config.preference}</Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings2 className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Global Settings</h3>
+            </div>
+            <div className="kv-row">
+              <span className="text-xs text-muted-foreground">Preference</span>
+              <Badge variant="secondary" className="text-xs">{config.preference}</Badge>
+            </div>
+          </div>
         )}
 
         {/* Shared Networks */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Shared Networks</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold section-header">Shared Networks</h3>
             {!isReadOnly && (
-              <Button onClick={() => setCreateNetworkOpen(true)}>
+              <Button size="sm" onClick={() => setCreateNetworkOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Shared Network
               </Button>
@@ -213,192 +210,193 @@ export default function DHCPv6ServerPage() {
           </div>
 
           {config.shared_networks.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {config.shared_networks.map((network) => (
-                <Card key={network.name}>
-                  <CardContent className="pt-6">
-                    {/* Network Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div
-                        className="flex items-center gap-2 cursor-pointer"
-                        onClick={() => toggleNetwork(network.name)}
-                      >
-                        {expandedNetworks.has(network.name) ? (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        )}
-                        <Network className="h-5 w-5 text-primary" />
-                        <h3 className="font-semibold">{network.name}</h3>
-                        <Badge variant="outline">
-                          {network.subnets.length} subnet
-                          {network.subnets.length !== 1 ? "s" : ""}
-                        </Badge>
-                      </div>
-                      {!isReadOnly && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteNetwork(network)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                <div key={network.name} className="rounded-lg border border-border card-accent p-3">
+                  {/* Network Header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div
+                      className="flex items-center gap-2 cursor-pointer"
+                      onClick={() => toggleNetwork(network.name)}
+                    >
+                      {expandedNetworks.has(network.name) ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       )}
+                      <Network className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold">{network.name}</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {network.subnets.length} subnet
+                        {network.subnets.length !== 1 ? "s" : ""}
+                      </Badge>
                     </div>
+                    {!isReadOnly && (
+                      <Button
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={() => handleDeleteNetwork(network)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
 
-                    {/* Subnets (expanded) */}
-                    {expandedNetworks.has(network.name) && (
-                      <div className="space-y-4 ml-7">
-                        {network.subnets.length > 0 ? (
-                          network.subnets.map((subnet) => (
-                            <div
-                              key={subnet.prefix}
-                              className="rounded-lg border border-border p-4 space-y-3"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Server className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-mono font-medium text-sm">
-                                  {subnet.prefix}
+                  {/* Subnets (expanded) */}
+                  {expandedNetworks.has(network.name) && (
+                    <div className="space-y-3 ml-6">
+                      {network.subnets.length > 0 ? (
+                        network.subnets.map((subnet) => (
+                          <div
+                            key={subnet.prefix}
+                            className="rounded-md border border-border p-3 space-y-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Server className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-mono font-medium text-xs">
+                                {subnet.prefix}
+                              </span>
+                            </div>
+
+                            {/* Address Ranges */}
+                            {(subnet.address_range_prefixes.length > 0 ||
+                              subnet.address_range_start) && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  Address Ranges:
                                 </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {subnet.address_range_prefixes.map(
+                                    (prefix) => (
+                                      <Badge
+                                        key={prefix}
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
+                                        {prefix}
+                                      </Badge>
+                                    )
+                                  )}
+                                  {subnet.address_range_start &&
+                                    subnet.address_range_stop && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        {subnet.address_range_start} -{" "}
+                                        {subnet.address_range_stop}
+                                      </Badge>
+                                    )}
+                                </div>
                               </div>
+                            )}
 
-                              {/* Address Ranges */}
-                              {(subnet.address_range_prefixes.length > 0 ||
-                                subnet.address_range_start) && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    Address Ranges:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {subnet.address_range_prefixes.map(
-                                      (prefix) => (
-                                        <Badge
-                                          key={prefix}
-                                          variant="secondary"
-                                        >
-                                          {prefix}
-                                        </Badge>
-                                      )
-                                    )}
-                                    {subnet.address_range_start &&
-                                      subnet.address_range_stop && (
-                                        <Badge variant="secondary">
-                                          {subnet.address_range_start} -{" "}
-                                          {subnet.address_range_stop}
-                                        </Badge>
-                                      )}
-                                  </div>
+                            {/* Name Servers */}
+                            {subnet.name_servers.length > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  Name Servers:
+                                </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {subnet.name_servers.map((ns) => (
+                                    <Badge key={ns} variant="secondary" className="text-xs">
+                                      {ns}
+                                    </Badge>
+                                  ))}
                                 </div>
-                              )}
+                              </div>
+                            )}
 
-                              {/* Name Servers */}
-                              {subnet.name_servers.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    Name Servers:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {subnet.name_servers.map((ns) => (
-                                      <Badge key={ns} variant="secondary">
-                                        {ns}
+                            {/* Domain Search */}
+                            {subnet.domain_search.length > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  Domain Search:
+                                </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {subnet.domain_search.map((domain) => (
+                                    <Badge key={domain} variant="secondary" className="text-xs">
+                                      {domain}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Lease Times */}
+                            {(subnet.lease_time.default ||
+                              subnet.lease_time.minimum ||
+                              subnet.lease_time.maximum) && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  Lease Time:
+                                </span>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {subnet.lease_time.default && (
+                                    <span>
+                                      Default:{" "}
+                                      <Badge variant="outline" className="text-xs">
+                                        {subnet.lease_time.default}s
                                       </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Domain Search */}
-                              {subnet.domain_search.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    Domain Search:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {subnet.domain_search.map((domain) => (
-                                      <Badge key={domain} variant="secondary">
-                                        {domain}
+                                    </span>
+                                  )}
+                                  {subnet.lease_time.minimum && (
+                                    <span>
+                                      Min:{" "}
+                                      <Badge variant="outline" className="text-xs">
+                                        {subnet.lease_time.minimum}s
                                       </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Lease Times */}
-                              {(subnet.lease_time.default ||
-                                subnet.lease_time.minimum ||
-                                subnet.lease_time.maximum) && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    Lease Time:
-                                  </span>
-                                  <div className="flex flex-wrap gap-2 mt-1">
-                                    {subnet.lease_time.default && (
-                                      <span>
-                                        Default:{" "}
-                                        <Badge variant="outline">
-                                          {subnet.lease_time.default}s
-                                        </Badge>
-                                      </span>
-                                    )}
-                                    {subnet.lease_time.minimum && (
-                                      <span>
-                                        Min:{" "}
-                                        <Badge variant="outline">
-                                          {subnet.lease_time.minimum}s
-                                        </Badge>
-                                      </span>
-                                    )}
-                                    {subnet.lease_time.maximum && (
-                                      <span>
-                                        Max:{" "}
-                                        <Badge variant="outline">
-                                          {subnet.lease_time.maximum}s
-                                        </Badge>
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* SIP Servers */}
-                              {subnet.sip_servers.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    SIP Servers:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {subnet.sip_servers.map((sip) => (
-                                      <Badge key={sip} variant="secondary">
-                                        {sip}
+                                    </span>
+                                  )}
+                                  {subnet.lease_time.maximum && (
+                                    <span>
+                                      Max:{" "}
+                                      <Badge variant="outline" className="text-xs">
+                                        {subnet.lease_time.maximum}s
                                       </Badge>
-                                    ))}
-                                  </div>
+                                    </span>
+                                  )}
                                 </div>
-                              )}
+                              </div>
+                            )}
 
-                              {/* SNTP Servers */}
-                              {subnet.sntp_servers.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    SNTP Servers:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {subnet.sntp_servers.map((sntp) => (
-                                      <Badge key={sntp} variant="secondary">
-                                        {sntp}
-                                      </Badge>
-                                    ))}
-                                  </div>
+                            {/* SIP Servers */}
+                            {subnet.sip_servers.length > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  SIP Servers:
+                                </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {subnet.sip_servers.map((sip) => (
+                                    <Badge key={sip} variant="secondary" className="text-xs">
+                                      {sip}
+                                    </Badge>
+                                  ))}
                                 </div>
-                              )}
+                              </div>
+                            )}
 
-                              {/* Static Mappings */}
-                              {subnet.static_mappings.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-muted-foreground">
-                                    Static Mappings:
-                                  </span>
-                                  <Table className="mt-2">
+                            {/* SNTP Servers */}
+                            {subnet.sntp_servers.length > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  SNTP Servers:
+                                </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {subnet.sntp_servers.map((sntp) => (
+                                    <Badge key={sntp} variant="secondary" className="text-xs">
+                                      {sntp}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Static Mappings */}
+                            {subnet.static_mappings.length > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">
+                                  Static Mappings:
+                                </span>
+                                <div className="rounded-md border border-border overflow-hidden mt-2">
+                                  <Table className="table-dense">
                                     <TableHeader>
                                       <TableRow>
                                         <TableHead>Name</TableHead>
@@ -439,39 +437,38 @@ export default function DHCPv6ServerPage() {
                                     </TableBody>
                                   </Table>
                                 </div>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-sm text-muted-foreground italic">
-                            No subnets configured in this shared network
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">
+                          No subnets configured in this shared network
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <Network className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  No shared networks configured
-                </p>
-                {!isReadOnly && (
-                  <Button
-                    variant="outline"
-                    className="mt-3"
-                    onClick={() => setCreateNetworkOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Shared Network
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border border-border card-accent p-3 text-center py-8">
+              <Network className="h-5 w-5 text-muted-foreground mx-auto mb-3" />
+              <p className="text-xs text-muted-foreground">
+                No shared networks configured
+              </p>
+              {!isReadOnly && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => setCreateNetworkOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Shared Network
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>

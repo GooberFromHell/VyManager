@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -162,12 +161,12 @@ export function HAProxyContent() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">HAProxy</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">HAProxy</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Reverse proxy and load balancing with HAProxy
             {capabilities && (
               <span className="ml-2">
@@ -225,53 +224,47 @@ export function HAProxyContent() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-                <Database className="h-4 w-4 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{backends.length}</p>
-                <p className="text-xs text-muted-foreground">Backends</p>
-              </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-lg border border-border card-accent p-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
+              <Database className="h-4 w-4 text-blue-500" />
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/10">
-                <Globe className="h-4 w-4 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{services.length}</p>
-                <p className="text-xs text-muted-foreground">Services</p>
-              </div>
+            <div>
+              <p className="text-2xl font-bold">{backends.length}</p>
+              <p className="text-xs text-muted-foreground">Backends</p>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10">
-                <Server className="h-4 w-4 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {backends.reduce((sum, b) => sum + b.servers.length, 0)}
-                </p>
-                <p className="text-xs text-muted-foreground">Total Servers</p>
-              </div>
+          </div>
+        </div>
+        <div className="rounded-lg border border-border card-accent p-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
+              <Globe className="h-4 w-4 text-green-500" />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="text-2xl font-bold">{services.length}</p>
+              <p className="text-xs text-muted-foreground">Services</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg border border-border card-accent p-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+              <Server className="h-4 w-4 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">
+                {backends.reduce((sum, b) => sum + b.servers.length, 0)}
+              </p>
+              <p className="text-xs text-muted-foreground">Total Servers</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="backends">
-        <TabsList>
+        <TabsList className="overflow-x-auto">
           <TabsTrigger value="backends">
             Backends
             <Badge variant="secondary" className="ml-2 text-xs">{backends.length}</Badge>
@@ -331,7 +324,7 @@ export function HAProxyContent() {
               </div>
             ) : (
               <ScrollArea>
-                <Table>
+                <Table className="table-dense">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
@@ -470,7 +463,7 @@ export function HAProxyContent() {
               </div>
             ) : (
               <ScrollArea>
-                <Table>
+                <Table className="table-dense">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>

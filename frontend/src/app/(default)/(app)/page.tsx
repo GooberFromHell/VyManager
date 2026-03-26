@@ -183,8 +183,8 @@ export default function Home() {
 
   if (isPending || isChecking) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center h-48 w-full">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
       </div>
     );
   }
@@ -492,49 +492,50 @@ export default function Home() {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="page-compact">
+      <div>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Welcome to VyManager - Professional VyOS Management Interface
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">Dashboard</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              VyManager — Professional VyOS Management
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {canEditDashboard && (
               <>
                 {hasUnsavedChanges && (
                   <>
-                    <Button variant="outline" onClick={handleCancel} disabled={saving}>
-                      <X className="h-4 w-4 mr-2" />
+                    <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                      <X className="h-3.5 w-3.5 mr-1.5" />
                       Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                      <Save className="h-4 w-4 mr-2" />
-                      {saving ? "Saving..." : "Save Layout"}
+                    <Button size="sm" onClick={handleSave} disabled={saving}>
+                      <Save className="h-3.5 w-3.5 mr-1.5" />
+                      {saving ? "Saving..." : "Save"}
                     </Button>
                   </>
                 )}
                 {editMode && (
-                  <Button onClick={() => setAddCardModalOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
+                  <Button size="sm" onClick={() => setAddCardModalOpen(true)}>
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
                     Add Card
                   </Button>
                 )}
                 <Button
+                  size="sm"
                   variant={editMode ? "default" : "outline"}
                   onClick={() => setEditMode(!editMode)}
                 >
                   {editMode ? (
                     <>
-                      <X className="h-4 w-4 mr-2" />
-                      Exit Edit
+                      <X className="h-3.5 w-3.5 mr-1.5" />
+                      Exit
                     </>
                   ) : (
                     <>
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Edit Dashboard
+                      <Edit3 className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
                     </>
                   )}
                 </Button>
@@ -543,79 +544,47 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Beta Information Card */}
-        <div className="mt-6 relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-br from-primary/5 via-purple-500/5 to-cyan-500/5 backdrop-blur-sm">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
-          <div className="relative p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary">Open Beta</span>
-            </div>
+        {/* Beta Information — compact inline strip */}
+        <div className="mt-3 relative overflow-hidden rounded-md border border-primary/20 bg-gradient-to-r from-primary/5 via-purple-500/5 to-cyan-500/5">
+          <div className="relative px-3 py-2">
+            <div className="flex items-center flex-wrap gap-3 text-xs">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-primary" />
+                <span className="font-semibold text-primary">Open Beta</span>
+              </div>
 
-            <div className="flex flex-wrap gap-4 text-sm">
               {versionInfo && (
-                <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">
-                    v{versionInfo.current_version}
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  <Tag className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-muted-foreground font-mono">v{versionInfo.current_version}</span>
                   {versionInfo.environment === "dev" && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
-                      dev
-                    </span>
+                    <span className="px-1 py-0.5 rounded text-[9px] font-semibold uppercase bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">dev</span>
                   )}
                 </div>
               )}
 
               {versionInfo?.update_available && (
-                <a
-                  href={versionInfo.release_url ?? "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-medium transition-colors"
-                >
-                  <ArrowUpCircle className="h-4 w-4" />
-                  v{versionInfo.latest_version} available
+                <a href={versionInfo.release_url ?? "#"} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+                  <ArrowUpCircle className="h-3 w-3" />
+                  v{versionInfo.latest_version}
                 </a>
               )}
 
-              <div className="flex items-center gap-2">
-                <Github className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Development by</span>
-                <a
-                  href="https://github.com/Community-VyProjects/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 font-medium transition-colors underline decoration-primary/30 hover:decoration-primary/60"
-                >
-                  VyProjects Org
-                </a>
-              </div>
+              <a href="https://github.com/Community-VyProjects/" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium transition-colors">
+                <Github className="h-3 w-3" /> VyProjects
+              </a>
 
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <a
-                  href="https://vyprojects.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 font-medium transition-colors underline decoration-primary/30 hover:decoration-primary/60"
-                >
-                  Website
-                </a>
-              </div>
+              <a href="https://vyprojects.org" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium transition-colors">
+                <Globe className="h-3 w-3" /> Website
+              </a>
 
-              <div className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Join our</span>
-                <a
-                  href="https://discord.gg/4mE6QsZtKm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-purple-500 hover:text-purple-400 font-medium transition-colors underline decoration-purple-500/30 hover:decoration-purple-500/60"
-                >
-                  Discord
-                </a>
-              </div>
+              <a href="https://discord.gg/4mE6QsZtKm" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-purple-400 hover:text-purple-300 font-medium transition-colors">
+                <MessageCircle className="h-3 w-3" /> Discord
+              </a>
             </div>
           </div>
         </div>

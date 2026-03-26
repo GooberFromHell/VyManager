@@ -299,10 +299,10 @@ export default function RoutePage() {
     return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
             <h2 className="text-xl font-semibold text-foreground">Error Loading Route Policies</h2>
             <p className="text-muted-foreground max-w-md">{error}</p>
-            <Button onClick={() => fetchData(true)} variant="outline">
+            <Button onClick={() => fetchData(true)} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
@@ -316,13 +316,13 @@ export default function RoutePage() {
       <div className="flex h-full">
         {/* Left Sidebar - Policy List */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
-          <div className="p-6 pb-4 shrink-0">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <RouteIcon className="h-5 w-5 text-primary" />
+          <div className="p-3 pb-3 shrink-0">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <RouteIcon className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-foreground">Policy Route</h1>
+                <h1 className="text-sm font-semibold text-foreground">Policy Route</h1>
                 <p className="text-xs text-muted-foreground">
                   {policies.length} {policies.length !== 1 ? "policies" : "policy"} · {totalRules} rule{totalRules !== 1 ? "s" : ""}
                 </p>
@@ -330,7 +330,7 @@ export default function RoutePage() {
             </div>
 
             {/* IPv4/IPv6 Tabs */}
-            <Tabs value={selectedPolicyType} onValueChange={(v) => handlePolicyTypeChange(v as "route" | "route6")} className="mb-4">
+            <Tabs value={selectedPolicyType} onValueChange={(v) => handlePolicyTypeChange(v as "route" | "route6")} className="mb-3">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="route">IPv4</TabsTrigger>
                 <TabsTrigger value="route6">IPv6</TabsTrigger>
@@ -338,7 +338,7 @@ export default function RoutePage() {
             </Tabs>
 
             {/* Search Policies */}
-            <div className="relative mb-4">
+            <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search policies..."
@@ -433,11 +433,11 @@ export default function RoutePage() {
           {selectedPolicyData ? (
             <>
               {/* Header */}
-              <div className="p-6 pb-4 border-b border-border">
-                <div className="flex items-center justify-between mb-4">
+              <div className="p-3 pb-3 border-b border-border">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold text-foreground font-mono">
+                      <h2 className="text-lg font-bold text-foreground font-mono">
                         {selectedPolicyData.name}
                       </h2>
                       <Button
@@ -482,51 +482,49 @@ export default function RoutePage() {
               </div>
 
               {/* Applied Interfaces Section */}
-              <div className="px-6 pt-4 pb-2">
-                <Card className="border-2 border-dashed">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Network className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="font-semibold text-sm">Applied Interfaces</h3>
-                        <Badge variant="secondary" className="text-xs">
-                          {policyInterfaces.length}
-                        </Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowManageInterfacesModal(true)}
-                        disabled={!selectedPolicyName}
-                      >
-                        <Network className="h-4 w-4 mr-2" />
-                        Manage Interfaces
-                      </Button>
+              <div className="px-3 pt-3 pb-2">
+                <div className="rounded-lg border border-border card-accent p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Network className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="text-sm font-semibold">Applied Interfaces</h3>
+                      <Badge variant="secondary" className="text-xs">
+                        {policyInterfaces.length}
+                      </Badge>
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowManageInterfacesModal(true)}
+                      disabled={!selectedPolicyName}
+                    >
+                      <Network className="h-4 w-4 mr-2" />
+                      Manage Interfaces
+                    </Button>
+                  </div>
 
-                    {policyInterfaces.length === 0 ? (
-                      <div className="text-center py-4">
-                        <p className="text-sm text-muted-foreground">
-                          No interfaces configured. Click "Manage Interfaces" to assign interfaces.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {policyInterfaces.map((iface) => (
-                          <Badge
-                            key={iface.name}
-                            variant="outline"
-                            className="px-3 py-1.5 flex items-center gap-2 bg-background"
-                          >
-                            <Network className="h-3 w-3" />
-                            <span className="font-mono text-sm">{iface.name}</span>
-                            <span className="text-muted-foreground text-xs">({iface.type})</span>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  {policyInterfaces.length === 0 ? (
+                    <div className="text-center py-2">
+                      <p className="text-sm text-muted-foreground">
+                        No interfaces configured. Click "Manage Interfaces" to assign interfaces.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {policyInterfaces.map((iface) => (
+                        <Badge
+                          key={iface.name}
+                          variant="outline"
+                          className="px-3 py-1.5 flex items-center gap-2 bg-background"
+                        >
+                          <Network className="h-3 w-3" />
+                          <span className="font-mono text-sm">{iface.name}</span>
+                          <span className="text-muted-foreground text-xs">({iface.type})</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Reorder Banner */}
@@ -540,12 +538,12 @@ export default function RoutePage() {
               )}
 
               {/* Rules Table */}
-              <div className="flex-1 p-6 pt-4 overflow-hidden">
+              <div className="flex-1 p-3 pt-3 overflow-hidden">
                 {filteredRules.length === 0 ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <RouteIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <div className="rounded-lg border border-border card-accent p-3">
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <RouteIcon className="h-8 w-8 text-muted-foreground mb-4" />
+                      <h3 className="text-sm font-semibold text-foreground mb-2">
                         {ruleSearchQuery ? "No Rules Match Search" : "No Rules Configured"}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-4 text-center max-w-sm">
@@ -554,15 +552,15 @@ export default function RoutePage() {
                           : "Add rules to this policy to control routing behavior"}
                       </p>
                       {!ruleSearchQuery && (
-                        <Button onClick={() => setShowCreateRuleModal(true)}>
+                        <Button onClick={() => setShowCreateRuleModal(true)} size="sm">
                           <Plus className="h-4 w-4 mr-2" />
                           Add First Rule
                         </Button>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ) : (
-                  <Card>
+                  <div className="rounded-md border border-border overflow-hidden">
                     <ScrollArea className="h-[calc(100vh-350px)]">
                       <DndContext
                         sensors={sensors}
@@ -570,7 +568,7 @@ export default function RoutePage() {
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                       >
-                        <Table>
+                        <Table className="table-dense">
                           <TableHeader>
                             <TableRow className="hover:bg-transparent">
                               <TableHead className="w-12"></TableHead>
@@ -600,7 +598,7 @@ export default function RoutePage() {
                         </Table>
                       </DndContext>
                     </ScrollArea>
-                  </Card>
+                  </div>
                 )}
               </div>
             </>
@@ -617,7 +615,7 @@ export default function RoutePage() {
                     : "Select a policy from the sidebar to view its rules"}
                 </p>
                 {policies.length === 0 && (
-                  <Button onClick={() => setShowCreatePolicyModal(true)}>
+                  <Button onClick={() => setShowCreatePolicyModal(true)} size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Policy
                   </Button>

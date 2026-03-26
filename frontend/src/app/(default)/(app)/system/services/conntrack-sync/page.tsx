@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -101,15 +100,15 @@ export default function ConntrackSyncPage() {
 
   if (loading && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center h-48">
         <ErrorAlert
           title="Error Loading Conntrack Sync"
           message={error}
@@ -121,7 +120,7 @@ export default function ConntrackSyncPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-compact">
       {/* Header */}
       <PageHeader
         title="Conntrack Sync"
@@ -129,12 +128,12 @@ export default function ConntrackSyncPage() {
         actions={
           <>
             {canWrite(FeatureGroup.CONNTRACK_SYNC) && (
-              <Button variant="outline" onClick={() => setEditOpen(true)}>
+              <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit Settings
               </Button>
             )}
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
               <RefreshCw
                 className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
               />
@@ -146,239 +145,231 @@ export default function ConntrackSyncPage() {
 
       {/* Empty state */}
       {!isConfigured && (
-        <Card>
-          <CardContent>
-            <EmptyState
-              icon={Network}
-              title="Conntrack Sync is not configured"
-              description="Configure Conntrack Sync to synchronize connection tracking state between high-availability cluster nodes."
-              action={canWrite(FeatureGroup.CONNTRACK_SYNC) ? { label: "Configure Conntrack Sync", onClick: () => setEditOpen(true), icon: Pencil } : undefined}
-            />
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-border card-accent p-3">
+          <EmptyState
+            icon={Network}
+            title="Conntrack Sync is not configured"
+            description="Configure Conntrack Sync to synchronize connection tracking state between high-availability cluster nodes."
+            action={canWrite(FeatureGroup.CONNTRACK_SYNC) ? { label: "Configure Conntrack Sync", onClick: () => setEditOpen(true), icon: Pencil } : undefined}
+          />
+        </div>
       )}
 
       {isConfigured && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* General Settings Card */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Settings className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">General Settings</h3>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">
-                    Accept Protocols
-                  </span>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {(config?.accept_protocols || []).length > 0 ? (
-                      config!.accept_protocols.map((proto) => (
-                        <Badge
-                          key={proto}
-                          variant="secondary"
-                          className="font-mono"
-                        >
-                          {proto}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-muted-foreground italic">
-                        All protocols
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Multicast Group</span>
-                  <span className="font-mono">
-                    {config?.mcast_group || (
-                      <span className="text-muted-foreground italic">—</span>
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Disable External Cache
-                  </span>
-                  <Badge
-                    variant={
-                      config?.disable_external_cache ? "destructive" : "default"
-                    }
-                  >
-                    {config?.disable_external_cache ? "Disabled" : "Enabled"}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Failover Mechanism Card */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Failover Mechanism</h3>
-              </div>
-              {config?.failover_mechanism ? (
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Type</span>
-                    <Badge variant="outline" className="uppercase">
-                      {config.failover_mechanism.type}
-                    </Badge>
-                  </div>
-                  {config.failover_mechanism.sync_group && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sync Group</span>
-                      <span className="font-mono">
-                        {config.failover_mechanism.sync_group}
-                      </span>
-                    </div>
-                  )}
-                  {config.failover_mechanism.cluster_group && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        Cluster Group
-                      </span>
-                      <span className="font-mono">
-                        {config.failover_mechanism.cluster_group}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">
-                  No failover mechanism configured
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Expect Sync Card */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Expect Sync</h3>
-              </div>
-              <div className="space-y-2 text-sm">
-                <span className="text-muted-foreground">
-                  Connection Tracking Helpers
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">General Settings</h3>
+            </div>
+            <div className="space-y-2">
+              <div>
+                <span className="text-xs text-muted-foreground">
+                  Accept Protocols
                 </span>
                 <div className="mt-1 flex flex-wrap gap-1">
-                  {(config?.expect_sync || []).length > 0 ? (
-                    config!.expect_sync.map((module) => (
+                  {(config?.accept_protocols || []).length > 0 ? (
+                    config!.accept_protocols.map((proto) => (
                       <Badge
-                        key={module}
+                        key={proto}
                         variant="secondary"
-                        className="font-mono"
+                        className="text-xs font-mono"
                       >
-                        {module}
+                        {proto}
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-muted-foreground italic">
-                      No modules configured
+                    <span className="text-xs text-muted-foreground italic">
+                      All protocols
                     </span>
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">Multicast Group</span>
+                <span className="text-xs font-mono">
+                  {config?.mcast_group || (
+                    <span className="text-muted-foreground italic">—</span>
+                  )}
+                </span>
+              </div>
+
+              <div className="kv-row">
+                <span className="text-xs text-muted-foreground">
+                  Disable External Cache
+                </span>
+                <Badge
+                  className="text-xs"
+                  variant={
+                    config?.disable_external_cache ? "destructive" : "default"
+                  }
+                >
+                  {config?.disable_external_cache ? "Disabled" : "Enabled"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Failover Mechanism Card */}
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Failover Mechanism</h3>
+            </div>
+            {config?.failover_mechanism ? (
+              <div className="space-y-1">
+                <div className="kv-row">
+                  <span className="text-xs text-muted-foreground">Type</span>
+                  <Badge variant="outline" className="text-xs uppercase">
+                    {config.failover_mechanism.type}
+                  </Badge>
+                </div>
+                {config.failover_mechanism.sync_group && (
+                  <div className="kv-row">
+                    <span className="text-xs text-muted-foreground">Sync Group</span>
+                    <span className="text-xs font-mono">
+                      {config.failover_mechanism.sync_group}
+                    </span>
+                  </div>
+                )}
+                {config.failover_mechanism.cluster_group && (
+                  <div className="kv-row">
+                    <span className="text-xs text-muted-foreground">
+                      Cluster Group
+                    </span>
+                    <span className="text-xs font-mono">
+                      {config.failover_mechanism.cluster_group}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">
+                No failover mechanism configured
+              </p>
+            )}
+          </div>
+
+          {/* Expect Sync Card */}
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Activity className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold">Expect Sync</h3>
+            </div>
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground">
+                Connection Tracking Helpers
+              </span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {(config?.expect_sync || []).length > 0 ? (
+                  config!.expect_sync.map((module) => (
+                    <Badge
+                      key={module}
+                      variant="secondary"
+                      className="text-xs font-mono"
+                    >
+                      {module}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">
+                    No modules configured
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Advanced Card — only shown when v1.5+ features have values */}
           {hasAdvancedValues && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Cpu className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Advanced</h3>
-                </div>
-                <div className="space-y-3 text-sm">
-                  {(config?.listen_addresses || []).length > 0 && (
-                    <div>
-                      <span className="text-muted-foreground">
-                        Listen Addresses
-                      </span>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {config!.listen_addresses.map((addr) => (
-                          <Badge
-                            key={addr}
-                            variant="secondary"
-                            className="font-mono"
-                          >
-                            {addr}
-                          </Badge>
-                        ))}
-                      </div>
+            <div className="rounded-lg border border-border card-accent p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Cpu className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold">Advanced</h3>
+              </div>
+              <div className="space-y-2">
+                {(config?.listen_addresses || []).length > 0 && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">
+                      Listen Addresses
+                    </span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {config!.listen_addresses.map((addr) => (
+                        <Badge
+                          key={addr}
+                          variant="secondary"
+                          className="text-xs font-mono"
+                        >
+                          {addr}
+                        </Badge>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {config?.event_listen_queue_size && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        Event Listen Queue Size
-                      </span>
-                      <span className="font-mono">
-                        {config.event_listen_queue_size}
-                      </span>
-                    </div>
-                  )}
+                {config?.event_listen_queue_size && (
+                  <div className="kv-row">
+                    <span className="text-xs text-muted-foreground">
+                      Event Listen Queue Size
+                    </span>
+                    <span className="text-xs font-mono">
+                      {config.event_listen_queue_size}
+                    </span>
+                  </div>
+                )}
 
-                  {config?.sync_queue_size && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        Sync Queue Size
-                      </span>
-                      <span className="font-mono">{config.sync_queue_size}</span>
-                    </div>
-                  )}
+                {config?.sync_queue_size && (
+                  <div className="kv-row">
+                    <span className="text-xs text-muted-foreground">
+                      Sync Queue Size
+                    </span>
+                    <span className="text-xs font-mono">{config.sync_queue_size}</span>
+                  </div>
+                )}
 
-                  {config?.startup_resync !== null && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        Startup Resync
-                      </span>
-                      <Badge
-                        variant={
-                          config?.startup_resync ? "default" : "secondary"
-                        }
-                      >
-                        {config?.startup_resync ? "Enabled" : "Disabled"}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                {config?.startup_resync !== null && (
+                  <div className="kv-row">
+                    <span className="text-xs text-muted-foreground">
+                      Startup Resync
+                    </span>
+                    <Badge
+                      className="text-xs"
+                      variant={
+                        config?.startup_resync ? "default" : "secondary"
+                      }
+                    >
+                      {config?.startup_resync ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Interfaces Card — full width */}
-          <Card className="md:col-span-2">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Network className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Interfaces</h3>
-                </div>
-                {canWrite(FeatureGroup.CONNTRACK_SYNC) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAddInterfaceOpen(true)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Interface
-                  </Button>
-                )}
+          <div className="rounded-lg border border-border card-accent p-3 md:col-span-2">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Network className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold">Interfaces</h3>
               </div>
+              {canWrite(FeatureGroup.CONNTRACK_SYNC) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAddInterfaceOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Interface
+                </Button>
+              )}
+            </div>
 
-              {(config?.interfaces || []).length > 0 ? (
-                <Table>
+            {(config?.interfaces || []).length > 0 ? (
+              <div className="rounded-md border border-border overflow-hidden">
+                <Table className="table-dense">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Interface</TableHead>
@@ -396,7 +387,7 @@ export default function ConntrackSyncPage() {
                         </TableCell>
                         <TableCell className="font-mono">
                           {iface.port || (
-                            <span className="text-muted-foreground italic">
+                            <span className="text-muted-foreground italic text-xs">
                               Default
                             </span>
                           )}
@@ -405,8 +396,7 @@ export default function ConntrackSyncPage() {
                           <TableCell>
                             <Button
                               variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                               onClick={() =>
                                 handleDeleteInterface(iface.name)
                               }
@@ -419,16 +409,16 @@ export default function ConntrackSyncPage() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <EmptyState
-                  icon={Network}
-                  title="No interfaces configured"
-                  action={canWrite(FeatureGroup.CONNTRACK_SYNC) ? { label: "Add Interface", onClick: () => setAddInterfaceOpen(true), icon: Plus } : undefined}
-                  compact
-                />
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            ) : (
+              <EmptyState
+                icon={Network}
+                title="No interfaces configured"
+                action={canWrite(FeatureGroup.CONNTRACK_SYNC) ? { label: "Add Interface", onClick: () => setAddInterfaceOpen(true), icon: Plus } : undefined}
+                compact
+              />
+            )}
+          </div>
         </div>
       )}
 

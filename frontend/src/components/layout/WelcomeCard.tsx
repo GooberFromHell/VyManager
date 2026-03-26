@@ -1,7 +1,6 @@
 "use client";
 
 import { useFirstVisit } from "@/hooks/useFirstVisit";
-import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, X, Shield, Globe, Network } from "lucide-react";
 import Link from "next/link";
 
@@ -11,57 +10,53 @@ export function WelcomeCard() {
   if (!isFirstVisit) return null;
 
   return (
-    <Card className="col-span-full border-primary/20 bg-primary/5 animate-fade-up">
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="h-6 w-6 text-primary mt-0.5" />
+    <div className="col-span-full rounded-lg border border-primary/20 bg-primary/5 p-3 animate-fade-up">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Connected</h3>
+            <p className="text-xs text-muted-foreground">Quick links to get started:</p>
+          </div>
+        </div>
+        <button
+          onClick={dismiss}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Dismiss welcome card"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 ml-6">
+        <Link href="/system/services" className="group">
+          <div className="flex items-center gap-2 rounded-md border border-border p-2 transition-colors hover:bg-accent">
+            <Globe className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
             <div>
-              <h3 className="font-semibold text-foreground">You&apos;re connected!</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Here&apos;s what you can do with VyManager:
-              </p>
+              <p className="text-xs font-medium text-foreground">Services</p>
+              <p className="text-[0.625rem] text-muted-foreground">DNS, NTP, SSH</p>
             </div>
           </div>
-          <button
-            onClick={dismiss}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Dismiss welcome card"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 ml-9">
-          <Link href="/system/services" className="group">
-            <div className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent">
-              <Globe className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Services</p>
-                <p className="text-xs text-muted-foreground">DNS, NTP, SSH, and more</p>
-              </div>
+        </Link>
+        <Link href="/firewall/policies" className="group">
+          <div className="flex items-center gap-2 rounded-md border border-border p-2 transition-colors hover:bg-accent">
+            <Shield className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+            <div>
+              <p className="text-xs font-medium text-foreground">Firewall</p>
+              <p className="text-[0.625rem] text-muted-foreground">Rules, groups, zones</p>
             </div>
-          </Link>
-          <Link href="/firewall/policies" className="group">
-            <div className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent">
-              <Shield className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Firewall</p>
-                <p className="text-xs text-muted-foreground">Rules, groups, and zones</p>
-              </div>
+          </div>
+        </Link>
+        <Link href="/network/interfaces" className="group">
+          <div className="flex items-center gap-2 rounded-md border border-border p-2 transition-colors hover:bg-accent">
+            <Network className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+            <div>
+              <p className="text-xs font-medium text-foreground">Network</p>
+              <p className="text-[0.625rem] text-muted-foreground">Interfaces, NAT, DHCP</p>
             </div>
-          </Link>
-          <Link href="/network/interfaces" className="group">
-            <div className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent">
-              <Network className="h-5 w-5 text-muted-foreground group-hover:text-primary mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Network</p>
-                <p className="text-xs text-muted-foreground">Interfaces, NAT, DHCP</p>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </Link>
+      </div>
+    </div>
   );
 }

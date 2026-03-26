@@ -13,7 +13,7 @@ export function SplitLayout({
 }: SplitLayoutProps) {
   return (
     <div className={cn("flex h-full", className)}>
-      <div className="w-80 border-r border-border bg-card flex flex-col h-full">
+      <div className="w-56 border-r border-border bg-sidebar flex flex-col h-full shrink-0">
         {sidebar}
       </div>
       <div className="flex-1 overflow-y-auto">{children}</div>

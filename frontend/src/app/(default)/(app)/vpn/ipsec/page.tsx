@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -114,145 +113,146 @@ export default function IPSecPage() {
   // Loading state
   if (loading && !config) {
     return (
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Loading IPSec configuration...</p>
-          </div>
+      <div className="flex items-center justify-center h-48">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading IPSec configuration...</p>
         </div>
+      </div>
     );
   }
 
   // Error state
   if (error && !config) {
     return (
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <div className="text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
-            <p className="text-destructive font-medium">Failed to load configuration</p>
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button onClick={() => fetchConfig(true)}>
-              <RefreshCw className="h-4 w-4 mr-2" /> Retry
-            </Button>
-          </div>
+      <div className="flex items-center justify-center h-48">
+        <div className="text-center space-y-3">
+          <AlertCircle className="h-5 w-5 text-destructive mx-auto" />
+          <p className="text-destructive font-medium text-sm">Failed to load configuration</p>
+          <p className="text-sm text-muted-foreground">{error}</p>
+          <Button size="sm" onClick={() => fetchConfig(true)}>
+            <RefreshCw className="h-4 w-4 mr-2" /> Retry
+          </Button>
         </div>
+      </div>
     );
   }
 
   const totals = config?.totals;
 
   return (
-      <div className="flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <div className="p-6 border-b bg-background">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-primary/10">
-                <Shield className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">IPSec VPN</h1>
-                <p className="text-muted-foreground">
-                  Manage site-to-site and remote access IPSec tunnels
-                </p>
-              </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b bg-background">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Shield className="h-4 w-4 text-primary" />
             </div>
-            <Button variant="outline" size="sm" onClick={() => fetchConfig(true)} disabled={loading}>
-              <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
-              Refresh
-            </Button>
+            <div>
+              <h1 className="text-sm font-semibold">IPSec VPN</h1>
+              <p className="text-xs text-muted-foreground">
+                Manage site-to-site and remote access IPSec tunnels
+              </p>
+            </div>
           </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-6 gap-3 mt-4">
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <Network className="h-4 w-4 text-blue-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">S2S Peers</p>
-                  <p className="font-semibold">{totals?.site_to_site_peers ?? 0}</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <Wifi className="h-4 w-4 text-green-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">RA Conns</p>
-                  <p className="font-semibold">{totals?.remote_access_connections ?? 0}</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-purple-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">IKE Groups</p>
-                  <p className="font-semibold">{totals?.ike_groups ?? 0}</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-amber-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">ESP Groups</p>
-                  <p className="font-semibold">{totals?.esp_groups ?? 0}</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-cyan-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Pools</p>
-                  <p className="font-semibold">{totals?.remote_access_pools ?? 0}</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-gray-500" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Profiles</p>
-                  <p className="font-semibold">{totals?.profiles ?? 0}</p>
-                </div>
-              </div>
-            </Card>
-          </div>
+          <Button variant="outline" size="sm" onClick={() => fetchConfig(true)} disabled={loading}>
+            <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
+            Refresh
+          </Button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex-1 overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-            <div className="px-6 pt-4 border-b">
-              <TabsList>
-                <TabsTrigger value="s2s">Site-to-Site</TabsTrigger>
-                <TabsTrigger value="ra">Remote Access</TabsTrigger>
-                <TabsTrigger value="ike">IKE Groups</TabsTrigger>
-                <TabsTrigger value="esp">ESP Groups</TabsTrigger>
-                <TabsTrigger value="auth">Authentication</TabsTrigger>
-                <TabsTrigger value="pools">Pools</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
+        {/* Stats */}
+        <div className="grid grid-cols-6 gap-3 mt-3">
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2">
+              <Network className="h-4 w-4 text-blue-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">S2S Peers</p>
+                <p className="font-semibold text-sm">{totals?.site_to_site_peers ?? 0}</p>
+              </div>
             </div>
+          </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2">
+              <Wifi className="h-4 w-4 text-green-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">RA Conns</p>
+                <p className="font-semibold text-sm">{totals?.remote_access_connections ?? 0}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-purple-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">IKE Groups</p>
+                <p className="font-semibold text-sm">{totals?.ike_groups ?? 0}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-amber-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">ESP Groups</p>
+                <p className="font-semibold text-sm">{totals?.esp_groups ?? 0}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4 text-cyan-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">Pools</p>
+                <p className="font-semibold text-sm">{totals?.remote_access_pools ?? 0}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border card-accent p-3">
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">Profiles</p>
+                <p className="font-semibold text-sm">{totals?.profiles ?? 0}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <ScrollArea className="flex-1">
-              <div className="p-6">
-                {/* Site-to-Site Tab */}
-                <TabsContent value="s2s" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Site-to-Site Peers</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => { setEditingS2S(null); setShowS2SModal(true); }}>
-                        <Plus className="h-4 w-4 mr-1" /> Add Peer
-                      </Button>
-                    )}
-                  </div>
-                  {(config?.site_to_site_peers.length ?? 0) === 0 ? (
-                    <EmptyState icon={Network} label="No site-to-site peers configured" />
-                  ) : (
-                    <Table>
+      {/* Tabs */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+          <div className="px-4 pt-3 border-b">
+            <TabsList>
+              <TabsTrigger value="s2s">Site-to-Site</TabsTrigger>
+              <TabsTrigger value="ra">Remote Access</TabsTrigger>
+              <TabsTrigger value="ike">IKE Groups</TabsTrigger>
+              <TabsTrigger value="esp">ESP Groups</TabsTrigger>
+              <TabsTrigger value="auth">Authentication</TabsTrigger>
+              <TabsTrigger value="pools">Pools</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <ScrollArea className="flex-1">
+            <div className="p-4">
+              {/* Site-to-Site Tab */}
+              <TabsContent value="s2s" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Site-to-Site Peers</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => { setEditingS2S(null); setShowS2SModal(true); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Peer
+                    </Button>
+                  )}
+                </div>
+                {(config?.site_to_site_peers.length ?? 0) === 0 ? (
+                  <EmptyState icon={Network} label="No site-to-site peers configured" />
+                ) : (
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Peer</TableHead>
@@ -280,21 +280,21 @@ export default function IPSecPage() {
                             </TableCell>
                             <TableCell>{peer.ike_group || "-"}</TableCell>
                             <TableCell>{peer.default_esp_group || "-"}</TableCell>
-                            <TableCell><Badge variant="outline">{peer.tunnels.length}</Badge></TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">{peer.tunnels.length}</Badge></TableCell>
                             <TableCell>
                               {peer.disabled ? (
-                                <Badge variant="secondary" className="bg-red-500/10 text-red-600">Disabled</Badge>
+                                <Badge variant="secondary" className="text-xs bg-red-500/10 text-red-600">Disabled</Badge>
                               ) : (
-                                <Badge variant="secondary" className="bg-green-500/10 text-green-600">Enabled</Badge>
+                                <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">Enabled</Badge>
                               )}
                             </TableCell>
                             {hasWrite && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingS2S(peer); setShowS2SModal(true); }}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingS2S(peer); setShowS2SModal(true); }}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setDeleteTarget({
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-destructive/10" onClick={() => setDeleteTarget({
                                     type: "Site-to-Site Peer",
                                     name: peer.name,
                                     onDelete: () => ipsecService.deleteS2SPeer(peer.name),
@@ -309,23 +309,25 @@ export default function IPSecPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  )}
-                </TabsContent>
-
-                {/* Remote Access Tab */}
-                <TabsContent value="ra" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Remote Access Connections</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => { setEditingRA(null); setShowRAModal(true); }}>
-                        <Plus className="h-4 w-4 mr-1" /> Add Connection
-                      </Button>
-                    )}
                   </div>
-                  {(config?.remote_access.connections.length ?? 0) === 0 ? (
-                    <EmptyState icon={Wifi} label="No remote access connections configured" />
-                  ) : (
-                    <Table>
+                )}
+              </TabsContent>
+
+              {/* Remote Access Tab */}
+              <TabsContent value="ra" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Remote Access Connections</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => { setEditingRA(null); setShowRAModal(true); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Connection
+                    </Button>
+                  )}
+                </div>
+                {(config?.remote_access.connections.length ?? 0) === 0 ? (
+                  <EmptyState icon={Wifi} label="No remote access connections configured" />
+                ) : (
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Connection</TableHead>
@@ -354,10 +356,10 @@ export default function IPSecPage() {
                             {hasWrite && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingRA(conn); setShowRAModal(true); }}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingRA(conn); setShowRAModal(true); }}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setDeleteTarget({
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-destructive/10" onClick={() => setDeleteTarget({
                                     type: "Connection", name: conn.name,
                                     onDelete: () => ipsecService.deleteRAConnection(conn.name),
                                   })}>
@@ -370,23 +372,25 @@ export default function IPSecPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  )}
-                </TabsContent>
-
-                {/* IKE Groups Tab */}
-                <TabsContent value="ike" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">IKE Groups</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => { setEditingIKE(null); setShowIKEModal(true); }}>
-                        <Plus className="h-4 w-4 mr-1" /> Add IKE Group
-                      </Button>
-                    )}
                   </div>
-                  {(config?.ike_groups.length ?? 0) === 0 ? (
-                    <EmptyState icon={Shield} label="No IKE groups configured" />
-                  ) : (
-                    <Table>
+                )}
+              </TabsContent>
+
+              {/* IKE Groups Tab */}
+              <TabsContent value="ike" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">IKE Groups</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => { setEditingIKE(null); setShowIKEModal(true); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Add IKE Group
+                    </Button>
+                  )}
+                </div>
+                {(config?.ike_groups.length ?? 0) === 0 ? (
+                  <EmptyState icon={Shield} label="No IKE groups configured" />
+                ) : (
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
@@ -401,17 +405,17 @@ export default function IPSecPage() {
                         {config?.ike_groups.map((g) => (
                           <TableRow key={g.name} className="group">
                             <TableCell className="font-medium">{g.name}</TableCell>
-                            <TableCell><Badge variant="outline">{g.key_exchange || "ikev2"}</Badge></TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">{g.key_exchange || "ikev2"}</Badge></TableCell>
                             <TableCell>{g.lifetime ? `${g.lifetime}s` : "-"}</TableCell>
                             <TableCell>{g.dpd_action || "none"}</TableCell>
                             <TableCell>{g.proposals.length}</TableCell>
                             {hasWrite && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingIKE(g); setShowIKEModal(true); }}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingIKE(g); setShowIKEModal(true); }}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setDeleteTarget({
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-destructive/10" onClick={() => setDeleteTarget({
                                     type: "IKE Group", name: g.name,
                                     onDelete: () => ipsecService.deleteIKEGroup(g.name),
                                     warning: "Deleting this IKE group may affect peers that reference it.",
@@ -425,23 +429,25 @@ export default function IPSecPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  )}
-                </TabsContent>
-
-                {/* ESP Groups Tab */}
-                <TabsContent value="esp" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">ESP Groups</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => { setEditingESP(null); setShowESPModal(true); }}>
-                        <Plus className="h-4 w-4 mr-1" /> Add ESP Group
-                      </Button>
-                    )}
                   </div>
-                  {(config?.esp_groups.length ?? 0) === 0 ? (
-                    <EmptyState icon={Lock} label="No ESP groups configured" />
-                  ) : (
-                    <Table>
+                )}
+              </TabsContent>
+
+              {/* ESP Groups Tab */}
+              <TabsContent value="esp" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">ESP Groups</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => { setEditingESP(null); setShowESPModal(true); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Add ESP Group
+                    </Button>
+                  )}
+                </div>
+                {(config?.esp_groups.length ?? 0) === 0 ? (
+                  <EmptyState icon={Lock} label="No ESP groups configured" />
+                ) : (
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
@@ -463,10 +469,10 @@ export default function IPSecPage() {
                             {hasWrite && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingESP(g); setShowESPModal(true); }}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingESP(g); setShowESPModal(true); }}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setDeleteTarget({
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-destructive/10" onClick={() => setDeleteTarget({
                                     type: "ESP Group", name: g.name,
                                     onDelete: () => ipsecService.deleteESPGroup(g.name),
                                     warning: "Deleting this ESP group may affect peers/tunnels that reference it.",
@@ -480,23 +486,25 @@ export default function IPSecPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  )}
-                </TabsContent>
-
-                {/* Authentication Tab */}
-                <TabsContent value="auth" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Pre-Shared Keys</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => { setEditingPSK(null); setShowPSKModal(true); }}>
-                        <Plus className="h-4 w-4 mr-1" /> Add PSK
-                      </Button>
-                    )}
                   </div>
-                  {(config?.authentication.psk.length ?? 0) === 0 ? (
-                    <EmptyState icon={Key} label="No pre-shared keys configured" />
-                  ) : (
-                    <Table>
+                )}
+              </TabsContent>
+
+              {/* Authentication Tab */}
+              <TabsContent value="auth" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Pre-Shared Keys</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => { setEditingPSK(null); setShowPSKModal(true); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Add PSK
+                    </Button>
+                  )}
+                </div>
+                {(config?.authentication.psk.length ?? 0) === 0 ? (
+                  <EmptyState icon={Key} label="No pre-shared keys configured" />
+                ) : (
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
@@ -525,10 +533,10 @@ export default function IPSecPage() {
                             {hasWrite && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPSK(psk); setShowPSKModal(true); }}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingPSK(psk); setShowPSKModal(true); }}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setDeleteTarget({
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-destructive/10" onClick={() => setDeleteTarget({
                                     type: "PSK", name: psk.name,
                                     onDelete: () => ipsecService.deleteAuthPSK(psk.name),
                                   })}>
@@ -541,23 +549,25 @@ export default function IPSecPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  )}
-                </TabsContent>
-
-                {/* Pools Tab */}
-                <TabsContent value="pools" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Address Pools</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => { setEditingPool(null); setShowPoolModal(true); }}>
-                        <Plus className="h-4 w-4 mr-1" /> Add Pool
-                      </Button>
-                    )}
                   </div>
-                  {(config?.remote_access.pools.length ?? 0) === 0 ? (
-                    <EmptyState icon={Database} label="No address pools configured" />
-                  ) : (
-                    <Table>
+                )}
+              </TabsContent>
+
+              {/* Pools Tab */}
+              <TabsContent value="pools" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Address Pools</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => { setEditingPool(null); setShowPoolModal(true); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Pool
+                    </Button>
+                  )}
+                </div>
+                {(config?.remote_access.pools.length ?? 0) === 0 ? (
+                  <EmptyState icon={Database} label="No address pools configured" />
+                ) : (
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <Table className="table-dense">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
@@ -591,10 +601,10 @@ export default function IPSecPage() {
                             {hasWrite && (
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPool(pool); setShowPoolModal(true); }}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingPool(pool); setShowPoolModal(true); }}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => setDeleteTarget({
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-destructive/10" onClick={() => setDeleteTarget({
                                     type: "Pool", name: pool.name,
                                     onDelete: () => ipsecService.deleteRAPool(pool.name),
                                     warning: "Connections using this pool may be affected.",
@@ -608,116 +618,116 @@ export default function IPSecPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  )}
-                </TabsContent>
+                  </div>
+                )}
+              </TabsContent>
 
-                {/* Settings Tab */}
-                <TabsContent value="settings" className="mt-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Global Settings</h3>
-                    {hasWrite && (
-                      <Button size="sm" onClick={() => setShowSettingsModal(true)}>
-                        <Pencil className="h-4 w-4 mr-1" /> Edit Settings
-                      </Button>
+              {/* Settings Tab */}
+              <TabsContent value="settings" className="mt-0">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Global Settings</h3>
+                  {hasWrite && (
+                    <Button size="sm" onClick={() => setShowSettingsModal(true)}>
+                      <Pencil className="h-4 w-4 mr-1" /> Edit Settings
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-border card-accent p-3 space-y-3">
+                    <h4 className="text-sm font-semibold">Options</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Disable Route Auto-install</span>
+                        <Badge variant={config?.options.disable_route_autoinstall ? "default" : "secondary"} className="text-xs">
+                          {config?.options.disable_route_autoinstall ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">FlexVPN</span>
+                        <Badge variant={config?.options.flexvpn ? "default" : "secondary"} className="text-xs">
+                          {config?.options.flexvpn ? "Enabled" : "Disabled"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Virtual IP</span>
+                        <Badge variant={config?.options.virtual_ip ? "default" : "secondary"} className="text-xs">
+                          {config?.options.virtual_ip ? "Enabled" : "Disabled"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Disable Unique Req IDs</span>
+                        <Badge variant={config?.disable_uniqreqids ? "default" : "secondary"} className="text-xs">
+                          {config?.disable_uniqreqids ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border card-accent p-3 space-y-3">
+                    <h4 className="text-sm font-semibold">Logging</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Level</span>
+                        <span>{config?.log.level || "default"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Subsystems</span>
+                        <span>{(config?.log.subsystems || []).join(", ") || "none"}</span>
+                      </div>
+                    </div>
+                    {capabilities?.features.retransmission_options.supported && (
+                      <>
+                        <h4 className="text-sm font-semibold pt-2">Retransmission</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Attempts</span>
+                            <span>{config?.options.retransmission_attempts || "default"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Base</span>
+                            <span>{config?.options.retransmission_base || "default"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Timeout</span>
+                            <span>{config?.options.retransmission_timeout || "default"}</span>
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <Card className="p-4 space-y-3">
-                      <h4 className="text-sm font-medium">Options</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Disable Route Auto-install</span>
-                          <Badge variant={config?.options.disable_route_autoinstall ? "default" : "secondary"}>
-                            {config?.options.disable_route_autoinstall ? "Yes" : "No"}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">FlexVPN</span>
-                          <Badge variant={config?.options.flexvpn ? "default" : "secondary"}>
-                            {config?.options.flexvpn ? "Enabled" : "Disabled"}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Virtual IP</span>
-                          <Badge variant={config?.options.virtual_ip ? "default" : "secondary"}>
-                            {config?.options.virtual_ip ? "Enabled" : "Disabled"}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Disable Unique Req IDs</span>
-                          <Badge variant={config?.disable_uniqreqids ? "default" : "secondary"}>
-                            {config?.disable_uniqreqids ? "Yes" : "No"}
-                          </Badge>
-                        </div>
+                  <div className="rounded-lg border border-border card-accent p-3 space-y-3">
+                    <h4 className="text-sm font-semibold">Interfaces</h4>
+                    {config?.interfaces && config.interfaces.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {config.interfaces.map((iface) => (
+                          <Badge key={iface} variant="outline" className="text-xs font-mono">{iface}</Badge>
+                        ))}
                       </div>
-                    </Card>
-                    <Card className="p-4 space-y-3">
-                      <h4 className="text-sm font-medium">Logging</h4>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No interfaces configured</p>
+                    )}
+                  </div>
+                  {(config?.profiles.length ?? 0) > 0 && (
+                    <div className="rounded-lg border border-border card-accent p-3 space-y-3">
+                      <h4 className="text-sm font-semibold">Profiles</h4>
                       <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Level</span>
-                          <span>{config?.log.level || "default"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Subsystems</span>
-                          <span>{(config?.log.subsystems || []).join(", ") || "none"}</span>
-                        </div>
-                      </div>
-                      {capabilities?.features.retransmission_options.supported && (
-                        <>
-                          <h4 className="text-sm font-medium pt-2">Retransmission</h4>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Attempts</span>
-                              <span>{config?.options.retransmission_attempts || "default"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Base</span>
-                              <span>{config?.options.retransmission_base || "default"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Timeout</span>
-                              <span>{config?.options.retransmission_timeout || "default"}</span>
+                        {config?.profiles.map((p) => (
+                          <div key={p.name} className="flex justify-between">
+                            <span className="font-medium">{p.name}</span>
+                            <div className="flex gap-2">
+                              {p.ike_group && <Badge variant="outline" className="text-xs">IKE: {p.ike_group}</Badge>}
+                              {p.esp_group && <Badge variant="outline" className="text-xs">ESP: {p.esp_group}</Badge>}
+                              {p.disabled && <Badge variant="secondary" className="text-xs bg-red-500/10 text-red-600">Disabled</Badge>}
                             </div>
                           </div>
-                        </>
-                      )}
-                    </Card>
-                    <Card className="p-4 space-y-3">
-                      <h4 className="text-sm font-medium">Interfaces</h4>
-                      {config?.interfaces && config.interfaces.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {config.interfaces.map((iface) => (
-                            <Badge key={iface} variant="outline" className="font-mono">{iface}</Badge>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No interfaces configured</p>
-                      )}
-                    </Card>
-                    {(config?.profiles.length ?? 0) > 0 && (
-                      <Card className="p-4 space-y-3">
-                        <h4 className="text-sm font-medium">Profiles</h4>
-                        <div className="space-y-2 text-sm">
-                          {config?.profiles.map((p) => (
-                            <div key={p.name} className="flex justify-between">
-                              <span className="font-medium">{p.name}</span>
-                              <div className="flex gap-2">
-                                {p.ike_group && <Badge variant="outline" className="text-xs">IKE: {p.ike_group}</Badge>}
-                                {p.esp_group && <Badge variant="outline" className="text-xs">ESP: {p.esp_group}</Badge>}
-                                {p.disabled && <Badge variant="secondary" className="text-xs bg-red-500/10 text-red-600">Disabled</Badge>}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </Card>
-                    )}
-                  </div>
-                </TabsContent>
-              </div>
-            </ScrollArea>
-          </Tabs>
-        </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </div>
+          </ScrollArea>
+        </Tabs>
       </div>
 
       {/* Modals */}
@@ -794,9 +804,9 @@ export default function IPSecPage() {
 
 function EmptyState({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
   return (
-    <div className="text-center py-12">
-      <Icon className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-      <p className="text-muted-foreground">{label}</p>
+    <div className="text-center py-8">
+      <Icon className="h-5 w-5 text-muted-foreground/30 mx-auto mb-3" />
+      <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );
 }

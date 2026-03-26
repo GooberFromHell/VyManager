@@ -48,31 +48,26 @@ export default function UnicastProtocolsPage() {
   return (
     <div className="flex h-full">
       {/* Left Sidebar - Protocol Selector */}
-      <div className="w-80 border-r border-border bg-card flex flex-col h-full">
-        <div className="p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Network className="h-6 w-6 text-primary" />
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Unicast Protocols</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Dynamic routing protocols
-              </p>
-            </div>
+      <div className="w-56 border-r border-border bg-sidebar flex flex-col h-full">
+        <div className="p-3">
+          <div className="flex items-center gap-2.5">
+            <Network className="h-5 w-5 text-primary shrink-0" />
+            <h2 className="text-sm font-semibold text-foreground">Unicast Protocols</h2>
           </div>
         </div>
 
         <Separator />
 
         {/* Protocol List */}
-        <ScrollArea className="flex-1 px-3">
-          <div className="space-y-1 py-3">
+        <ScrollArea className="flex-1 px-2">
+          <div className="space-y-0.5 py-2">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-sm text-muted-foreground">Loading protocols...</p>
+              <div className="flex items-center justify-center py-6">
+                <p className="text-xs text-muted-foreground">Loading protocols...</p>
               </div>
             ) : protocols.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-sm text-muted-foreground">No accessible protocols</p>
+              <div className="flex items-center justify-center py-6">
+                <p className="text-xs text-muted-foreground">No accessible protocols</p>
               </div>
             ) : (
               protocols.map((protocol) => (
@@ -80,38 +75,23 @@ export default function UnicastProtocolsPage() {
                   key={protocol.id}
                   onClick={() => setSelectedProtocol(protocol.id)}
                   className={cn(
-                    "w-full text-left rounded-lg px-3 py-3 transition-all",
+                    "w-full text-left rounded-md px-3 py-2 transition-all",
                     selectedProtocol === protocol.id
                       ? "bg-accent text-accent-foreground shadow-sm"
                       : "hover:bg-accent/50"
                   )}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className={cn(
-                      "mt-0.5 rounded-md p-1.5",
-                      selectedProtocol === protocol.id ? "bg-primary/10" : "bg-muted"
-                    )}>
-                      <Network className={cn(
-                        "h-4 w-4",
-                        selectedProtocol === protocol.id ? "text-primary" : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className={cn(
-                          "font-medium text-sm",
-                          selectedProtocol === protocol.id ? "text-foreground" : "text-foreground"
-                        )}>
-                          {protocol.name}
-                        </span>
-                        {selectedProtocol === protocol.id && (
-                          <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {protocol.description}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2.5">
+                    <Network className={cn(
+                      "h-3.5 w-3.5 shrink-0",
+                      selectedProtocol === protocol.id ? "text-primary" : "text-muted-foreground"
+                    )} />
+                    <span className="font-medium text-sm truncate flex-1">
+                      {protocol.name}
+                    </span>
+                    {selectedProtocol === protocol.id && (
+                      <ChevronRight className="h-3.5 w-3.5 text-primary shrink-0" />
+                    )}
                   </div>
                 </button>
               ))

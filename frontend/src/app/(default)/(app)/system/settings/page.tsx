@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Server, Users, FileText, Shield, Map, Settings2 } from "lucide-react";
+import { Users, FileText, Shield, Map, Settings2 } from "lucide-react";
 import {
   systemSettingsService,
   type SystemConfig,
@@ -16,6 +16,7 @@ import { SyslogPanel } from "@/components/system/settings/SyslogPanel";
 import { ConntrackPanel } from "@/components/system/settings/ConntrackPanel";
 import { HostMappingPanel } from "@/components/system/settings/HostMappingPanel";
 import { AdvancedPanel } from "@/components/system/settings/AdvancedPanel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function SystemSettingsPage() {
   const [config, setConfig] = useState<SystemConfig | null>(null);
@@ -48,22 +49,18 @@ export default function SystemSettingsPage() {
   const refresh = () => load(true);
 
   return (
-      <div className="p-8 space-y-6">
+      <div className="page-compact">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Server className="h-8 w-8" />
-            System Settings
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage VyOS system configuration — hostname, users, syslog, conntrack, and more.
+        <PageHeader
+          title="System Settings"
+          description="Manage VyOS system configuration — hostname, users, syslog, conntrack, and more."
+        />
+
+        {isReadOnly && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">
+            You have read-only access to system settings.
           </p>
-          {isReadOnly && (
-            <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-              You have read-only access to system settings.
-            </p>
-          )}
-        </div>
+        )}
 
         {loading && (
           <p className="text-sm text-muted-foreground">Loading system configuration…</p>
@@ -76,8 +73,8 @@ export default function SystemSettingsPage() {
         )}
 
         {!loading && config && capabilities && (
-          <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="flex flex-wrap gap-1 h-auto">
+          <Tabs defaultValue="general" className="space-y-4">
+            <TabsList className="flex flex-wrap gap-1 h-auto overflow-x-auto">
               <TabsTrigger value="general" className="flex items-center gap-2">
                 <Settings2 className="h-4 w-4" />
                 General

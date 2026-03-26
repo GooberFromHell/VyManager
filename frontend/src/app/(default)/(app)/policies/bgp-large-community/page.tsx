@@ -295,10 +295,10 @@ export default function BGPLargeCommunityPage() {
     return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
             <h2 className="text-xl font-semibold text-foreground">Error Loading Large Community Lists</h2>
             <p className="text-muted-foreground max-w-md">{error}</p>
-            <Button onClick={() => fetchData(true)} variant="outline">
+            <Button onClick={() => fetchData(true)} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
@@ -312,13 +312,13 @@ export default function BGPLargeCommunityPage() {
       <div className="flex h-full">
         {/* Left Sidebar - Large Community Lists */}
         <div className="w-80 border-r border-border bg-card/50 flex flex-col">
-          <div className="p-6 pb-4 shrink-0">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <ListFilter className="h-5 w-5 text-primary" />
+          <div className="p-3 pb-3 shrink-0">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <ListFilter className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-foreground">BGP Large Community</h1>
+                <h1 className="text-sm font-semibold text-foreground">BGP Large Community</h1>
                 <p className="text-xs text-muted-foreground">
                   {largeCommunityLists.length} {largeCommunityLists.length !== 1 ? "lists" : "list"} · {totalRules} rule{totalRules !== 1 ? "s" : ""}
                 </p>
@@ -326,7 +326,7 @@ export default function BGPLargeCommunityPage() {
             </div>
 
             {/* Search Large Community Lists */}
-            <div className="relative mb-4">
+            <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search lists..."
@@ -421,11 +421,11 @@ export default function BGPLargeCommunityPage() {
           {selectedLargeCommunityListData ? (
             <>
               {/* Header */}
-              <div className="p-6 pb-4 border-b border-border">
-                <div className="flex items-center justify-between mb-4">
+              <div className="p-3 pb-3 border-b border-border">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold text-foreground font-mono">
+                      <h2 className="text-lg font-bold text-foreground font-mono">
                         {selectedLargeCommunityListData.name}
                       </h2>
                       <Button
@@ -480,12 +480,12 @@ export default function BGPLargeCommunityPage() {
               )}
 
               {/* Rules Table */}
-              <div className="flex-1 p-6 pt-4 overflow-hidden">
+              <div className="flex-1 p-3 pt-3 overflow-hidden">
                 {filteredRules.length === 0 ? (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <ListFilter className="h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <div className="rounded-lg border border-border card-accent p-3">
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <ListFilter className="h-8 w-8 text-muted-foreground mb-4" />
+                      <h3 className="text-sm font-semibold text-foreground mb-2">
                         {ruleSearchQuery ? "No Rules Match Search" : "No Rules Configured"}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-4 text-center max-w-sm">
@@ -494,15 +494,15 @@ export default function BGPLargeCommunityPage() {
                           : "Add rules to this large community list to filter BGP routes"}
                       </p>
                       {!ruleSearchQuery && (
-                        <Button onClick={() => setShowCreateRuleModal(true)}>
+                        <Button onClick={() => setShowCreateRuleModal(true)} size="sm">
                           <Plus className="h-4 w-4 mr-2" />
                           Add First Rule
                         </Button>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ) : (
-                  <Card>
+                  <div className="rounded-md border border-border overflow-hidden">
                     <ScrollArea className="h-[calc(100vh-300px)]">
                       <DndContext
                         sensors={sensors}
@@ -510,7 +510,7 @@ export default function BGPLargeCommunityPage() {
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                       >
-                        <Table>
+                        <Table className="table-dense">
                           <TableHeader>
                             <TableRow className="hover:bg-transparent">
                               <TableHead className="w-12"></TableHead>
@@ -539,7 +539,7 @@ export default function BGPLargeCommunityPage() {
                         </Table>
                       </DndContext>
                     </ScrollArea>
-                  </Card>
+                  </div>
                 )}
               </div>
             </>
@@ -556,7 +556,7 @@ export default function BGPLargeCommunityPage() {
                     : "Select a large community list from the sidebar to view its rules"}
                 </p>
                 {largeCommunityLists.length === 0 && (
-                  <Button onClick={() => setShowCreateLargeCommunityListModal(true)}>
+                  <Button onClick={() => setShowCreateLargeCommunityListModal(true)} size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Large Community List
                   </Button>

@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -592,8 +591,8 @@ export default function FirewallZonesPage() {
 
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center h-48">
+          <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
     );
   }
@@ -602,7 +601,7 @@ export default function FirewallZonesPage() {
 
   return (
       <TooltipProvider>
-        <div className="space-y-6 p-6">
+        <div className="page-compact">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -636,8 +635,7 @@ export default function FirewallZonesPage() {
           {/* ================================================================
               Zone Table
           ================================================================ */}
-          <Card>
-            <CardContent className="p-0">
+          <div className="rounded-md border border-border overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -724,15 +722,14 @@ export default function FirewallZonesPage() {
                   </span>
                 )}
               </div>
-            </CardContent>
-          </Card>
+          </div>
 
           {/* ================================================================
               Zone Policy Matrix
           ================================================================ */}
           {zones.length > 0 && (
-            <Card>
-              <CardContent className="p-4 space-y-3">
+            <div className="rounded-lg border border-border card-accent p-3">
+              <div className="space-y-3">
                 <p className="text-sm font-medium">Zone Policy Matrix</p>
 
                 <div className="overflow-x-auto">
@@ -830,8 +827,8 @@ export default function FirewallZonesPage() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* ================================================================
@@ -859,8 +856,7 @@ export default function FirewallZonesPage() {
           {/* ================================================================
               Firewall Policy Table
           ================================================================ */}
-          <Card>
-            <CardContent className="p-0">
+          <div className="rounded-md border border-border overflow-hidden">
               {/* Toolbar */}
               <div className="flex items-center gap-2 px-4 py-3 border-b flex-wrap">
                 {/* Exclusive IPv4/IPv6 toggle */}
@@ -1035,8 +1031,7 @@ export default function FirewallZonesPage() {
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </div>
         </div>
 
         {/* ================================================================
