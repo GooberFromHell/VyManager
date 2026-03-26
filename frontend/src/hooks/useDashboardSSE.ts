@@ -157,7 +157,16 @@ export function useDashboardSSE(): DashboardSSEState {
     });
 
     es.onerror = () => {
-      // EventSource auto-reconnects; update status to show it's recovering
+      // EventSource auto-reconnects on transient errors, but on auth failure
+      // (401) the server will reject the connection. In that case, stop
+      // retrying and set status to error — AuthGuard will handle the redirect.
+      if (es.readyState === EventSource.CLOSED) {
+        setStatus("error");
+        es.close();
+        esRef.current = null;
+        return;
+      }
+      // Still attempting to reconnect
       setStatus("error");
     };
 

@@ -9,9 +9,11 @@ RBAC: ADMIN sees all jobs; non-ADMIN sees own jobs only.
 No active VyOS instance required.
 """
 
+import io
 import json
 import logging
 import re
+import zipfile
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
@@ -182,6 +184,75 @@ async def download_job_result(request: Request, job_id: str):
     return Response(
         content=content,
         media_type="application/json",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
+
+
+@router.get("/trigger/{trigger_id}/download")
+async def download_trigger_backup(request: Request, trigger_id: str):
+    """Download all completed backups for a trigger as a single ZIP file.
+
+    The ZIP contains one subdirectory per instance, each holding a
+    ``backup.json`` with the instance's backup result.
+
+    Returns 404 if the trigger has no jobs.
+    Returns 400 if no jobs in the trigger have downloadable results.
+    """
+    user_id, is_admin, db_pool = await _get_user_and_pool(request)
+
+    jobs = await background_jobs.list_jobs(
+        db_pool,
+        user_id=user_id,
+        trigger_id=trigger_id,
+        is_admin=is_admin,
+    )
+
+    if not jobs:
+        raise HTTPException(status_code=404, detail="No jobs found for this trigger")
+
+    # Collect jobs that have downloadable results
+    downloadable = [
+        j for j in jobs
+        if j.get("status") in ("success", "partial") and j.get("result") is not None
+    ]
+
+    if not downloadable:
+        raise HTTPException(
+            status_code=400,
+            detail="No completed backups available for download",
+        )
+
+    # Build ZIP in memory
+    site_name = downloadable[0].get("site_name") or "site"
+    sanitized_site = re.sub(r"[^a-zA-Z0-9]", "_", site_name)
+
+    timestamp = downloadable[0].get("created_at") or "unknown"
+    sanitized_ts = re.sub(r"[^0-9T\-]", "", str(timestamp).split(".")[0])
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for job in downloadable:
+            instance_name = job.get("instance_name") or "unknown"
+            sanitized_instance = re.sub(r"[^a-zA-Z0-9_-]", "_", instance_name)
+
+            result = job.get("result")
+            if isinstance(result, str):
+                try:
+                    result = json.loads(result)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+            content = json.dumps(result, indent=2, default=str)
+            zf.writestr(f"{sanitized_instance}/backup.json", content)
+
+    zip_bytes = buf.getvalue()
+    filename = f"backup_{sanitized_site}_{sanitized_ts}.zip"
+
+    return Response(
+        content=zip_bytes,
+        media_type="application/zip",
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"',
         },

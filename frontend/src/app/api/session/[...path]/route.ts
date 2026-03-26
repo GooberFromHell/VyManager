@@ -118,17 +118,22 @@ async function proxyRequest(
       });
     }
 
-    if (responseContentType && responseContentType.includes("text/csv")) {
-      // Return the CSV file as-is
+    // Pass through file downloads (CSV, ZIP, attachments, etc.)
+    const contentDisp = response.headers.get("content-disposition");
+    if (
+      responseContentType &&
+      (responseContentType.includes("text/csv") ||
+        responseContentType.includes("application/zip") ||
+        responseContentType.includes("application/octet-stream") ||
+        (contentDisp && contentDisp.includes("attachment")))
+    ) {
       const blob = await response.blob();
       const responseHeaders = new Headers();
 
-      // Copy important headers
-      const contentDisposition = response.headers.get("content-disposition");
-      if (contentDisposition) {
-        responseHeaders.set("Content-Disposition", contentDisposition);
+      if (contentDisp) {
+        responseHeaders.set("Content-Disposition", contentDisp);
       }
-      responseHeaders.set("Content-Type", "text/csv");
+      responseHeaders.set("Content-Type", responseContentType);
 
       return new NextResponse(blob, {
         status: response.status,

@@ -6,6 +6,7 @@ import {
   Clock,
   Briefcase,
   Filter,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,6 +137,14 @@ export function BackgroundJobsView() {
       await backgroundJobsService.downloadJobBackup(jobId, instanceName);
     } catch (err) {
       console.error("Failed to download backup:", err);
+    }
+  };
+
+  const handleDownloadAll = async (triggerId: string, siteName: string) => {
+    try {
+      await backgroundJobsService.downloadSiteBackup(triggerId, siteName);
+    } catch (err) {
+      console.error("Failed to download site backup:", err);
     }
   };
 
@@ -275,6 +284,15 @@ export function BackgroundJobsView() {
         <div className="space-y-6">
           {groups.map((group) => {
             const statusSummary = getGroupStatusSummary(group.jobs);
+            const hasDownloadable = group.jobs.some(
+              (j) =>
+                (j.status === "success" || j.status === "partial") &&
+                j.result !== null
+            );
+            const isGroupDone = group.jobs.every(
+              (j) =>
+                j.status !== "queued" && j.status !== "running"
+            );
             return (
               <div key={group.trigger_id} className="space-y-3">
                 {/* Group header */}
@@ -291,10 +309,25 @@ export function BackgroundJobsView() {
                       {timeAgo(group.created_at)}
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {group.jobs.length}{" "}
-                    {group.jobs.length === 1 ? "instance" : "instances"}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    {isGroupDone && hasDownloadable && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDownloadAll(group.trigger_id, group.site_name)
+                        }
+                        className="gap-1.5"
+                      >
+                        <Download className="h-3 w-3" />
+                        Download All
+                      </Button>
+                    )}
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {group.jobs.length}{" "}
+                      {group.jobs.length === 1 ? "instance" : "instances"}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Job cards */}

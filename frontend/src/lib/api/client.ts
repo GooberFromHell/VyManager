@@ -19,6 +19,9 @@ function resolveBackendUrl(): string {
 
 import { VyOSResponse, ApiError } from "../types/api";
 
+// Module-level flag to prevent duplicate 401 redirects
+let _isRedirectingToLogin = false;
+
 export class ApiClient {
   private readonly _baseUrl?: string;
 
@@ -78,6 +81,21 @@ export class ApiClient {
         // Special handling for connection failures (503)
         if (response.status === 503 && errorMessage.includes("Failed to connect")) {
           errorMessage = "Failed to connect";
+        }
+
+        // 401 Unauthorized — redirect to login in browser context
+        // Exclude /api/auth/ paths (auth endpoints may legitimately return 401)
+        if (
+          response.status === 401 &&
+          typeof window !== "undefined" &&
+          !endpoint.startsWith("/auth/") &&
+          !_isRedirectingToLogin
+        ) {
+          _isRedirectingToLogin = true;
+          const from = window.location.pathname;
+          window.location.href = `/login?from=${encodeURIComponent(from)}`;
+          // Return a never-resolving promise to prevent further code execution
+          return new Promise<never>(() => {});
         }
 
         const error: ApiError = {

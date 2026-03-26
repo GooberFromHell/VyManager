@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuth } from "./lib/auth";
 
-export default async function proxy(request: NextRequest) {
+export const runtime = "nodejs";
+
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const publicRoutes = [
     "/login",
@@ -21,13 +23,20 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const auth = await getAuth();
-  const session = await auth.api.getSession({ headers: request.headers });
+  try {
+    const auth = await getAuth();
+    const session = await auth.api.getSession({ headers: request.headers });
 
-  if (!session) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("from", pathname);
-    return NextResponse.redirect(loginUrl);
+    if (!session) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  } catch (error) {
+    // Fail open if auth check fails (e.g. DB unreachable) —
+    // the client-side AuthGuard will catch it on the next heartbeat.
+    console.error("[middleware] Auth check failed, allowing request through:", error);
+    return NextResponse.next();
   }
 
   return NextResponse.next();

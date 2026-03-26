@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2, Plus, Save, Edit3, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -102,7 +101,6 @@ function DroppableColumnOverlay({
 }
 
 export default function Home() {
-  const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
   const { data: session, isPending } = useSession();
   const { activeSession } = useSessionStore();
@@ -151,40 +149,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const checkAndRedirect = async () => {
+    const loadDashboardData = async () => {
       if (isPending) {
         return;
       }
 
-      if (!session?.user) {
-        try {
-          const response = await fetch(`/api/session/onboarding-status`, {
-            method: "GET",
-          });
-
-          if (!response.ok) {
-            console.error("[RootPage] Onboarding status check failed:", response.status);
-            router.push("/login");
-            return;
-          }
-
-          const data = await response.json();
-
-          if (data.needs_onboarding) {
-            console.log("[RootPage] Onboarding needed - redirecting to /onboarding");
-            router.push("/onboarding");
-          } else {
-            console.log("[RootPage] Onboarding complete - redirecting to /login");
-            router.push("/login");
-          }
-        } catch (err) {
-          console.error("[RootPage] Failed to check onboarding status:", err);
-          router.push("/login");
-        }
-        return;
-      }
-
-      // Session already loaded by (default)/layout.tsx — just load dashboard data
+      // AuthGuard ensures session is valid — load dashboard data directly
       await loadDashboard();
 
       // Check if user has permission to edit the dashboard layout
@@ -201,8 +171,8 @@ export default function Home() {
       setIsChecking(false);
     };
 
-    checkAndRedirect();
-  }, [router, session, isPending]);
+    loadDashboardData();
+  }, [isPending]);
 
   if (isPending || isChecking) {
     return (

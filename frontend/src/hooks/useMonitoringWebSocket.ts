@@ -118,7 +118,12 @@ export function useMonitoringWebSocket(): UseMonitoringWebSocketReturn {
         cleanup();
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event: CloseEvent) => {
+        // Code 1008 = Policy Violation (auth failure) — stop reconnection.
+        // AuthGuard will handle the redirect to login.
+        if (event.code === 1008) {
+          setError("Authentication failed");
+        }
         setStatus("disconnected");
         wsRef.current = null;
       };

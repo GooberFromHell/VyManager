@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSessionStore } from "@/store/session-store";
 import { Toaster } from "@/components/ui/toaster";
 import { Loader2 } from "lucide-react";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function DefaultLayout({
   children,
@@ -21,24 +22,36 @@ export default function DefaultLayout({
     load();
   }, [loadSession]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <div className="text-center">
-            <p className="text-sm font-medium text-foreground">Loading VyManager</p>
-            <p className="text-xs text-muted-foreground mt-1">Initializing your session...</p>
+  return (
+    <AuthGuard
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-background">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground">Loading VyManager</p>
+              <p className="text-xs text-muted-foreground mt-1">Initializing your session...</p>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {children}
-      <Toaster />
-    </>
+      }
+    >
+      {isLoading ? (
+        <div className="flex h-screen items-center justify-center bg-background">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground">Loading VyManager</p>
+              <p className="text-xs text-muted-foreground mt-1">Initializing your session...</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {children}
+          <Toaster />
+        </>
+      )}
+    </AuthGuard>
   );
 }

@@ -41,6 +41,25 @@ class BackgroundJobsService {
     document.body.removeChild(a);
   }
 
+  async downloadSiteBackup(triggerId: string, siteName: string): Promise<void> {
+    const response = await fetch(`/api/session/jobs/trigger/${triggerId}/download`, {
+      credentials: "include",
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: "Download failed" }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `backup_${siteName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+
   async triggerSiteBackup(siteId: string): Promise<TriggerBackupResponse> {
     return apiClient.post<TriggerBackupResponse>(`/session/sites/${siteId}/backup`);
   }

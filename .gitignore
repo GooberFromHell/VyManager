@@ -143,3 +143,4 @@ node_modules
 !.archon/workspace/outputs/.gitkeep
 .archon/data/
 .archon/venv/
+node_modules
